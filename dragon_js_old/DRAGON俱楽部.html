@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>DRAGON倶楽部</title>
+<style>
+html, body {
+  width: 100%;
+  height: 100%;
+}
+* {
+  margin: 0;
+  padding: 0;
+}
+#canvas-container {
+  width: 100%;
+  height: 100%;
+  background-color:black;
+}
+</style>
+</head>
+<body>
+<canvas id="canvas-container" width="100%" height="100%"></canvas>
+
+
+<script>
+
+                                                                     //最初の準備。ここから
+window.requestAnimationFrame = (function(){
+    return  window.requestAnimationFrame   ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame    ||
+        window.oRequestAnimationFrame      ||
+        window.msRequestAnimationFrame     ||
+        function(callback){
+            window.setTimeout(callback, 1000 / 60);
+        };
+})();
+
+window.onload = function() {
+    // Canvas未サポートは実行しない
+    if (!window.HTMLCanvasElement) return;
+
+    const canvas = document.querySelector('#canvas-container');
+    const ctx = canvas.getContext('2d');
+    let queue = null;
+
+    // Canvasサイズを100%
+
+    window.addEventListener("resize", function() {
+        clearTimeout( queue );
+        queue = setTimeout(function() {
+            setCanvasSize();
+        }, 300 );
+    }, false );
+
+    const setCanvasSize = function() {
+        canvas.width = document.documentElement.clientWidth;
+        canvas.height = document.documentElement.clientHeight;
+    };
+    setCanvasSize();
+
+    const clickPoint = {
+        x: 0,
+        y: 0
+    };
+                                                                     //最初の準備。ここまで
+
+
+                                                                     //ボディ。ここから
+
+let drabody=500;                                            //ボディ。数
+let scalex = 40;                                            //ボディ。横大きさ
+let scaley = 30;                                            //ボディ。縦大きさ
+let speed=500;                                              //ボディ。速さ
+let particles=[];
+let k=drabody;
+let rajian=0;                                               //自動の為の変数1。
+let rajik=0;                                                //自動の為の変数2。
+let raji=Math.PI/180;
+let image;
+let img1=new Image();
+img1.src="img1.png";                                             //読込画像のファイル名。1。
+let img2=new Image();
+img2.src="img2.png";                                             //読込画像のファイル名。2。
+let img3=new Image();
+img3.src="img3.png";                                             //読込画像のファイル名。3。
+
+
+    const Particle = function(image, scalex, scaley, speed, rajian, position) {
+        this.image=image;
+        this.scalex = scalex; //大きさx
+        this.scaley = scaley; //大きさy
+        this.speed = speed;   //速度
+        this.rajian = rajian; //角度
+        this.position = {     // 位置
+            x: 0,
+            y: 0}; 
+                 };
+
+Particle.prototype.draw = function() {
+ctx.save();
+ctx.beginPath();
+ctx.drawImage(this.image,this.position.x-this.scalex/2,this.position.y-this.scaley/2,this.scalex,this.scaley);
+ctx.fill();
+ctx.stroke();
+ctx.closePath();
+ctx.restore();};
+
+for(let i=drabody+1; i>0; i--){
+particles[i]=new Particle(image, scalex, scaley, speed, rajian);
+particles[i].scalex=scalex;
+particles[i].scaley=scaley;
+particles[i].position.x=0;
+particles[i].position.y=0;
+};
+
+Particle.prototype.update = function() {
+particles[drabody+1].image=img1;
+particles[drabody+1].scalex = scalex;
+particles[drabody+1].scaley = scaley/2;
+particles[drabody+1].position.x += (clickPoint.x-particles[drabody+1].position.x) / this.speed + Math.sin(rajik/57173)*0.33;
+particles[drabody+1].position.y += (clickPoint.y-particles[drabody+1].position.y) / this.speed + Math.cos(rajik/81735)*0.27;
+
+
+for(let k=drabody; k>0; k--){
+
+rajik += 0.01;
+particles[k].rajian = Math.sin(Math.PI/360000*rajik+k/80)*3*k;
+
+                                                                  //動き起点。頭。上顎。
+if(k<=drabody && k>drabody-3){
+particles[k].image=img1;
+particles[k].scalex = scalex+scalex*1/(k-drabody+4);
+particles[k].scaley = scaley/2+scaley*1.2/(k-drabody+4);
+};
+
+                                                                  //横角。右。
+if(k<=drabody-3 && k>drabody-4){
+particles[k].image=img2;
+particles[k].scalex = scalex*1.8;
+particles[k].scaley = scaley/9;
+particles[k].position.x = particles[k+1].position.x + scalex/2;
+particles[k].position.y = particles[k+1].position.y - scaley/3;
+};
+
+                                                                  //横角。左。
+if(k<=drabody-4 && k>drabody-5){
+particles[k].image=img2;
+particles[k].scalex = scalex*1.8;
+particles[k].scaley = scaley/9;
+particles[k].position.x = particles[k+1].position.x - scalex;
+particles[k].position.y = particles[k+1].position.y;
+};
+
+                                                                  //目。両角。
+if(k<=drabody-5 && k>drabody-6){
+particles[k].image=img3;
+particles[k].scalex = scalex*2;
+particles[k].scaley = scaley*2;
+particles[k].position.x = particles[k+1].position.x + scalex/2;
+particles[k].position.y = particles[k+1].position.y - scaley/6;
+};
+
+                                                                  //首部分。14個。
+if(k<=drabody-6 && k>drabody-20){
+if(k%2 === 0){
+particles[k].image=img2;
+particles[k].scalex = scalex/2;
+particles[k].scaley = scaley/2;
+}else{
+particles[k].image=img3;
+};};
+
+                                                                  //胴体。前部分。10個。
+if(k<=drabody-20 && k>drabody-30){
+if(k%2 === 0){
+particles[k].image=img2;
+particles[k].scalex = scalex/2 + scalex/2 * Math.sin((drabody-k-20)/80 * raji)*2500 ;
+particles[k].scaley = scaley/2 + scaley/2 * Math.sin((drabody-k-20)/80 * raji)*2200;
+}else{
+particles[k].image=img3;
+particles[k].scalex = scalex + scalex * Math.sin((drabody-k-20)/80 * raji)*2000 ;
+particles[k].scaley = scaley + scaley * Math.sin((drabody-k-20)/80 * raji)*2200;
+};};
+
+                                                                  //右翼起点。
+if(k<=drabody-30 && k>drabody-31){
+particles[k].image=img2;
+particles[k].scalex = 0;
+particles[k].scaley = 0;
+particles[k].position.x = particles[k+1].position.x;
+particles[k].position.y = particles[k+1].position.y;
+};
+
+                                                                  //右翼。縦骨格。1個目。
+if(k<=drabody-31 && k>drabody-32){
+particles[k].image=img3;
+particles[k].scalex = scalex * 1.2;
+particles[k].scaley = scaley * 1.2;
+particles[k].position.x = particles[k+1].position.x + particles[k+1].scalex/3;
+particles[k].position.y = particles[k+1].position.y + scaley/3;
+};
+
+                                                                  //右翼。縦骨格。13個。
+if(k<=drabody-32 && k>drabody-45){
+particles[k].image=img3;
+particles[k].scalex = scalex * 1.2;
+particles[k].scaley = scaley * 1.2;
+particles[k].position.x += (particles[k+1].position.x - particles[k].position.x) / this.speed + scalex/700;
+particles[k].position.y = particles[k+1].position.y - Math.abs(particles[k].rajian)/100;
+};
+
+                                                                  //右翼。横骨格。31個。
+if(k<=drabody-45 && k>drabody-76){
+particles[k].image=img3;
+particles[k].scalex = particles[k+1].scalex * 1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x += (particles[k+1].position.x - particles[k].position.x) / this.speed + scalex/1000;
+particles[k].position.y += (particles[k+1].position.y - particles[k].position.y) / this.speed * 0.001;
+};
+
+                                                                  //右翼。風受け1。元。
+if(k<=drabody-76 && k>drabody-77){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 1.2;
+particles[k].position.x = particles[k+30].position.x - particles[k+30].scalex/2;
+particles[k].position.y = particles[k+30].position.y + particles[k+30].scaley/2;
+};
+
+                                                                  //右翼。風受け。1。29個。
+if(k<=drabody-77 && k>drabody-106){
+particles[k].image=img1;
+particles[k].scalex = scalex*1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+30].position.x - particles[k+30].scalex/2;
+particles[k].position.y = particles[k+30].position.y + particles[k+30].scaley/2;
+};
+
+                                                                  //右翼。風受け2。元。
+if(k<=drabody-106 && k>drabody-107){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 1.1;
+particles[k].position.x = particles[k+30].position.x - particles[k+30].scalex/2;
+particles[k].position.y = particles[k+30].position.y + particles[k+30].scaley/2;
+};
+
+                                                                  //右翼。風受け。2。28個。
+if(k<=drabody-107 && k>drabody-135){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+30].position.x - particles[k+30].scalex/2;
+particles[k].position.y = particles[k+30].position.y + particles[k+30].scaley/2;
+};
+
+                                                                  //右翼。風受け3。元。
+if(k<=drabody-135 && k>drabody-136){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 1;
+particles[k].position.x = particles[k+29].position.x - particles[k+29].scalex/2;
+particles[k].position.y = particles[k+29].position.y + particles[k+29].scaley/2;
+};
+
+                                                                  //右翼。風受け。3。27個。
+if(k<=drabody-136 && k>drabody-163){
+particles[k].image=img1;
+particles[k].scalex = scalex*1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+29].position.x - particles[k+29].scalex/2;
+particles[k].position.y = particles[k+29].position.y + particles[k+29].scaley/2;
+};
+
+                                                                  //右翼。風受け4。元。
+if(k<=drabody-163 && k>drabody-164){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 0.9;
+particles[k].position.x = particles[k+28].position.x - particles[k+28].scalex/2;
+particles[k].position.y = particles[k+28].position.y + particles[k+28].scaley/2;
+};
+
+                                                                  //右翼。風受け。4。26個。
+if(k<=drabody-164 && k>drabody-190){
+particles[k].image=img1;
+particles[k].scalex = scalex*1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+28].position.x - particles[k+28].scalex/2;
+particles[k].position.y = particles[k+28].position.y + particles[k+28].scaley/2;
+};
+
+                                                                  //右翼。風受け5。元。
+if(k<=drabody-190 && k>drabody-191){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 0.8;
+particles[k].position.x = particles[k+27].position.x - particles[k+27].scalex/2;
+particles[k].position.y = particles[k+27].position.y + particles[k+27].scaley/2;
+};
+
+                                                                  //右翼。風受け。5。24個。
+if(k<=drabody-191 && k>drabody-215){
+particles[k].image=img1;
+particles[k].scalex = scalex*1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+27].position.x - particles[k+27].scalex/2;
+particles[k].position.y = particles[k+27].position.y + particles[k+27].scaley/2;
+};
+
+                                                                  //左翼起点。
+if(k<=drabody-215 && k>drabody-216){
+particles[k].image=img2;
+particles[k].scalex = 0;
+particles[k].scaley = 0;
+particles[k].position.x = particles[drabody-30].position.x;
+particles[k].position.y = particles[drabody-30].position.y;
+};
+
+                                                                  //左翼。縦骨格。1個目。
+if(k<=drabody-216 && k>drabody-217){
+particles[k].image=img3;
+particles[k].scalex = scalex * 1.2;
+particles[k].scaley = scaley * 1.2;
+particles[k].position.x = particles[k+1].position.x - particles[k+1].scalex/3;
+particles[k].position.y = particles[k+1].position.y + scaley/3;
+};
+
+                                                                  //左翼。縦骨格。13個。
+if(k<=drabody-217 && k>drabody-230){
+particles[k].image=img3;
+particles[k].scalex = scalex * 1.2;
+particles[k].scaley = scaley * 1.2;
+particles[k].position.x += (particles[k+1].position.x - particles[k].position.x) / this.speed - scalex/700;
+particles[k].position.y = particles[k+1].position.y - Math.abs(particles[k+185].rajian)/100;
+};
+
+                                                                  //左翼。横骨格。31個。
+if(k<=drabody-230 && k>drabody-261){
+particles[k].image=img3;
+particles[k].scalex = particles[k+1].scalex * 1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x += (particles[k+1].position.x - particles[k].position.x) / this.speed - scalex/1000;
+particles[k].position.y += (particles[k+1].position.y - particles[k].position.y) / this.speed * 0.001;
+};
+
+                                                                  //左翼。風受け1。元。
+if(k<=drabody-261 && k>drabody-262){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 1.2;
+particles[k].position.x = particles[k+30].position.x + particles[k+30].scalex/2;
+particles[k].position.y = particles[k+30].position.y + particles[k+30].scaley/2;
+};
+
+                                                                  //左翼。風受け。1。29個。
+if(k<=drabody-262 && k>drabody-291){
+particles[k].image=img1;
+particles[k].scalex = scalex*1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+30].position.x + particles[k+30].scalex/2;
+particles[k].position.y = particles[k+30].position.y + particles[k+30].scaley/2;
+};
+
+                                                                  //左翼。風受け2。元。
+if(k<=drabody-291 && k>drabody-292){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 1.1;
+particles[k].position.x = particles[k+30].position.x + particles[k+30].scalex/2;
+particles[k].position.y = particles[k+30].position.y + particles[k+30].scaley/2;
+};
+
+                                                                  //左翼。風受け。2。28個。
+if(k<=drabody-292 && k>drabody-320){
+particles[k].image=img1;
+particles[k].scalex = scalex*1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+30].position.x + particles[k+30].scalex/2;
+particles[k].position.y = particles[k+30].position.y + particles[k+30].scaley/2;
+};
+
+                                                                  //左翼。風受け3。元。
+if(k<=drabody-320 && k>drabody-321){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 1;
+particles[k].position.x = particles[k+29].position.x + particles[k+29].scalex/2;
+particles[k].position.y = particles[k+29].position.y + particles[k+29].scaley/2;
+};
+
+
+                                                                  //左翼。風受け。3。27個。
+if(k<=drabody-321 && k>drabody-348){
+particles[k].image=img1;
+particles[k].scalex = scalex*1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+29].position.x + particles[k+29].scalex/2;
+particles[k].position.y = particles[k+29].position.y + particles[k+29].scaley/2;
+};
+
+                                                                  //左翼。風受け4。元。
+if(k<=drabody-348 && k>drabody-349){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 0.9;
+particles[k].position.x = particles[k+28].position.x + particles[k+28].scalex/2;
+particles[k].position.y = particles[k+28].position.y + particles[k+28].scaley/2;
+};
+
+                                                                  //左翼。風受け。4。26個。
+if(k<=drabody-349 && k>drabody-375){
+particles[k].image=img1;
+particles[k].scalex = scalex*1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+28].position.x + particles[k+28].scalex/2;
+particles[k].position.y = particles[k+28].position.y + particles[k+28].scaley/2;
+};
+
+                                                                  //左翼。風受け5。元。
+if(k<=drabody-375 && k>drabody-376){
+particles[k].image=img1;
+particles[k].scalex = scalex * 1;
+particles[k].scaley = scaley * 0.8;
+particles[k].position.x = particles[k+27].position.x + particles[k+27].scalex/2;
+particles[k].position.y = particles[k+27].position.y + particles[k+27].scaley/2;
+};
+
+
+                                                                  //左翼。風受け。5。24個。
+if(k<=drabody-376 && k>drabody-400){
+particles[k].image=img1;
+particles[k].scalex = scalex*1;
+particles[k].scaley = particles[k+1].scaley * 0.9;
+particles[k].position.x = particles[k+27].position.x + particles[k+27].scalex/2;
+particles[k].position.y = particles[k+27].position.y + particles[k+27].scaley/2;
+};
+
+                                                                  //胴体。中間部分。
+if(k<=drabody-400 && k>drabody-402){
+if(k%2 === 0){
+particles[k].image=img1;
+particles[k].scalex = particles[drabody - 29].scalex/2;
+particles[k].scaley = particles[drabody - 29].scaley/2;
+}else{
+particles[k].image=img3;
+particles[k].scalex = particles[drabody - 29].scalex;
+particles[k].scaley = particles[drabody - 29].scaley;
+};
+particles[k].position.x = particles[drabody - 29].position.x;
+particles[k].position.y = particles[drabody - 29].position.y;
+};
+
+
+                                                                  //胴体。後ろ部分。
+if(k<=drabody-402 && k>drabody-412){
+if(k%2 === 0){
+particles[k].image=img2;
+particles[k].scalex = particles[drabody-401].scalex/2 - scalex/2 * Math.sin((drabody-k-402)/180 * raji)*3000;
+particles[k].scaley = particles[drabody-401].scaley/2 - scaley/2 * Math.sin((drabody-k-402)/180 * raji)*3500;
+}else{
+particles[k].image=img3;
+particles[k].scalex = particles[drabody-401].scalex - scalex * Math.sin((drabody-k-402)/180 * raji)*3000;
+particles[k].scaley = particles[drabody-401].scaley - scaley * Math.sin((drabody-k-402)/180 * raji)*3500;
+};};
+
+                                                                  //尻尾。
+if(k<=drabody-412 && k>drabody-500){
+if(k%2 === 0){
+particles[k].image=img3;
+particles[k].scalex = particles[k+1].scalex * 0.95;
+particles[k].scaley = particles[k+1].scaley * 0.95;
+}else{
+particles[k].image=img3;};
+particles[k].scalex = particles[k+1].scalex * 0.95;
+particles[k].scaley = particles[k+1].scaley * 0.95;
+};
+
+
+particles[k].position.x += (particles[k+1].position.x - particles[k].position.x) / this.speed;
+particles[k].position.y += (particles[k+1].position.y - particles[k].position.y) / this.speed;
+};
+
+this.draw();};
+
+                                                                     //ボディ。ここまで
+
+
+
+
+                                                                     //イベントリスナー。マウスの動きを取得。ここから
+const rect = canvas.getBoundingClientRect();
+
+canvas.addEventListener("mousemove", function(e) {
+const mouseX = e.clientX - rect.left;
+const mouseY = e.clientY - rect.top;
+clickPoint.x = mouseX;
+clickPoint.y = mouseY;}, false);
+                                                                     //イベントリスナー。マウスの動きを取得。ここまで
+
+
+
+
+
+                                                                     //イベントリスナー。サイズを大きくする。ここから
+
+document.addEventListener("keydown", function(e) {
+
+if(e.key === "ArrowUp"){
+e.preventDefault();
+scaley += 1;
+}else if(e.key === "ArrowDown"){
+scaley -= 1;
+}else if(e.key === "ArrowRight"){
+scalex += 1;
+}else if(e.key === "ArrowLeft"){
+scalex -= 1;
+};
+},false);
+                                                                     //イベントリスナー。サイズを大きくする。ここまで
+
+
+
+
+                                                                     //ループ関数。ここから
+const loop = function() {
+requestAnimationFrame(loop);
+ctx.clearRect(0,0, ctx.canvas.width, ctx.canvas.height);
+
+for(let i in particles){
+particles[i].update()
+;};};
+                                                                     //ループ関数。ここまで
+
+
+loop();                                                              //ループ実行
+
+};
+
+
+</script>
+</body>
+</html>
