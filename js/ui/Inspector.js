@@ -1,5 +1,4 @@
 import Sortable from '../../lib/sortable.esm.js';
-// import Sortable from '../../node_modules/sortablejs/modular/sortable.esm.js';
 import { PROP_SCHEMA, DragonScope } from '../base/prop_schema.js';
 import { MotionStrategy } from '../core/Strategies.js';
 import { Dragon } from '../core/Dragon.js';

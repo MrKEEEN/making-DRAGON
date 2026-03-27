@@ -64,8 +64,8 @@ if (e.key === "d"){
     rotationMode = (rotationMode === 4) ? 0 : 4;
     noticeMode();}
 if (e.key === "z"){
-     drawMode = (drawMode === 1) ? 0 : 1;
-     noticeMode();}
+    drawMode = (drawMode === 1) ? 0 : 1;
+    noticeMode();}
 if (e.key === "m") {
     mouseMode = (mouseMode === 1) ? 0 : 1;
     noticeMode();}
@@ -143,182 +143,9 @@ export async function loadImage(src){
       i++;
     } catch (error) {
       running = false;}
-  DragonScope.images = images;
-}
+  DragonScope.images = images;}
 
-// ============================
-// 初期ドラゴン配列
-// ============================
-
-const D0 = new Dragon(
-  {
-  meta:{
-  name: "Master",
-  _imgIndex: 0,
-  },
-  basic:{
-  numParts: 1,
-  scaleX:0.1,
-  scaleY:0.1,
-  spacing: 2,
-  speed: 0.7,
-  },
-  masterMove: {
-    flagMasterMove: true,
-    orbitAmpX: 120,
-    orbitAmpY: 50,
-    orbitSpeedX: 0.0004,
-    orbitSpeedY: 0.0002,
-    orbitPhase: 1/6,
-    orbitAsymX: 2.06,
-    orbitAsymY: 1.6,
-  },
-});
-DragonScope.D0 = D0;
-DragonScope.selectedDragon = D0;
-DragonScope.dragons.push(D0);
-
-
-const D1 = new Dragon(
-    {
-  meta:{
-  name: "head",
-  _imgIndex:3,
-  followId: D0,
-  followIndex: D0.lastIndex,
-  },
-  basic:{
-    scaleX: 30,
-  scaleY: 30,
-  numParts:10,
-  spacing: 20,
-  speed: 0.5,
-  },
-  });
-  DragonScope.dragons.push(D1);
-
-  const D2 = new Dragon(
-      {
-  meta:{
-  name: "neck",
-  _imgIndex: 0,
-  followId: D1,
-  followIndex: D1.lastIndex,
-  },
-  basic:{
-  numParts: 20,
-  scaleX: 30,
-  scaleY: 30,
-  spacing: 10,
-  speed: 0.8,
-  offsetX: (D1.scaleX - 30)/2,
-  offsetY: (D1.scaleY - 30)/2,
-  },
-    breath: {
-    flagBreath: true,
-    breatheAmpX: 50.61,
-    breatheAmpY: 40.5,
-    breatheSpeed: 0.002,
-    breatheProfile: "frontWave",
-    breatheLag: 0.6
-  },
-});
-  DragonScope.dragons.push(D2);
-
-const D3 = new Dragon(
-    {
-  meta:{
-  name: "body",
-  _imgIndex: 0,
-  followId: D2,
-  followIndex: D2.lastIndex,
-  },
-  basic:{
-  numParts: 40,
-  spacing: 5,
-  scaleX:25,
-  scaleY:50,
-  speed:0.5,
-  },
-  scaleFunc: {
-  flagScaleFunc: true,
-  methodX: "mul",
-  methodY: "mul",
-  ampScaleX: 100,
-  ampScaleY: 200,
-  effectScaleX: 1,
-  effectScaleY: 1,
-},
-    breath: {
-    flagBreath: true,
-    breatheAmpX: 40.61,
-    breatheAmpY: 20.5,
-    breatheSpeed: 0.0013,
-    breatheProfile:"center",
-    breatheLag: 0.6
-  },
-});
-  DragonScope.dragons.push(D3);
-
-
-const D4 = new Dragon(
-    {
-  meta:{
-  name: "wing",
-  _imgIndex: 2,
-  followId: D3,
-  followIndex: D3.lastIndex,
-  },
-  basic:{
-  numParts:20,
-  scaleX:30, scaleY:30,
-  spacing: 3,
-  speed: 0.4,
-  offsetX: -D2.scaleX/2,
-  offsetY: -D2.scaleY/2,
-  },
-  branch: {
-    flagBranch: true,
-    branchOffsetX: 3,
-    branchOffsetY: -2,
-    attachAngle: 0,
-    baseAngle: 1,
-    spread: 0.05,
-    waveAmp: 1,
-    waveSpeed: 0.002,
-    waveAngle: 0,
-    waveLag: 0.01,
-    sineSideAmp: 0.01,
-    sineSideSpeed: 0.0002,
-    sineSideLag: 0.01,
-    flapAmp: 10,
-    flapSpeed: 0.001,
-    flapSpread: 0.5,
-    flapXOffset: 10,
-    lengthAmp: 0,
-    lengthSpeed: 0,
-    mirrorOffset: 1,
-  },
-    scaleFunc:{
-  flagScaleFunc:true,
-  methodX: "simpMul",
-  methodY: "simpMul",
-  ampScaleX: 150,
-  ampScaleY: 30,
-  effectScaleX: 20,
-  effectScaleY: 20,
-},
-    breath: {
-    flagBreath: true,
-    breatheAmpX: 40.61,
-    breatheAmpY: 20.5,
-    breatheSpeed: 0.0033,
-    breatheProfile:"center",
-    breatheLag: 0.6
-  },
-  });
-  DragonScope.dragons.push(D4);
-
+ResetSaveLoad.applyData(DragonScope.initialData);
 
 canvas.addEventListener("dblclick", () => {
   if (DragonScope.master) {
@@ -339,9 +166,9 @@ createInspectorGUI();
 ResetSaveLoad.setupUI( {rebuildDragonList, buildDPS});
 
 
-   loop(buildDPS, DragonScope.dragons);}
+  loop(buildDPS, DragonScope.dragons);}
 
-   function loop(buildDPS) {
+  function loop(buildDPS) {
   function frame() {
     requestAnimationFrame(frame);
     if (!DragonScope.dragons || !Array.isArray(DragonScope.dragons)) return;
