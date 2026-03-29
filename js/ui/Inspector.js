@@ -1,7 +1,9 @@
 import Sortable from '../../lib/sortable.esm.js';
-import { PROP_SCHEMA, DragonScope } from '../base/prop_schema.js';
 import { MotionStrategy } from '../core/Strategies.js';
 import { Dragon } from '../core/Dragon.js';
+import { PROP_SCHEMA, DragonScope } from '../base/prop_schema.js';
+import { showToast } from '../base/MathUtils.js';
+
 
 let dragonListEl = null;
 
@@ -44,7 +46,7 @@ export function rebuildDragonList() {
 
 
 
- export function paneSetupUI() {
+export function paneSetupUI() {
 const dragonInputWrapper = document.createElement("div");
 dragonInputWrapper.style.marginBottom = "3px";
 const dragonInputLabel = document.createElement("div");
@@ -65,7 +67,7 @@ dragonInputWrapper.appendChild(dragonAddBtn);
   // --- A. 上部コンテナ（リスト・入力・名前） ---
   const topContainer = document.createElement('div');
   topContainer.id = "inspector-top-container";
-  topContainer.style.cssText = "flex: 0 0 250px; overflow-y:auto; display:flex; flex-direction:column; background:#111; min-height:0;";
+  topContainer.style.cssText = "flex: 0 0 250px; overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column; background:#111; min-height:0;";
   controls.appendChild(topContainer);
   // 1. Dragon List の追加
   dragonListEl = document.createElement('ol');
@@ -81,7 +83,7 @@ dragonInputWrapper.appendChild(dragonAddBtn);
   // --- C. 下部コンテナ（パラメータ） ---
   const contentArea = document.createElement('div');
   contentArea.id = 'inspector-content';
-  contentArea.style.cssText = "flex: 1 1 auto; overflow-y:auto; padding:5px;";
+  contentArea.style.cssText = "flex: 1 1 auto; overflow-y:auto; padding:0px;";
   controls.appendChild(contentArea);
   // --- 上下リサイズ処理 ---
   splitResizer.onmousedown = (e) => {
@@ -180,7 +182,7 @@ function updateAdd(dragonInput){
       }});
     DragonScope.dragons.push(newDragon);
     DragonScope.selectedDragon = newDragon;
-    console.log("New dragon added:", newDragon.name);}
+    showToast(`New dragon added: ${newDragon.name}`);}
 //---update---
   d.parts.forEach(p => {
     p.vx = 0;
@@ -253,13 +255,13 @@ function updateAdd(dragonInput){
       const label = document.createElement('label');
       const input = document.createElement('input');
       const itemRow = document.createElement('div');
-      itemRow.style = "margin: 4px 0; display: flex; flex-direction: column;";
+      itemRow.style = "margin: 0px 0; display: flex; flex-direction: column;";
 
       const isLockedGroup = (DragonScope.selectedDragon.name === "Master" && ['scaleFunc', 'breath', 'branch'].includes(groupKey)) ||
       (DragonScope.selectedDragon.name !== "Master" && ['whole', 'masterMove'].includes(groupKey));
       const isLockedKey = ((DragonScope.selectedDragon.name === "Master" &&
-groupKey === 'basic' && ['scaleX', 'scaleY', 'offsetX', 'offsetY', 'numParts',].includes(key)) ||
-      (DragonScope.selectedDragon.name === "Master" && groupKey === 'meta' && ['name', 'followId', 'followIndex',].includes(key)));
+                            groupKey === 'basic' && ['scaleX', 'scaleY', 'offsetX', 'offsetY', 'numParts',].includes(key)) ||
+                          (DragonScope.selectedDragon.name === "Master" && groupKey === 'meta' && ['name', 'followId', 'followIndex',].includes(key)));
       const isLocked = isLockedGroup || isLockedKey;
       function lockedProperty(isLocked){
                     if (isLocked) {
@@ -303,7 +305,7 @@ groupKey === 'basic' && ['scaleX', 'scaleY', 'offsetX', 'offsetY', 'numParts',].
         input.style = "background:#111; color:#eee; border:1px solid #333; font-size:10px;";
         input.className = "inspector-image-input";
         const controls = document.createElement("div");
-        controls.style = "display: flex; align-items: center; gap: 0px;";
+        // controls.style = "display: flex; align-items: center; gap: 0px;";
         const countDisplay = document.createElement("span");
         countDisplay.innerText = ` / 0 ~ ${DragonScope.images.length-1}`;
         countDisplay.style = "font-size:10px; color:#666; margin-left:2px;";
@@ -349,13 +351,7 @@ groupKey === 'basic' && ['scaleX', 'scaleY', 'offsetX', 'offsetY', 'numParts',].
                   renderList();
                 } catch (err) {
                   console.error("Upload failed", err);
-                }
-                
-                // finally {
-                //   setTimeout(() => {
-                //   URL.revokeObjectURL(url);    //TODO revokeを数秒後に修正する
-                // }, 3000);}
-            };
+                }};
               fileInput.click();};
             header.appendChild(innerUploadBtn);
             content.appendChild(header);
@@ -546,16 +542,16 @@ const targetDragon = DragonScope.selectedDragon.followId;
         itemRow.appendChild(label);
         lockedProperty(isLocked);
         const row = document.createElement('div');
-        row.style = "display:flex; align-items:center; gap:5px;";
+        row.style = "display:flex; align-items:center; gap:0px;";
         const slider = document.createElement('input');
         slider.type = "range";
         slider.min = config[0];
         slider.max = config[1];
         const baseStep = config[2] ?? F_1;
         slider.step = baseStep;
-        slider.style = "flex:1; height:5px; margin-right: 0px;";
+        slider.style = "flex:1; height:5px; margin-right: 10px;";
         const valDisp = document.createElement('span');
-        valDisp.style = "font-size:10px; color:#fff; min-width:25px; text-align:right;";
+        valDisp.style = "font-size:10px; color:#fff; min-width:20px; text-align:right;";
         const currentVal = DragonScope.selectedDragon[key] ?? config[defInd];
         slider.value = currentVal;
         valDisp.innerText = currentVal;

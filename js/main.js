@@ -1,10 +1,27 @@
 import { DragonScope } from './base/prop_schema.js';
-import { Dragon } from './core/Dragon.js';
 import { createInspectorGUI, paneSetupUI, buildDPS, rebuildDragonList, updateListHighlight } from './ui/Inspector.js';
 import { ResetSaveLoad } from './ui/ResetSaveLoad.js';
 
 
 const canvas = document.getElementById("canvas");
+
+let rgb = { r: 0, g: 0, b: 0 };
+const changeBackgroundColor = () => {
+    canvas.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+};
+window.addEventListener("keydown", (e) => {
+    const key = e.key.toLowerCase();
+    const step = e.shiftKey ? -1 : 1; // Shiftありで減少、なしで増加
+    if (key === 'r') {
+        rgb.r = Math.min(255, Math.max(0, rgb.r + step));
+    } else if (key === 'g') {
+        rgb.g = Math.min(255, Math.max(0, rgb.g + step));
+    } else if (key === 'b') {
+        rgb.b = Math.min(255, Math.max(0, rgb.b + step));}
+    changeBackgroundColor();
+    const RGBInfo = document.getElementById('RGB-info');
+    RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;});
+
 const ctx = canvas.getContext("2d");
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -26,50 +43,64 @@ window.addEventListener("mouseup", () => {
 });
 window.addEventListener("mousemove", (e) => {
   if (!isDraggingV){return;}
-  // 右端からの距離を計算
   const newWidth = window.innerWidth - e.clientX;
   // 幅の制限（0〜500px）
   const finalWidth = Math.max(0, Math.min(500, newWidth));
-  // controlsの幅を更新
   controls.style.width = finalWidth + "px";
-  // リサイザー自体の位置も更新
   resizerV.style.right = finalWidth + "px";
-  // 0pxなら完全に隠す
   if (finalWidth <= 0) {
-    controls.style.display = "none";
-  } else {
-    controls.style.display = "flex";
-  }
+    controls.style.display = "none";}
+    resizeCanvas();});
 
-  // キャンバスのサイズを再計算（もし関数がある場合）
-  if (typeof resizeCanvas === 'function') resizeCanvas();});
-
-
-  // f,r,s,d キーで回転モード切替.　z keyで描写反転. m keyでmouse追従のon,off切替
+  // 1,2,3,4 キーで回転モード切替.　z keyで描写反転. m keyでmouse追従のon,off切替
 let rotationMode = 0;
-let drawMode = 0;
-let mouseMode = 1;
+let reverseMode = 0;   // 0:通常順, 1:反転順後ろから描写
+let mouseMode = 1;  // 0:追従off, 1:追従on
+let clearMode = 1;  // 0:描画クリア, 1: 描画ノンクリア
+let writeMode = 0;  // 0:off, 1:on
 window.addEventListener("keydown", e => {
-const noticeMode = () => console.log("Rotation Mode:", rotationMode, "Draw Mode:", drawMode, "Mouse Mode:", mouseMode);
-if (e.key === "f") {
+const noticeMode = () => {
+  const modeInfo = document.getElementById('mode-info');
+  modeInfo.textContent = `MODE - Rotation:${rotationMode} reverse:${reverseMode} Mouse:${mouseMode} Clear:${clearMode} Write:${writeMode}`;
+};
+if (e.key === "1") {
     rotationMode = (rotationMode === 1) ? 0 : 1;
     noticeMode();}
-if (e.key === "r") {
+if (e.key === "2") {
     rotationMode = (rotationMode === 2) ? 0 : 2;
     noticeMode();}
-if (e.key === "s"){
+if (e.key === "3"){
     rotationMode = (rotationMode === 3) ? 0 : 3;
     noticeMode();}
-if (e.key === "d"){
+if (e.key === "4"){
     rotationMode = (rotationMode === 4) ? 0 : 4;
     noticeMode();}
 if (e.key === "z"){
-    drawMode = (drawMode === 1) ? 0 : 1;
+    reverseMode = (reverseMode === 1) ? 0 : 1;
     noticeMode();}
 if (e.key === "m") {
     mouseMode = (mouseMode === 1) ? 0 : 1;
     noticeMode();}
+if (e.key === "c") {
+    clearMode = (clearMode === 1) ? 0 : 1;
+    noticeMode();}
+if (e.key === "w") {
+    writeMode = (writeMode === 1) ? 0 : 1;
+    noticeMode();}
   });
+
+let isWriting = false;
+window.addEventListener("mousedown", () => {
+  if (writeMode) isWriting = true;
+});
+window.addEventListener("mouseup", () => {
+  isWriting = false;
+});
+window.addEventListener("mouseleave", () => {
+  isWriting = false;
+});
+
+
 
   const mouse = { x: canvas.width / 2, y: canvas.height / 2 };
   canvas.addEventListener("mousemove", e => {
@@ -82,6 +113,7 @@ if (e.key === "m") {
 // 描画
 // ==============================
 function drawAll() {
+  if(writeMode && !isWriting){return;}
   const displayList = DragonScope.dps ?? [];
   const modeDrawing = (item) => {
     const part = item.part;
@@ -94,18 +126,20 @@ function drawAll() {
     const sY = part.scaleY ?? 30;
     ctx.drawImage(img, -sX / 2, -sY / 2, sX, sY);
     ctx.restore();};
-  if(drawMode === 0){
+  if(reverseMode === 0){
   for (let i = displayList.length - 1; i >= 0; i--) {
     modeDrawing(displayList[i]);}
-  } else if (drawMode === 1){
-    for (let i = 0; i < displayList.length-1; i++) {modeDrawing(displayList[i]);}}}
+  } else if (reverseMode === 1){
+    for (let i = 0; i < displayList.length-1; i++) {
+    modeDrawing(displayList[i]);}
+  }}
 
 
   //配列の途中から両端に向かって描画していく計算式（仮テスト用）
-  // if(drawMode === 0){
+  // if(reverseMode === 0){
   // for (let i = displayList.length - 1; i >= 0; i--) {
   //   modeDrawing(displayList[i]);}
-  // } else if (drawMode === 1){
+  // } else if (reverseMode === 1){
   //   for (let i = displayList.length-1 ; i >= 0 ; i--){
   //     const offset = Math.ceil(i / 2) * (i % 2 === 0 ? 1 : -1);
   //     const index = Math.floor(displayList.length / 2) + offset;
@@ -114,11 +148,11 @@ function drawAll() {
 
 
 // ==============================
-// 初期化
+// 画像読み込み
 // ==============================
 export async function loadImage(src){
   return new Promise((resolve,reject)=>{
-    const img=new Image();
+    const img = new Image();
     if (src.startsWith('blob:')) {
       img.src=src;
     } else {
@@ -145,25 +179,20 @@ export async function loadImage(src){
       running = false;}
   DragonScope.images = images;}
 
+//Master用のjsonファイルの読み込み。load処理と同等のものを実装している。ファイルのパスはapp.js内のSAMPLESオブジェクトで定義されている。
 ResetSaveLoad.applyData(DragonScope.initialData);
-
-canvas.addEventListener("dblclick", () => {
-  if (DragonScope.master) {
-    DragonScope.master.isBoosting = true;
-  } else {
-    console.warn("Master dragon not found.");}});
-
+//ペインのセットアップ
 paneSetupUI();
-
-if (DragonScope.dragons.length > 0) {
-    DragonScope.selectedDragon = DragonScope.dragons[0];}
-
-
+//描画用のパーツ配列作成
 buildDPS();
+//ペインのリスト作成
 rebuildDragonList();
+//リストの選択パートのハイライト
 updateListHighlight();
+//ペイン内のプロパティ類の編集エリア構築
 createInspectorGUI();
-ResetSaveLoad.setupUI( {rebuildDragonList, buildDPS});
+//ペイン内のResetSaveLoad＋deleteのセット
+ResetSaveLoad.setupUI();
 
 
   loop(buildDPS, DragonScope.dragons);}
@@ -171,11 +200,9 @@ ResetSaveLoad.setupUI( {rebuildDragonList, buildDPS});
   function loop(buildDPS) {
   function frame() {
     requestAnimationFrame(frame);
-    if (!DragonScope.dragons || !Array.isArray(DragonScope.dragons)) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if(clearMode){ ctx.clearRect(0, 0, canvas.width, canvas.height); }
     for (const d of DragonScope.dragons) {
-      if (d && typeof d.update === 'function') {
-        d.update(mouse, rotationMode); }}
+        d.update(mouse, rotationMode);}
     if (DragonScope.needsRebuildDPS) {
       buildDPS();
       DragonScope.needsRebuildDPS = false;}

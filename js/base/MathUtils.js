@@ -1,10 +1,22 @@
 import { PROP_SCHEMA, DragonScope } from './prop_schema.js';
 
+// ==========================
+//   showToast
+// ==========================
 
+export const showToast = (text) => {
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = text;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+};
 
-//   // ==========================
-//   // scaleFunc
-//   // ==========================
+// ==========================
+//  scaleFunc
+// ==========================
   (function() {
   (i, baseScaleX, baseScaleY, {methodX, methodY, ampScaleX, ampScaleY, effectScaleX, effectScaleY}) => {
       let scaleX = baseScaleX;

@@ -105,7 +105,7 @@ if(currentImgIndex && dragon.resetParts){
 
 
     applyData(data) {
-              DragonScope.dragons.length = 0;
+      DragonScope.dragons.length = 0;
     //Master選択時のロード
         const nameMap = {};
         data.forEach((loadProp) => {
@@ -133,9 +133,7 @@ if(currentImgIndex && dragon.resetParts){
     const newId = newDragon.id;
     DragonScope.storage[newId] = { current: {}, saved: {} };
       AllPropSchema_KEYS_excId.forEach(key => {
-        DragonScope.storage[newId].saved[key] = (key === "followId") ? follower : loadProp[key];
-    }
-
+        DragonScope.storage[newId].saved[key] = (key === "followId") ? follower : loadProp[key];}
       );});
   DragonScope.selectedDragon = DragonScope.dragons[0];
   DragonScope.master = DragonScope.dragons.find(d => d.name === "Master");
@@ -152,46 +150,6 @@ if(currentImgIndex && dragon.resetParts){
     const d = DragonScope.selectedDragon;
     if(d.name === "Master"){
       this.applyData(data);
-    //     DragonScope.dragons.length = 0;
-    // //Master選択時のロード
-    //     const nameMap = {};
-    //     data.forEach((loadProp) => {
-    // // 追従先オブジェクトの解決
-    //         const follower = loadProp.followId ? nameMap[loadProp.followId] : null;
-    //         const loadSchema = {};
-    //     Object.keys(PROP_SCHEMA).forEach(groupKey => {
-    //   if (groupKey === "id"){return;}
-    //   loadSchema[groupKey] = {};
-    //   // カテゴリ内の各プロパティ（name, scaleX等）をループ
-    //   Object.keys(PROP_SCHEMA[groupKey]).forEach(key => {
-    //     let defIdx = PROP_SCHEMA[groupKey][key].length -1;
-    //     if (loadProp.hasOwnProperty(key)) {
-    //       loadSchema[groupKey][key] = loadProp[key];
-    //     }else{loadSchema[groupKey][key] = PROP_SCHEMA[groupKey][key][defIdx];
-    //     }});});
-    // // 文字列になっているfollowIdのみ解決済みのオブジェクト参照に差し替え
-    // loadSchema.meta.followId = follower;
-    // // インスタンス生成
-    // const newDragon = new Dragon(loadSchema);
-    // // 配列とマップへの登録
-    // DragonScope.dragons.push(newDragon);
-    // nameMap[newDragon.name] = newDragon;
-    // // DataStore同期
-    // const newId = newDragon.id;
-    // DragonScope.storage[newId] = { current: {}, saved: {} };
-    //   AllPropSchema_KEYS_excId.forEach(key => {
-    //     DragonScope.storage[newId].saved[key] = (key === "followId") ? follower : loadProp[key];
-    // }
-  
-  
-  // );});
-  // DragonScope.selectedDragon = DragonScope.dragons[0];
-  // DragonScope.master = DragonScope.dragons.find(d => d.name === "Master");
-  // DragonScope.dragons.forEach(d => {
-  //   if (d.imgIndex >= DragonScope.images.length) {
-  //       d.imgIndex = DragonScope.images.length - 1;
-  //       d.rebuild();
-  //       DragonScope.needsRebuildDPS = true;}});
     } else if (d.name !== "Master"){
     let newName = data.name ? data.name : "";
     if (d && newName){
@@ -247,7 +205,7 @@ deleteDragon(id) {
 //-----------------------
 //setup -ボタンクリック-
 //-----------------------
-setupUI(callbacks) {
+setupUI() {
   const topContainer = document.getElementById('inspector-top-container');
   const resetBtn = document.createElement("button");
   resetBtn.textContent = "Reset";
@@ -300,8 +258,9 @@ saveBtn.onclick = () => {
             console.warn("Part load failed: Selected file is for Master or invalid format.");
             return;}
         this.load(d.id, d, data);}
-        callbacks.rebuildDragonList();
-        callbacks.buildDPS();
+        rebuildDragonList();
+        buildDPS();
+
         createInspectorGUI();};
     reader.readAsText(file);};
     input.click();};

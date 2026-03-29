@@ -14,9 +14,7 @@ export function MotionStrategy(){
 //=========================================
 class ComplexBranchMotionStrategy  {
   update(target, mouse, t) {
-    // 必須データの存在確認
     if (!target.followId){return;}
-
     const parentDragon = target.followId;
     const parentPart = parentDragon.parts[target.followIndex ?? (target.followId).numParts.length-1];
     if(!parentPart){return;}
@@ -139,7 +137,13 @@ _updateMaster(target, mouse, t){
         offX += wave * (resolved.headBobAmpX ?? 0) * stillFactor;
         offY += Math.cos(t * speed) * (resolved.headBobAmpY ?? 0) * stillFactor;}}
 
-        //ダブルクリックでマウスに引き寄せる
+  //ダブルクリックでマウスに引き寄せる
+        canvas.addEventListener("dblclick", () => {
+  if (DragonScope.master) {
+    DragonScope.master.isBoosting = true;
+  } else {
+    console.warn("Master dragon not found.");}});
+
         if(target.isBoosting){
       target.masterOffset.x = 0;
       target.masterOffset.y = 0;
@@ -154,7 +158,7 @@ _updateMaster(target, mouse, t){
       const dy = targetY - root.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-       root.activeAngle = Math.atan2(dy, dx);
+      root.activeAngle = Math.atan2(dy, dx);
       if (subIsBoosting && dist < 5) {
         target.masterOffset.x = -offX;
         target.masterOffset.y = -offY;
@@ -196,7 +200,7 @@ _updateMaster(target, mouse, t){
       let dist = Math.sqrt(dx * dx + dy * dy);
 
       // 角度の更新
-      curr.activeAngle = Math.atan2(dy, dx);
+      curr.activeAngle = Math.atan2(dy, dx)*3;
 
       // spacing（間隔）を維持する移動
       const minSpacing = target.spacing ?? 5;

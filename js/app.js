@@ -3,12 +3,12 @@ import { DragonScope } from './base/prop_schema.js';
 // ==============================
 // 1. サンプルファイルのパス定義
 // ==============================
-// リポジトリ内の相対パスを記述
 const SAMPLES = {
+    "one point":    "./samples/dragon_Master_onepoint.json",
     "First Dragon": "./samples/dragon_Master_firstDRAGON.json",
     "Snake":        "./samples/dragon_Master_snake.json",
     "Spider":       "./samples/dragon_Master_spider.json",
-    "Mr. Sherman":  "./samples/dragon_Master_mr-sherman.json"
+    "Mr. Sherman":  "./samples/dragon_Master_mr-sherman.json",
 };
 
 function showSelector() {
@@ -16,25 +16,21 @@ function showSelector() {
     overlay.style = "position:fixed;top:0;left:0;width:100%;height:100%;background:#111;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:10000;color:white;font-family:sans-serif;";
     overlay.innerHTML = "<h2 style='margin-bottom:30px;'>Select Prototype</h2><div id='btn-container'></div>";
     document.body.appendChild(overlay);
-
     const container = overlay.querySelector('#btn-container');
 
     Object.keys(SAMPLES).forEach(name => {
         const btn = document.createElement('button');
         btn.innerText = name;
         btn.style = "margin:10px;padding:15px 40px;font-size:18px;cursor:pointer;background:#333;color:white;border:1px solid #555;border-radius:4px;";
-
         btn.onclick = async () => {
             try {
                 // ファイルをフェッチしてJSONとして解析
                 const response = await fetch(SAMPLES[name]);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-
                 // データをセット
                 DragonScope.initialData = data;
-
-                document.body.removeChild(overlay);
+                overlay.remove();
 
                 // main.js を実行
                 await import('./main.js');

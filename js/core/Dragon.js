@@ -74,7 +74,7 @@ constructor(options = {}){
     this.history = [];
     if (!this.parts || this.parts.length === 0) return;
     const root = this.parts[0];
-    const step = Math.max(1, Math.floor(this.spacing * 2.0));
+    const step = Math.max(1, Math.floor(this.spacing * 3));
     const totalNeeded = this.parts.length * step;
     for (let j = 0; j <= totalNeeded; j++) {
       this.history.push({ x: root.x, y: root.y, angle: root.angle });}}
@@ -113,7 +113,7 @@ constructor(options = {}){
     const dx = target.x - root.x;
     const dy = target.y - root.y;
     // 頭部の向き
-    if (Math.sqrt(dx * dx + dy * dy) > 0.05) {
+    if (Math.sqrt(dx * dx + dy * dy) > 0.01) {
       root.activeAngle = Math.atan2(dy, dx);}
     if (rotationMode === 4) {
       const convergenceFactor = Math.pow(this.stillness, 0.02);
