@@ -1,10 +1,11 @@
 import { DragonScope } from '../base/prop_schema.js';
 
+export { MotionStrategy };
 
 //==================
 //flagBranch判定関数
 //==================
-export function MotionStrategy(){
+const MotionStrategy = () => {
   DragonScope.dragons.forEach(dragon => {
     dragon.strategy = dragon.flagBranch ? new ComplexBranchMotionStrategy() : new ChainMotionStrategy();
   });}
@@ -13,7 +14,7 @@ export function MotionStrategy(){
 //ComplexBranchMotionStrategy
 //=========================================
 class ComplexBranchMotionStrategy  {
-  update(target, mouse, t) {
+  update(target, _, t) {
     if (!target.followId){return;}
     const parentDragon = target.followId;
     const parentPart = parentDragon.parts[target.followIndex ?? (target.followId).numParts.length-1];

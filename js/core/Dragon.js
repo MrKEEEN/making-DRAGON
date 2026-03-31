@@ -2,11 +2,12 @@ import { PROP_SCHEMA, DragonScope } from '../base/prop_schema.js';
 import { createResolvedParams } from '../base/MathUtils.js';
 import { MotionStrategy } from './Strategies.js';
 
+export { Dragon };
 
     // ============================
     // クラス Dragon
     // ============================
-export class Dragon {
+const Dragon = class {
   static INTERNAL_DEFAULTS = {
     masterOffset: { x: 0, y: 0 },
     motionAmount: 0,

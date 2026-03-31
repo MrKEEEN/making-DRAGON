@@ -19,10 +19,10 @@ function showSelector() {
     const container = overlay.querySelector('#btn-container');
 
     Object.keys(SAMPLES).forEach(name => {
-        const btn = document.createElement('button');
-        btn.innerText = name;
-        btn.style = "margin:10px;padding:15px 40px;font-size:18px;cursor:pointer;background:#333;color:white;border:1px solid #555;border-radius:4px;";
-        btn.onclick = async () => {
+        const appBtn = document.createElement('button');
+        appBtn.innerText = name;
+        appBtn.style = "margin:10px;padding:15px 40px;font-size:18px;cursor:pointer;background:#333;color:white;border:1px solid #555;border-radius:4px;";
+        appBtn.onclick = async () => {
             try {
                 // ファイルをフェッチしてJSONとして解析
                 const response = await fetch(SAMPLES[name]);
@@ -39,7 +39,7 @@ function showSelector() {
                 alert("ファイルの読み込みに失敗しました。パスを確認してください。");
             }
         };
-        container.appendChild(btn);
+        container.appendChild(appBtn);
     });
 }
 

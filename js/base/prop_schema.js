@@ -1,6 +1,7 @@
 
-export const DragonScope = {master: null, images: [], dragons: [], dps: [], storage: {},};
+export { DragonScope, PROP_SCHEMA, AllPropSchema_KEYS_excId, AllPropSchema_KEYS_except_id_followId_followIndex };
 
+const DragonScope = {master: null, images: [], dragons: [], dps: [], storage: {},};
 const F_1 = Number(0.1.toFixed(1));
 const F_2 = Number(0.01.toFixed(2));
 const F_3 = Number(0.001.toFixed(3));
@@ -11,7 +12,7 @@ const F_4 = Number(0.0001.toFixed(4));
 //number配列[min, max, step, default]
 //string配列[type, options, ., ., ., default]
 //=======================
-export const PROP_SCHEMA = {
+const PROP_SCHEMA = {
 // --- 1. メタデータ（数値以外） ---
 id: null,
 meta: {
@@ -100,8 +101,7 @@ headBobSpeed: [-0.5, 0.5, F_4, 0],
 },};
 
 
-
 //idプロパティだけ除外したkey配列
-export const AllPropSchema_KEYS_excId = Object.values(PROP_SCHEMA).flatMap(group => Object.keys(group ?? {}));
+const AllPropSchema_KEYS_excId = Object.values(PROP_SCHEMA).flatMap(group => Object.keys(group ?? {}));
 //id,followId,followIndexを除外したkey配列
-export const AllPropSchema_KEYS_except_id_followId_followIndex = AllPropSchema_KEYS_excId.filter(key => key !== 'followId' && key !== 'followIndex');
+const AllPropSchema_KEYS_except_id_followId_followIndex = AllPropSchema_KEYS_excId.filter(key => key !== 'followId' && key !== 'followIndex');

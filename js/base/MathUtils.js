@@ -1,17 +1,19 @@
 import { PROP_SCHEMA, DragonScope } from './prop_schema.js';
 
+export { createResolvedParams, showToast };
+
 // ==========================
 //   showToast
 // ==========================
 
-export const showToast = (text) => {
+const showToast = (text) => {
     const toast = document.createElement('div');
     toast.className = 'toast-message';
     toast.textContent = text;
     document.body.appendChild(toast);
     setTimeout(() => {
         toast.remove();
-    }, 3000);
+    }, 5000);
 };
 
 // ==========================
@@ -48,11 +50,11 @@ export const showToast = (text) => {
 
 
 
-export function createResolvedParams(dragon) {
+const createResolvedParams = (dragon) => {
   const resolved = {};
-
   let intervalId = null;
 window.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
   if (intervalId || !['*', '/', '+', '-'].includes(e.key)){return;}
   const targetKey = e.key;
   intervalId = setInterval(() => {

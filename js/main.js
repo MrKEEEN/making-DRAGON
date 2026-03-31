@@ -2,16 +2,17 @@ import { DragonScope } from './base/prop_schema.js';
 import { createInspectorGUI, paneSetupUI, buildDPS, rebuildDragonList, updateListHighlight } from './ui/Inspector.js';
 import { ResetSaveLoad } from './ui/ResetSaveLoad.js';
 
+//TODO 画面の画像を右クリックメニューで保存するとページが勝手にリロードされる。jsのコードではなくブラウザの機能だが、要修正。画像保存は必要。
 
 const canvas = document.getElementById("canvas");
 
 let rgb = { r: 0, g: 0, b: 0 };
 const changeBackgroundColor = () => {
-    canvas.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
-};
+      canvas.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);};
 window.addEventListener("keydown", (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
     const key = e.key.toLowerCase();
-    const step = e.shiftKey ? -1 : 1; // Shiftありで減少、なしで増加
+    const step = e.shiftKey ? -1 : 1;
     if (key === 'r') {
         rgb.r = Math.min(255, Math.max(0, rgb.r + step));
     } else if (key === 'g') {
@@ -26,8 +27,12 @@ const ctx = canvas.getContext("2d");
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;}
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize", () => {
+  if(!clearMode){return;}
+  resizeCanvas()});
 resizeCanvas();
+
+
 const resizerV = document.getElementById("resizer_v");
 const controls = document.getElementById("controls");
 
@@ -42,55 +47,51 @@ window.addEventListener("mouseup", () => {
   document.body.style.cursor = "default";
 });
 window.addEventListener("mousemove", (e) => {
-  if (!isDraggingV){return;}
+  if (!isDraggingV || !clearMode){return;}
   const newWidth = window.innerWidth - e.clientX;
   // 幅の制限（0〜500px）
   const finalWidth = Math.max(0, Math.min(500, newWidth));
   controls.style.width = finalWidth + "px";
   resizerV.style.right = finalWidth + "px";
-  if (finalWidth <= 0) {
-    controls.style.display = "none";}
     resizeCanvas();});
 
-  // 1,2,3,4 キーで回転モード切替.　z keyで描写反転. m keyでmouse追従のon,off切替
+  // 1,2,3,4 キーで回転モード切替. z keyで描写反転. m keyでmouse追従のon,off切替
 let rotationMode = 0;
 let reverseMode = 0;   // 0:通常順, 1:反転順後ろから描写
 let mouseMode = 1;  // 0:追従off, 1:追従on
 let clearMode = 1;  // 0:描画クリア, 1: 描画ノンクリア
 let writeMode = 0;  // 0:off, 1:on
 window.addEventListener("keydown", e => {
+if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
 const noticeMode = () => {
   const modeInfo = document.getElementById('mode-info');
-  modeInfo.textContent = `MODE - Rotation:${rotationMode} reverse:${reverseMode} Mouse:${mouseMode} Clear:${clearMode} Write:${writeMode}`;
-};
+  modeInfo.textContent = `MODE - Rotation(1~4):${rotationMode} reverse(z):${reverseMode} Mouse(m):${mouseMode} Clear(c):${clearMode} Write(w):${writeMode}`;};
 if (e.key === "1") {
-    rotationMode = (rotationMode === 1) ? 0 : 1;
-    noticeMode();}
+    rotationMode = (rotationMode === 1) ? 0 : 1;}
 if (e.key === "2") {
-    rotationMode = (rotationMode === 2) ? 0 : 2;
-    noticeMode();}
+    rotationMode = (rotationMode === 2) ? 0 : 2;}
 if (e.key === "3"){
-    rotationMode = (rotationMode === 3) ? 0 : 3;
-    noticeMode();}
+    rotationMode = (rotationMode === 3) ? 0 : 3;}
 if (e.key === "4"){
-    rotationMode = (rotationMode === 4) ? 0 : 4;
-    noticeMode();}
+    rotationMode = (rotationMode === 4) ? 0 : 4;}
 if (e.key === "z"){
-    reverseMode = (reverseMode === 1) ? 0 : 1;
-    noticeMode();}
+    reverseMode = (reverseMode === 1) ? 0 : 1;}
 if (e.key === "m") {
-    mouseMode = (mouseMode === 1) ? 0 : 1;
-    noticeMode();}
-if (e.key === "c") {
-    clearMode = (clearMode === 1) ? 0 : 1;
-    noticeMode();}
+    mouseMode = (mouseMode === 1) ? 0 : 1;}
 if (e.key === "w") {
-    writeMode = (writeMode === 1) ? 0 : 1;
-    noticeMode();}
-  });
+    writeMode = (writeMode === 1) ? 0 : 1;}
+if (e.key === "c") {
+//描画中にキャンバスサイズを変えるとリサイズイベントも発火してしまうため、clearModeがonのときのみリサイズしてキャンバスをクリアするようにする。
+    if (clearMode) {
+        clearMode = 0;
+    } else {
+        clearMode = 1;
+        resizeCanvas();}}
+    noticeMode();});
 
 let isWriting = false;
-window.addEventListener("mousedown", () => {
+canvas.addEventListener("mousedown", (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
   if (writeMode) isWriting = true;
 });
 window.addEventListener("mouseup", () => {
@@ -100,9 +101,7 @@ window.addEventListener("mouseleave", () => {
   isWriting = false;
 });
 
-
-
-  const mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  const mouse = { x: canvas.width/2, y: canvas.height/2 };
   canvas.addEventListener("mousemove", e => {
     if(!mouseMode){return;}
     mouse.x = e.clientX;
@@ -124,7 +123,7 @@ function drawAll() {
     ctx.rotate(part.angle);
     const sX = part.scaleX ?? 30;
     const sY = part.scaleY ?? 30;
-    ctx.drawImage(img, -sX / 2, -sY / 2, sX, sY);
+    ctx.drawImage(img, -sX/2, -sY/2, sX, sY);
     ctx.restore();};
   if(reverseMode === 0){
   for (let i = displayList.length - 1; i >= 0; i--) {

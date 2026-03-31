@@ -4,11 +4,11 @@ import { Dragon } from '../core/Dragon.js';
 import { PROP_SCHEMA, DragonScope } from '../base/prop_schema.js';
 import { showToast } from '../base/MathUtils.js';
 
+export { buildDPS, updateListHighlight, rebuildDragonList, paneSetupUI, createInspectorGUI };
 
 let dragonListEl = null;
 
-export const buildDPS = () => {
-  // DragonScope.dps が未定義の場合は初期化
+const buildDPS = () => {
   DragonScope.dps = [];
   for (const d of DragonScope.dragons) {
     if (!d.parts){continue;}
@@ -16,76 +16,45 @@ export const buildDPS = () => {
         d.imgIndex = DragonScope.images.length - 1;}
     //[0]のpartsは回転が独自で他partsと揃わないので描画しない
     for (const p of d.parts.slice(1)) {
-      DragonScope.dps.push({
-        part: p,
-        dragon: d,
-        imgIndex: p.imgIndex,
-      });}}};
+      DragonScope.dps.push({ part:p, dragon:d, imgIndex:p.imgIndex,});}}};
 
-// 選択状態を視覚的に更新する補助関数
-export function updateListHighlight() {
-    if (!dragonListEl) return;
-    Array.from(dragonListEl.children).forEach((li, i) => {
-        const isSelected = (DragonScope.dragons[i] === DragonScope.selectedDragon);
-        li.style.borderColor = isSelected ? "#2a8" : "#444";
-        li.style.background = isSelected ? "#242" : "#222";});}
-
-export function rebuildDragonList() {
-  if(!dragonListEl) return;
+const rebuildDragonList = () => {
+  if(!dragonListEl){return;}
   dragonListEl.innerHTML = '';
-  DragonScope.dragons.forEach((dragon, index) => {
-    const li = document.createElement('li');
-    li.textContent = `${index}: ${dragon.name ?? "Unnamed"}  【${dragon.numParts} parts】`;
-    li.style = "padding:4px; margin:2px; background:#222; cursor:grab; border:1px solid #444;";
+  DragonScope.dragons.forEach((dragon, i) => {
+    const dragonsLi = document.createElement('li');
+    dragonsLi.className = "dragon-list-item";
+    dragonsLi.textContent = `${i}: ${dragon.name ?? "Unnamed"} 【${dragon.numParts} parts】`;
     // 選択中の個体を目立たせる
     if (DragonScope.selectedDragon === dragon) {
-      li.style.borderColor = "#2a8";
-      li.style.background = "#242";}
-    dragonListEl.appendChild(li);
-  });}
+      dragonsLi.style.borderColor = "#2a8";
+      dragonsLi.style.background = "#242";}
+    dragonListEl.appendChild(dragonsLi);});}
 
 
+// 選択状態を視覚的に更新する補助関数
+const updateListHighlight = () => {
+    if (!dragonListEl){return;}
+    Array.from(dragonListEl.children).forEach((listEl, i) => {
+      const isSelected = (DragonScope.dragons[i] === DragonScope.selectedDragon);
+      listEl.style.borderColor = isSelected ? "#2a8" : "#444";
+      listEl.style.background = isSelected ? "#242" : "#222";});}
 
-export function paneSetupUI() {
-const dragonInputWrapper = document.createElement("div");
-dragonInputWrapper.style.marginBottom = "3px";
-const dragonInputLabel = document.createElement("div");
-dragonInputLabel.textContent = "New Dragon Name";
-dragonInputLabel.style.marginBottom = "0px";
-const dragonInput = document.createElement("input");
-dragonInput.type = "text";
-dragonInput.style.width = "95%";
-const dragonAddBtn = document.createElement("button");
-dragonAddBtn.textContent = "Update / Add";
-dragonAddBtn.style.width = "80%";
-dragonAddBtn.style.marginTop = "3px";
-dragonInputWrapper.appendChild(dragonInputLabel);
-dragonInputWrapper.appendChild(dragonInput);
-dragonInputWrapper.appendChild(dragonAddBtn);
-  const controls = document.getElementById("controls");
-  controls.innerHTML = ''; // 重複防止のためクリア
-  // --- A. 上部コンテナ（リスト・入力・名前） ---
-  const topContainer = document.createElement('div');
-  topContainer.id = "inspector-top-container";
-  topContainer.style.cssText = "flex: 0 0 250px; overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column; background:#111; min-height:0;";
-  controls.appendChild(topContainer);
-  // 1. Dragon List の追加
-  dragonListEl = document.createElement('ol');
-  dragonListEl.id = "DragonScope.dragons";
-  dragonListEl.style.cssText = "margin: 0; padding: 0; list-style: none;";
-  topContainer.appendChild(dragonListEl);
-  // 2. New Dragon Input の追加
-  topContainer.appendChild(dragonInputWrapper);
-  // --- B. 上下リサイザー（横線） ---
-  const splitResizer = document.createElement('div');
-  splitResizer.style.cssText = "height:8px; cursor:ns-resize; background:#444; border-top:1px solid #555; border-bottom:1px solid #222; flex-shrink:0;";
-  controls.appendChild(splitResizer);
-  // --- C. 下部コンテナ（パラメータ） ---
-  const contentArea = document.createElement('div');
-  contentArea.id = 'inspector-content';
-  contentArea.style.cssText = "flex: 1 1 auto; overflow-y:auto; padding:0px;";
-  controls.appendChild(contentArea);
-  // --- 上下リサイズ処理 ---
+
+// ============================================================
+//   ペイン初期セットアップ
+// ============================================================
+const paneSetupUI = () => {
+const dragonInput = document.getElementById("dragonInput");
+const updateAddBtn = document.getElementById("updateAddBtn");
+const topContainer = document.getElementById('inspector-top-container');
+// 1. Dragon List の追加
+dragonListEl = document.createElement("ol");
+dragonListEl.id = "DragonScope.dragons";
+dragonListEl.style.cssText = "margin: 0; padding: 0; list-style: none;";
+topContainer.prepend(dragonListEl);
+// --- 上下リサイズ処理 ---
+  const splitResizer = document.getElementById('splitResizer');
   splitResizer.onmousedown = (e) => {
     e.preventDefault();
     const startY = e.clientY;
@@ -98,31 +67,36 @@ dragonInputWrapper.appendChild(dragonAddBtn);
     const onMouseUp = () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);};
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);};
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);};
+// --- sortable(ライブラリ)初期化 ---
+new Sortable(dragonListEl, {
+  animation: 150,
+  onEnd: (evt) => {
+    const movedItem = DragonScope.dragons.splice(evt.oldIndex, 1)[0];
+    DragonScope.dragons.splice(evt.newIndex, 0, movedItem);
+    rebuildDragonList();
+    DragonScope.needsRebuildDPS = true;}});
   dragonListEl.addEventListener("click", e => {
     sortableFunc(e);});
-  dragonAddBtn.addEventListener("click", () => {
+  updateAddBtn.addEventListener("click", () => {
     updateAdd(dragonInput);});
   DragonScope.master = DragonScope.dragons.find(d => d.name === "Master");}
 
-
-function sortableFunc(e){
+// ============================================================
+//   sortable関数
+// ============================================================
+  function sortableFunc(e){
     const li = e.target.closest("li");
     if(!li){return;}
     const idx = Array.from(dragonListEl.children).indexOf(li);
     DragonScope.selectedDragon = DragonScope.dragons[idx];
     updateListHighlight();
-    createInspectorGUI();
-  new Sortable(dragonListEl, {
-    animation: 150,
-    onEnd: (evt) => {
-      const movedItem = DragonScope.dragons.splice(evt.oldIndex, 1)[0];
-      DragonScope.dragons.splice(evt.newIndex, 0, movedItem);
-      rebuildDragonList();
-      DragonScope.needsRebuildDPS = true;}});}
+    createInspectorGUI();}
 
-
+// ============================================================
+//   updateAdd関数
+// ============================================================
 function updateAdd(dragonInput){
   let d = DragonScope.selectedDragon;
   //---replaceImage---
@@ -135,12 +109,12 @@ function updateAdd(dragonInput){
   DragonScope.storage[d.id].current["_imgIndex"] = newImgIndex;}
   // ---follow---
   const inspector = document.getElementById('controls');
-  const idInput = inspector.querySelector('.inspector-input[data-key="followId"]');
-  const idxInput = inspector.querySelector('.inspector-input[data-key="followIndex"]');
+  const idInput = inspector.querySelector('.inspector-follow-input[data-key="followId"]');
+  const idxInput = inspector.querySelector('.inspector-follow-input[data-key="followIndex"]');
   const valId = idInput.value.trim();
   const valIdx = parseInt(idxInput.value, 10);
   const found = DragonScope.dragons.find(d => d.name === valId);
-    if(found && !isNaN(valIdx)){
+  if(found && !isNaN(valIdx)){
   d.followId = found ?? valId;
   d.followIndex = valIdx;
   DragonScope.storage[d.id].current["followId"] = found ?? valId;
@@ -148,7 +122,7 @@ function updateAdd(dragonInput){
 //========================================================================================
   let tentativeName = null;
   let counter = 1;
-    //---reName---
+  //---reName---
   const nameInput = document.querySelector('.inspector-name-input');
   let reName = nameInput ? nameInput.value.trim() : "";
   if (d && reName && d.name !== reName) {
@@ -197,66 +171,54 @@ function updateAdd(dragonInput){
   dragonInput.value = "";
 }
 
-
-
-  //======================================================================================================
-
-    //=================================
-    //---コントロールペイン---
-    //=================================
-  export const createInspectorGUI = () => {
+//======================================================================================================
+//=================================
+//---コントロールペイン---
+//=================================
+const createInspectorGUI = () => {
   const topContainer = document.getElementById('inspector-top-container');
   const contentArea = document.getElementById('inspector-content');
-    if (!topContainer || !contentArea){return;}
-  // --- 前回のタイトルのみを削除 ---
-  const oldTitle = document.getElementById('inspector-current-title');
-  if (oldTitle){oldTitle.remove();}
+  if (!topContainer || !contentArea){return;}
   // --- 下部パラメータエリアのみをクリア ---
   contentArea.innerHTML = '';
   if (!DragonScope.selectedDragon){return;}
   // --- D. 「Editing: 名前」を上部エリアの末尾に追加（固定表示） ---
-  const title = document.createElement('div');
-  title.id = 'inspector-current-title';
-  title.innerText = `Editing: ${DragonScope.selectedDragon.name || "Unnamed"}`;
-  title.style = "font-size:12px;  font-weight:bold ;color:#908; padding:0px; background:#990;\
-                  margin-top:auto; position:sticky; bottom:0; z-index:10;";
-  contentArea.appendChild(title);
-
-  // --- パラメータ構築ループ ---
+    const splitResizer = document.getElementById('splitResizer');
+    splitResizer.innerText = `Editing: ${DragonScope.selectedDragon.name || "Unnamed"}`;
+  // ------------------- groupKeyの処理 -------------------
     for (const groupKey in PROP_SCHEMA) {
     if(groupKey === 'id') {continue;};
     const groupWrapper = document.createElement('div');
-    groupWrapper.style = "margin-bottom: 8px; padding: 5px; background: rgba(255,255,255,0.03);\
-                          border-radius:3px; border:1px solid rgba(255,255,255,0.05);";
+    groupWrapper.className = "prop-group-wrapper";
     const groupTitle = document.createElement('div');
-    groupTitle.style = "font-weight:bold; margin-bottom:5px; border-bottom:1px solid #555; color:#ddd; font-size:10px;";
+    groupTitle.className = "prop-group-title";
     groupTitle.innerText = groupKey.toUpperCase();
     groupWrapper.appendChild(groupTitle);
     const params = PROP_SCHEMA[groupKey];
     const contentWrapper = document.createElement('div');
-
-    // // タイトルクリックでcontentWrapperの表示切替
-    // 状態維持のためIDを付与（開閉状態の管理用）
+    // タイトルクリックでcontentWrapperの表示切替_状態維持のためIDを付与（開閉状態の管理用）
     contentWrapper.id = `content-${groupKey}`;
     // 初期状態は一律で非表示、または現在のスタイルを維持
-    contentWrapper.style.display = DragonScope.groupVisibility?.[groupKey] || 'block';
+    contentWrapper.style.display = DragonScope.groupVisibility?.[groupKey] ?? 'none';
     groupTitle.onclick = () => {
       const isHidden = contentWrapper.style.display === 'none';
       const nextDisplay = isHidden ? 'block' : 'none';
       contentWrapper.style.display = nextDisplay;
-      // グローバルスコープ等に状態を保存し、パート切り替え後も引き継ぐ
+    // グローバルスコープ等に状態を保存し、パート切り替え後も引き継ぐ
       if(!DragonScope.groupVisibility)
         {DragonScope.groupVisibility = {};}
-      DragonScope.groupVisibility[groupKey] = nextDisplay;
-    };
-
+      DragonScope.groupVisibility[groupKey] = nextDisplay;};
+    // ------------------- groupKeyの下階層の各keyの処理 -------------------
     for (const key in params) {
       const config = params[key];
       const label = document.createElement('label');
+      label.className = "inspector-label";
       const input = document.createElement('input');
+      input.className = "inspector-input";
       const itemRow = document.createElement('div');
+      itemRow.className = "inspector-item-row";
       itemRow.style = "margin: 0px 0; display: flex; flex-direction: column;";
-
+    // ------------------- 編集不可のプロパティのグレーアウト処理 -------------------
       const isLockedGroup = (DragonScope.selectedDragon.name === "Master" && ['scaleFunc', 'breath', 'branch'].includes(groupKey)) ||
       (DragonScope.selectedDragon.name !== "Master" && ['whole', 'masterMove'].includes(groupKey));
       const isLockedKey = ((DragonScope.selectedDragon.name === "Master" &&
@@ -264,72 +226,57 @@ function updateAdd(dragonInput){
                           (DragonScope.selectedDragon.name === "Master" && groupKey === 'meta' && ['name', 'followId', 'followIndex',].includes(key)));
       const isLocked = isLockedGroup || isLockedKey;
       function lockedProperty(isLocked){
-                    if (isLocked) {
-                    itemRow.style.opacity = "0.2";
-                    itemRow.style.pointerEvents = "none";
-                    itemRow.style.filter = "grayscale(100%)";
-                    input.disabled = true;
-                    input.style.cursor = "not-allowed";
-                    input.style.background = "#111";
-                    input.style.color = "#eee";
-                  }};
-
+        if (isLocked){itemRow.style.opacity="0.2"; itemRow.style.pointerEvents="none"; itemRow.style.filter="grayscale(100%)";
+            input.disabled=true; input.style.cursor="not-allowed"; input.style.background="#111";input.style.color="#eee";}};
       // configが"flag"の場合はgroupWrapper（タイトル直下）に、それ以外はcontentWrapperに追加
       if (config[0] === "flag") {
         groupWrapper.appendChild(itemRow);
       } else {
-        contentWrapper.appendChild(itemRow);
-      }
-
+        contentWrapper.appendChild(itemRow);}
       // --- 1. テキスト入力 (name等) ---
       if (config[0] === "text") {
+        input.className = "inspector-name-input";
         label.innerText = "reName (Input Text)";
-        label.style = "font-size: 10px; color: #666;";
         input.type = "text";
         input.value = DragonScope.selectedDragon[key] ?? "";
-        input.style = "background:#111; color:#eee; border:1px solid #333; font-size:10px;";
-        input.className = "inspector-name-input";
         lockedProperty(isLocked);
         itemRow.appendChild(label);
         itemRow.appendChild(input);
         contentWrapper.appendChild(itemRow);}
-
       // --- 2. 画像・数値入力 (img等) ---
       else if (config[0] === "image") {
+        input.className = "inspector-image-input";
         label.innerText = "replaceImage (Select number)";
-        label.style = "font-size: 10px; color: #666;";
         input.type = "number";
         input.value = DragonScope.selectedDragon[key] ?? 0;
         input.min = 0;
         input.max = DragonScope.images.length - 1;
-        input.style = "background:#111; color:#eee; border:1px solid #333; font-size:10px;";
-        input.className = "inspector-image-input";
         const controls = document.createElement("div");
-        // controls.style = "display: flex; align-items: center; gap: 0px;";
         const countDisplay = document.createElement("span");
+        countDisplay.className = "inspector-countDisplay";
         countDisplay.innerText = ` / 0 ~ ${DragonScope.images.length-1}`;
-        countDisplay.style = "font-size:10px; color:#666; margin-left:2px;";
         // --- LIST/EDITボタン: ドラッグ、矢印、削除、アップロードをこのボタン内に集約 ---
         const listBtn = document.createElement("button");
+        listBtn.className = "inspector-list-btn";
         listBtn.innerText = "LIST/EDIT";
-        listBtn.style = "margin-left:4px; padding:0 4px; background:#444; color:#eee; border:none; cursor:pointer; font-size:10px;";
         listBtn.onclick = () => {
           // モーダル外枠の作成
           const modal = document.createElement("div");
-          modal.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; display:flex; justify-content:center; align-items:center;";
+          modal.id = "image-list-modal";
           const content = document.createElement("div");
-          content.style = "background:#222; padding:20px; border-radius:8px; width:80%; max-height:80%; overflow-y:auto; border:1px solid #444;";
-          let draggedIdx = null; // ドラッグ中の要素インデックス保持用
+          content.id = "image-list-content";
+          // ドラッグ中の要素インデックス保持用
+          let draggedIdx = null;
           // リスト再描画用関数
           const renderList = () => {
             content.innerHTML = "";
             const header = document.createElement("div");
-            header.style = "display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;";
+            header.id = "image-list-header";
             header.innerHTML = "<h3 style='color:#eee; margin:0;'>Image List / Edit (Drag or Arrows)</h3>";
             // モーダル内専用UPLOADボタン
             const innerUploadBtn = document.createElement("button");
+            innerUploadBtn.id = "inner-upload-btn";
             innerUploadBtn.innerText = "UPLOAD";
-            innerUploadBtn.style = "padding:4px 8px; background:#159; color:#fff; border:none; cursor:pointer; font-size:10px;";
             innerUploadBtn.onclick = () => {
               const fileInput = document.createElement('input');
               fileInput.type = 'file';
@@ -356,10 +303,10 @@ function updateAdd(dragonInput){
             header.appendChild(innerUploadBtn);
             content.appendChild(header);
             const grid = document.createElement("div");
-            grid.style = "display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:10px;";
+            grid.id = "image-list-grid";
             DragonScope.images.forEach((img, idx) => {
               const item = document.createElement("div");
-              item.style = "background:#333; padding:5px; text-align:center; border:1px solid #555; cursor:grab;";
+              item.className = "image-list-item";
               item.draggable = true;
               // --- ドラッグ＆ドロップ制御 ---
               item.ondragstart = () => { draggedIdx = idx; item.style.opacity = "0.5"; };
@@ -374,18 +321,17 @@ function updateAdd(dragonInput){
               const preview = img.cloneNode();
               preview.style = "width:60px; height:60px; object-fit:contain; background:#000; pointer-events:none;";
               // --- 矢印ボタンによる並べ替え制御 ---
-              const arrowStyle = "font-size:10px; cursor:pointer; background:#555; color:#fff; border:none; padding:2px 6px; margin:0 2px;";
               const prevBtn = document.createElement("button");
+              prevBtn.className = "move-img-btn";
               prevBtn.innerText = "←";
-              prevBtn.style = arrowStyle;
               prevBtn.onclick = (e) => {
                 e.stopPropagation();
                 if(idx > 0) {
                   [DragonScope.images[idx], DragonScope.images[idx-1]] = [DragonScope.images[idx-1], DragonScope.images[idx]];
                   renderList();}};
               const nextBtn = document.createElement("button");
+              nextBtn.className = "move-img-btn";
               nextBtn.innerText = "→";
-              nextBtn.style = arrowStyle;
               nextBtn.onclick = (e) => {
                 e.stopPropagation();
                 if(idx < DragonScope.images.length - 1) {
@@ -393,8 +339,8 @@ function updateAdd(dragonInput){
                   renderList();}};
               // --- 削除ボタン制御（確認メッセージと範囲外インデックスの末尾吸着） ---
               const delBtn = document.createElement("button");
+              delBtn.className = "delete-img-btn";
               delBtn.innerText = "DEL";
-              delBtn.style = "font-size:9px; margin-top:5px; cursor:pointer; background:#822; color:#fff; border:none; padding:2px 4px; width:100%;";
               delBtn.onclick = (e) => {
                 e.stopPropagation();
                 if(DragonScope.images.length <= 1){
@@ -407,19 +353,16 @@ function updateAdd(dragonInput){
                 DragonScope.dragons.forEach(d => {
                   if (d[key] >= DragonScope.images.length) {
                     d[key] = DragonScope.images.length - 1;
-                    d.rebuild();
-                    DragonScope.needsRebuildDPS = true;}});
-
-
+                    d.rebuild();}});
                 updateUI();
                 renderList();};
               item.appendChild(preview);
               const info = document.createElement("div");
+              info.className = "image-index-info";
               info.innerText = `idx:${idx}`;
-              info.style = "font-size:9px; color:#aaa; margin:2px 0;";
               item.appendChild(info);
               const moveContainer = document.createElement("div");
-              moveContainer.style = "display:flex; justify-content:center; margin-bottom:2px;";
+              moveContainer.className = "move-img-container";
               moveContainer.appendChild(prevBtn);
               moveContainer.appendChild(nextBtn);
               item.appendChild(moveContainer);
@@ -427,8 +370,8 @@ function updateAdd(dragonInput){
               grid.appendChild(item);});
             content.appendChild(grid);
             const closeBtn = document.createElement("button");
+            closeBtn.id = "close-modal-btn";
             closeBtn.innerText = "CLOSE";
-            closeBtn.style = "margin-top:20px; width:100%; padding:8px; background:#444; color:#fff; border:none; cursor:pointer;";
             closeBtn.onclick = () => document.body.removeChild(modal);
             content.appendChild(closeBtn);};
           // インスペクター上の数値を最新の状態に更新する関数
@@ -443,82 +386,71 @@ function updateAdd(dragonInput){
         itemRow.appendChild(label);
         controls.appendChild(input);
         controls.appendChild(countDisplay);
-        // ペイン上の元のUPLOADは削除し、新設したLIST/EDITボタンのみを配置
         controls.appendChild(listBtn);
         itemRow.appendChild(controls);
         contentWrapper.appendChild(itemRow);}
-
       // --- 3. followId入力 ---
     else if (config[0] === "referenceId" || config[0] === "referenceIndex"){
-    const groupLabel = document.createElement('div');
-    groupLabel.innerText = key;
-    groupLabel.style = "font-size: 9px; color: #444; width: 5px; flex-shrink: 10; min-width: 5px; display: inline-block;";
-    itemRow.appendChild(groupLabel);
-    const row = document.createElement('div');
-    row.style = "display: flex; align-items: center; gap: 0px; margin-left: 50px; margin-bottom: 0px;";
-const input = document.createElement('input');
-input.type = (config[0] === "referenceId") ? "text" : "number";
-input.dataset.key = key;
-input.className = "inspector-input";
-input.style = "background: #111; color: #eee; border: 1px solid #333; font-size: 10px;";
+    const followLabel = document.createElement('div');
+    followLabel.className = "inspector-follow-label";
+    followLabel.innerText = key;
+    itemRow.appendChild(followLabel);
+    const followRow = document.createElement('div');
+    followRow.className = "inspector-follow-row";
+const followInput = document.createElement('input');
+followInput.className = "inspector-follow-input";
+followInput.type = (config[0] === "referenceId") ? "text" : "number";
+followInput.dataset.key = key;
 const rawVal = DragonScope.selectedDragon[key];
 const currentVal = (rawVal?.name ?? rawVal) ?? null;
-input.value = currentVal;
-input.min = 0;
+followInput.value = currentVal;
+followInput.min = 0;
 const targetDragon = DragonScope.selectedDragon.followId;
   if (config[0] === "referenceIndex") {
-    input.max = (targetDragon && targetDragon.numParts) ? targetDragon.numParts - 1 : null;}
+    followInput.max = (targetDragon && targetDragon.numParts) ? targetDragon.numParts - 1 : null;}
     lockedProperty(isLocked);
-    row.appendChild(input);
-    itemRow.appendChild(row);
+    followRow.appendChild(followInput);
+    itemRow.appendChild(followRow);
     contentWrapper.appendChild(itemRow);}
-
       // --- 4. フラグ項目 (ON/OFF) ---
       else if (config[0] === "flag"){
         label.innerText = key;
-        label.style = "font-size: 9px; color: #aaa; margin-bottom:2px;";
         itemRow.appendChild(label);
-        const btn = document.createElement('button');
-        const updateBtn = (val) => {
-          btn.innerText = val ? "ON" : "OFF";
-          btn.style = `padding:3px; font-size:10px; cursor:pointer; background:${val ? '#2a8' : '#822'};
-                      color:#fff; border:none; border-radius:2px; font-weight:bold;`;
+        const flagOnOffBtn = document.createElement('button');
+        flagOnOffBtn.className = "inspector-flag-btn";
+        const updateBtnSwitch = (val) => {
+          flagOnOffBtn.innerText = val ? "ON" : "OFF";
+          flagOnOffBtn.style = `background:${val ? '#2a8' : '#822'}`;
           let targetOpacity = val ? "1.0" : "0.2";
           let targetPointer = val ? "auto" : "none";
           let targetFilter = val ? "none" : "grayscale(100%)";
           if (isLocked) {
-              btn.style = `padding:3px; font-size:10px; cursor:default; background:#322; opacity:0.1;
-                          color:#fff; border:none; border-radius:2px; font-weight:bold;opacity:0.4;`;
-              btn.style.pointerEvents = "none";
+              flagOnOffBtn.style = `cursor:default; background:#322; opacity:0.1; opacity:0.4;`;
+              flagOnOffBtn.style.pointerEvents = "none";
               targetOpacity = "1";
               targetPointer = "none";
-              targetFilter = "grayscale(100%)";
-            }
+              targetFilter = "grayscale(100%)";}
               contentWrapper.style.opacity = targetOpacity;
               contentWrapper.style.pointerEvents = targetPointer;
-              contentWrapper.style.filter = targetFilter;
-          };
-        updateBtn(!!DragonScope.selectedDragon[key]);
-        btn.onclick = () => {
+              contentWrapper.style.filter = targetFilter;};
+        updateBtnSwitch(!!DragonScope.selectedDragon[key]);
+        flagOnOffBtn.onclick = () => {
           const newVal = !DragonScope.selectedDragon[key];
           DragonScope.selectedDragon[key] = newVal ? 1 : 0;
-          updateBtn(newVal);
+          updateBtnSwitch(newVal);
           DragonScope.storage[DragonScope.selectedDragon.id].current[key] = newVal;
           if (["flagBranch"].includes(key)) {
             MotionStrategy();
             DragonScope.selectedDragon.rebuild();
-            DragonScope.needsRebuildDPS = true;
           }};
-        itemRow.appendChild(btn);
-        groupWrapper.insertBefore(itemRow, groupTitle.nextSibling);
-      }
+        itemRow.appendChild(flagOnOffBtn);
+        groupWrapper.insertBefore(itemRow, groupTitle.nextSibling);}
       // --- 5. セレクトボックス ---
       else if (config[0] === "select") {
         label.innerText = key;
-        label.style = "font-size: 10px; color: #666;";
         itemRow.appendChild(label);
         const select = document.createElement('select');
-        select.style = "background:#111; color:#eee; border:1px solid #333; font-size:10px; padding:2px;";
+        select.className = "inspector-select";
         const defIdx = config.length-1;
           for(let i =1; i <= defIdx; i++){
           const o = document.createElement('option');
@@ -528,44 +460,47 @@ const targetDragon = DragonScope.selectedDragon.followId;
         select.value = DragonScope.selectedDragon[key] ?? config[defIdx];
         select.onchange = (e) => {
           DragonScope.selectedDragon[key] = e.target.value;
-          DragonScope.storage[DragonScope.selectedDragon.id].current[key] = e.target.value;
-        };
+          DragonScope.storage[DragonScope.selectedDragon.id].current[key] = e.target.value;};
         itemRow.appendChild(select);
         lockedProperty(isLocked);
-        contentWrapper.appendChild(itemRow);
-      }
+        contentWrapper.appendChild(itemRow);}
       // --- 6. 数値スライダー ---
       else if (typeof config[0] === "number"){
         const defInd = config.length-1;
         label.innerText = key;
-        label.style = "font-size: 10px; color: #666;";
         itemRow.appendChild(label);
         lockedProperty(isLocked);
-        const row = document.createElement('div');
-        row.style = "display:flex; align-items:center; gap:0px;";
+        const sliderRow = document.createElement('div');
+        sliderRow.className = "inspector-slider-row";
         const slider = document.createElement('input');
+        slider.className = "inspector-slider";
         slider.type = "range";
         slider.min = config[0];
         slider.max = config[1];
         const baseStep = config[2] ?? F_1;
         slider.step = baseStep;
-        slider.style = "flex:1; height:5px; margin-right: 10px;";
         const valDisp = document.createElement('span');
-        valDisp.style = "font-size:10px; color:#fff; min-width:20px; text-align:right;";
+        valDisp.className = "inspector-slider-value-disp";
         const currentVal = DragonScope.selectedDragon[key] ?? config[defInd];
         slider.value = currentVal;
         valDisp.innerText = currentVal;
-
-        // キーボード操作ロジック
+      // -------------------キーボード操作ロジック--------------
         slider.addEventListener('keydown', e => {
+          e.preventDefault();
           let v = parseFloat(slider.value);
           let changed = false;
           if (e.shiftKey && (e.key === "ArrowUp" || e.key === "ArrowDown")){
-              e.preventDefault(); v += baseStep * (e.key === "ArrowUp" ? 100 : -100); changed = true;
+              e.preventDefault();
+              v += baseStep * (e.key === "ArrowUp" ? 100 : -100);
+              changed = true;
             } else if (e.shiftKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")){
-              e.preventDefault(); v += baseStep * (e.key === "ArrowRight" ? 1 : -1); changed = true;
+              e.preventDefault();
+              v += baseStep * (e.key === "ArrowRight" ? 1 : -1);
+              changed = true;
             } else if (!e.shiftKey && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)){
-              e.preventDefault(); v += baseStep * (["ArrowUp", "ArrowRight"].includes(e.key) ? 10 : -10); changed = true; }
+              e.preventDefault();
+              v += baseStep * (["ArrowUp", "ArrowRight"].includes(e.key) ? 10 : -10);
+              changed = true;}
           if (changed) {
             v = Math.max(config[0], Math.min(config[1], v));
             const stepDec = baseStep.toString().includes('.') ? baseStep.toString().split('.')[1].length : 0;
@@ -574,9 +509,7 @@ const targetDragon = DragonScope.selectedDragon.followId;
             valDisp.innerText = finalV;
             DragonScope.selectedDragon[key] = finalV;
             slider.dispatchEvent(new Event('input'));
-            DragonScope.storage[DragonScope.selectedDragon.id].current[key] = finalV;
-          }});
-
+            DragonScope.storage[DragonScope.selectedDragon.id].current[key] = finalV;}});
         slider.oninput = (e) => {
           const v = parseFloat(e.target.value);
           valDisp.innerText = v;
@@ -584,15 +517,11 @@ const targetDragon = DragonScope.selectedDragon.followId;
           DragonScope.storage[DragonScope.selectedDragon.id].current[key] = v;
           if (["numParts"].includes(key)) {
             DragonScope.selectedDragon.rebuild();
-            rebuildDragonList();
-            DragonScope.needsRebuildDPS = true;
-          }};
-
-        row.appendChild(slider);
-        row.appendChild(valDisp);
-        itemRow.appendChild(row);
-        contentWrapper.appendChild(itemRow);
-}}
+            rebuildDragonList();}};
+        sliderRow.appendChild(slider);
+        sliderRow.appendChild(valDisp);
+        itemRow.appendChild(sliderRow);
+        contentWrapper.appendChild(itemRow);}}
         groupWrapper.appendChild(contentWrapper);
         contentArea.appendChild(groupWrapper);
 }};

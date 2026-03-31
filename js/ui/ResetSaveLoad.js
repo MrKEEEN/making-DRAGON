@@ -3,8 +3,9 @@ import { MotionStrategy } from '../core/Strategies.js';
 import { Dragon } from '../core/Dragon.js';
 import { createInspectorGUI, buildDPS, rebuildDragonList } from './Inspector.js';
 
+export { ResetSaveLoad };
 
-export const ResetSaveLoad = {
+const ResetSaveLoad = {
   sync(id, dragon, toDragon = true) {
       AllPropSchema_KEYS_excId.forEach((key) => {
         if (toDragon) {                          //reset,load処理
@@ -71,25 +72,23 @@ if(currentImgIndex && dragon.resetParts){
     flattedAllData.forEach((key, index) =>{key.followId = arrStrFollowId[index].followId;});
     //Master選択時は、followIdとfollowIndexプロパティも含める
     blobMaster = new Blob([JSON.stringify(flattedAllData, AllPropSchema_KEYS_excId, 2)],{type: 'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blobMaster);
-    a.download = `dragon_${dragon.name}_${Date.now()}.json`;
-    a.click();
+    const ma = document.getElementById('master-save-link');
+    ma.href = URL.createObjectURL(blobMaster);
+    ma.download = `dragon_${dragon.name}_${Date.now()}.json`;
+    ma.click();
+    setTimeout(() => URL.revokeObjectURL(ma.href), 1000);
 
    // 修正箇所：Master保存後にZIPファイルを生成して保存
     zip.generateAsync({type: "blob"}).then((content) => {
-      const za = document.createElement('a');
-      za.href = URL.createObjectURL(content);
-      za.download = `parts_${Date.now()}.zip`;
-      za.click();
-     // メモリ解放（必要に応じて）
-      setTimeout(() => URL.revokeObjectURL(za.href), 1000);
-    });
-
+      const da = document.getElementById('dragon-save-link');
+      da.href = URL.createObjectURL(content);
+      da.download = `parts_${Date.now()}.zip`;
+      da.click();
+     // メモリ解放
+      setTimeout(() => URL.revokeObjectURL(da.href), 1000);});
    //改めて現時点の情報セーブ
         DragonScope.dragons.forEach((dragon) => {
-        this.sync(dragon.id, dragon, false);
-        });
+        this.sync(dragon.id, dragon, false);});
 
     } else if (d.name !== "Master"){
     //現時点情報セーブ・current空
@@ -98,12 +97,13 @@ if(currentImgIndex && dragon.resetParts){
     if (!confirm(`want to download a JSON File, too?`)){return;}
     //Master以外は、followIdとfollowIndexプロパティを含めない（各パート処理）
     blobPart = new Blob([JSON.stringify(DragonScope.storage[id].saved, AllPropSchema_KEYS_except_id_followId_followIndex, 2)],{type: 'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blobPart);
-    a.download = `dragon_${dragon.name}_${Date.now()}.json`;
-    a.click();}},
+    const da = document.getElementById('dragon-save-link');
+    da.href = URL.createObjectURL(blobPart);
+    da.download = `dragon_${dragon.name}_${Date.now()}.json`;
+    da.click();
+    setTimeout(() => URL.revokeObjectURL(da.href), 1000);}},
 
-
+    //初期起動時にも使用するため、load関数から独立して定義する。
     applyData(data) {
       DragonScope.dragons.length = 0;
     //Master選択時のロード
@@ -141,8 +141,7 @@ if(currentImgIndex && dragon.resetParts){
     if (d.imgIndex >= DragonScope.images.length) {
         d.imgIndex = DragonScope.images.length - 1;
         d.rebuild();
-        DragonScope.needsRebuildDPS = true;}});
-    },
+      }});},
 
 
 
@@ -176,8 +175,7 @@ if(currentImgIndex && dragon.resetParts){
     }});}
     if (d.imgIndex >= DragonScope.images.length) {
         d.imgIndex = DragonScope.images.length - 1;
-        d.rebuild();
-        DragonScope.needsRebuildDPS = true;}
+        d.rebuild();}
       this.sync(dragon.id, dragon, false);}
 MotionStrategy();},
 
@@ -197,25 +195,17 @@ deleteDragon(id) {
     delete DragonScope.storage[id];
     DragonScope.selectedDragon = DragonScope.master;
     DragonScope.selectedDragon.rebuild();
-    DragonScope.needsRebuildDPS = true;
     rebuildDragonList();
-    buildDPS();
     createInspectorGUI();},
 
 //-----------------------
 //setup -ボタンクリック-
 //-----------------------
 setupUI() {
-  const topContainer = document.getElementById('inspector-top-container');
-  const resetBtn = document.createElement("button");
-  resetBtn.textContent = "Reset";
-  const saveBtn = document.createElement("button");
-  saveBtn.textContent = "Save";
-  const loadBtn = document.createElement("button");
-  loadBtn.textContent = "Load";
-  const delBtn = document.createElement('button');
-  delBtn.innerText = "DELETE PART";
-  delBtn.style = "width:100%; margin-top:5px; padding:5px; background:#822; color:#fff; border:none; cursor:pointer; font-size:10px; font-weight:bold;";
+  const resetBtn = document.getElementById("reset-btn");
+  const saveBtn = document.getElementById("save-btn");
+  const loadBtn = document.getElementById("load-btn");
+  const delBtn = document.getElementById('del-btn');
 
   resetBtn.onclick = () => {
     const d = DragonScope.selectedDragon;
@@ -225,7 +215,6 @@ setupUI() {
       } else {
       this.reset(d.id, d);}
   d.rebuild();
-  DragonScope.needsRebuildDPS = true;
   createInspectorGUI();};
 
 saveBtn.onclick = () => {
@@ -234,9 +223,7 @@ saveBtn.onclick = () => {
 
   loadBtn.onclick = () => {
   const d = DragonScope.selectedDragon;
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json';
+  const input = document.getElementById('json-loader');
   input.onchange = (e) => {
     const file = e.target.files[0];
     if (!file){return;}
@@ -267,8 +254,6 @@ saveBtn.onclick = () => {
 
 delBtn.onclick = () => {
 const d = DragonScope.selectedDragon;
-this. deleteDragon(d.id, d);};
-
-  topContainer.append(resetBtn, saveBtn, loadBtn, delBtn);}};
+this. deleteDragon(d.id, d);};}};
 
 
