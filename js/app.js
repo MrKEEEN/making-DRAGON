@@ -9,7 +9,7 @@ const SAMPLES = {
     "Snake":        ["./samples/dragon_Master_snake.json"],
     "Spider":       ["./samples/dragon_Master_spider.json"],
     "Mr. Sherman":  ["./samples/dragon_Master_mr-sherman.json"],
-    "fantasy DRAGONS" : ["./samples/dragon_Master_snake.json", "./samples/dragon_Master_fantasyDRAGONs_2.json", "./samples/dragon_Master_fantasyDRAGONs_3.json"],
+    "fantasy DRAGONS" : ["./samples/dragon_Master_fantasyDRAGONs_1.json", "./samples/dragon_Master_fantasyDRAGONs_2.json", "./samples/dragon_Master_fantasyDRAGONs_3.json"],
 };
 
 function showSelector() {

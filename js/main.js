@@ -236,7 +236,7 @@ export async function loadImage(src){
 
 const sampleUrls = DragonScope.initialData;
 if(sampleUrls.length > 1){
-  rgb.r = 150;
+  rgb.r = 255;
   canvas.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
   const RGBInfo = document.getElementById('RGB-info');
   RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;}
