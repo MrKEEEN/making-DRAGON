@@ -1,6 +1,9 @@
 import { DragonScope } from './base/prop_schema.js';
-import { createInspectorGUI, paneSetupUI, buildDPS, rebuildDragonList, updateListHighlight } from './ui/Inspector.js';
+import { dragonManager } from './core/DragonManager.js';
+import { paneSetupUI, buildDPS, createInspectorGUI } from './ui/Inspector.js';
 import { ResetSaveLoad } from './ui/ResetSaveLoad.js';
+import { MotionStrategy } from './core/Strategies.js';
+
 
 //TODO 画面の画像を右クリックメニューで保存するとページが勝手にリロードされる。jsのコードではなくブラウザの機能だが、要修正。画像保存は必要。
 
@@ -24,36 +27,45 @@ window.addEventListener("keydown", (e) => {
     RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;});
 
 const ctx = canvas.getContext("2d");
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;}
+const resizerV = document.getElementById("resizer_v");
+const maxPaneWidth = 500;
+
+  function resizeCanvas() {
+  const dpr = window.devicePixelRatio ?? 1;
+  // 物理ピクセルサイズを設定（解像度）
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  // CSS上の見た目（論理ピクセル）を固定
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+  // 描画コンテキストのスケーリング（既存の描画ロジックを維持するため）
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);}
+
 window.addEventListener("resize", () => {
   if(!clearMode){return;}
-  resizeCanvas()});
+  resizeCanvas()
+});
 resizeCanvas();
-
-
-const resizerV = document.getElementById("resizer_v");
-const controls = document.getElementById("controls");
 
 let isDraggingV = false;
 resizerV.addEventListener("mousedown", () => {
   isDraggingV = true;
-  document.body.style.cursor = "ew-resize";
-});
-
+  document.body.style.cursor = "ew-resize";});
 window.addEventListener("mouseup", () => {
   isDraggingV = false;
-  document.body.style.cursor = "default";
-});
+  document.body.style.cursor = "default";});
+
 window.addEventListener("mousemove", (e) => {
-  if (!isDraggingV || !clearMode){return;}
+  if (!isDraggingV || !clearMode) { return; }
+  // 1. CSS変数から現在のズーム倍率を取得
+  const zoom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zoom-ratio')) ?? 1;
   const newWidth = window.innerWidth - e.clientX;
-  // 幅の制限（0〜500px）
-  const finalWidth = Math.max(0, Math.min(500, newWidth));
-  controls.style.width = finalWidth + "px";
-  resizerV.style.right = finalWidth + "px";
-    resizeCanvas();});
+  // 3. ブラウザの拡大縮小に適応するための処理込み
+  const finalWidth = Math.max(0, Math.min(maxPaneWidth / zoom, newWidth));
+
+  document.documentElement.style.setProperty('--pane-width', finalWidth * zoom);
+  resizeCanvas();});
 
   // 1,2,3,4 キーで回転モード切替. z keyで描写反転. m keyでmouse追従のon,off切替
 let rotationMode = 0;
@@ -92,28 +104,72 @@ if (e.key === "c") {
 let isWriting = false;
 canvas.addEventListener("mousedown", (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
-  if (writeMode) isWriting = true;
-});
+  if (writeMode) isWriting = true;});
 window.addEventListener("mouseup", () => {
-  isWriting = false;
-});
+  isWriting = false;});
 window.addEventListener("mouseleave", () => {
-  isWriting = false;
-});
-
-  const mouse = { x: canvas.width/2, y: canvas.height/2 };
-  canvas.addEventListener("mousemove", e => {
+  isWriting = false;});
+const mouse = { x: canvas.width/2, y: canvas.height/2 };
+canvas.addEventListener("mousemove", e => {
     if(!mouseMode){return;}
     mouse.x = e.clientX;
-    mouse.y = e.clientY;
-  });
+    mouse.y = e.clientY;});
+canvas.addEventListener("dblclick", () => {
+    DragonScope.master.isBoosting = true;});
+
+
+//============================
+//新個体-individual作成ボタン
+//============================
+document.getElementById("add-ui-display").addEventListener("click", async () => {
+    const { Dragon } = await import('./core/Dragon.js');
+    const newDragon = new Dragon({
+        meta: { name: "Master", _imgIndex: 5, followId: null, followIndex: null },
+        basic: { numParts: 1 }});
+    // Individualとして追加（内部でUI生成なども完結）
+    dragonManager.add([newDragon]);
+    const newIndex = dragonManager.individuals.length - 1;
+    dragonManager.switch(newIndex);
+    // 全体描画リストの更新
+    updateUIStatus();});
+
+// PREVIOUS ボタン
+document.getElementById("prev-ui-switch").addEventListener("click", () => {
+    const newIndex = dragonManager.currentIndex - 1;
+    if (newIndex < 0){return;}
+        dragonManager.switch(newIndex);
+        updateUIStatus();});
+
+// NEXT ボタン
+document.getElementById("next-ui-switch").addEventListener("click", () => {
+    const newIndex = dragonManager.currentIndex + 1;
+    if (newIndex >= dragonManager.individuals.length){return;}
+        dragonManager.switch(newIndex);
+        updateUIStatus();});
+
+//============================
+// individual 削除ボタン
+//============================
+document.getElementById("del-ui-display").addEventListener("click", () => {
+  const deletedIndex = DragonScope.individualCurrentIndex;
+  dragonManager.deleteCurrentIndividual(deletedIndex);
+  updateUIStatus();
+});
+
+// UI上の「0 / 1」などのテキスト更新関数
+function updateUIStatus() {
+    const display = document.getElementById("current-ui-display");
+    if (display) {
+        const current = dragonManager.currentIndex + 1;
+        const total = dragonManager.individuals.length;
+        display.textContent = `${current} / ${total}`;}}
 
 // ==============================
 // 描画
 // ==============================
 function drawAll() {
   if(writeMode && !isWriting){return;}
-  const displayList = DragonScope.dps ?? [];
+  const displayList = dragonManager.allDps;
   const modeDrawing = (item) => {
     const part = item.part;
     const img = DragonScope.images[part.imgIndex];
@@ -178,34 +234,56 @@ export async function loadImage(src){
       running = false;}
   DragonScope.images = images;}
 
-//Master用のjsonファイルの読み込み。load処理と同等のものを実装している。ファイルのパスはapp.js内のSAMPLESオブジェクトで定義されている。
-ResetSaveLoad.applyData(DragonScope.initialData);
-//ペインのセットアップ
+const sampleUrls = DragonScope.initialData;
+if(sampleUrls.length > 1){
+  rgb.r = 150;
+  canvas.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+  const RGBInfo = document.getElementById('RGB-info');
+  RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;}
+
 paneSetupUI();
-//描画用のパーツ配列作成
-buildDPS();
-//ペインのリスト作成
-rebuildDragonList();
-//リストの選択パートのハイライト
-updateListHighlight();
-//ペイン内のプロパティ類の編集エリア構築
-createInspectorGUI();
-//ペイン内のResetSaveLoad＋deleteのセット
 ResetSaveLoad.setupUI();
+const { Dragon } = await import('./core/Dragon.js');
 
+for (let i = 0; i < sampleUrls.length; i++) {
+        try {
+            // i番目のパスのみを読み込む
+            const url = sampleUrls[i];
+            const response = await fetch(url);
+            const jsonData = await response.json();
+            // 3. 個体（Master）の器を生成
+            const newDragon = new Dragon({
+                meta: { name: "Master", _imgIndex: 5, followId: null, followIndex: null },
+                basic: { numParts: 1 }});
+            // 4. switch関数で重要な処理を行っているが、初期時に複数体を同タイミングで生成するため、順番を分けて2回呼出。
+            dragonManager.add([newDragon]);
+            dragonManager.switch(i);
+            ResetSaveLoad.applyData(jsonData);
+            dragonManager.switch(i);
+        } catch (e) {
+            console.error(`Failed at index ${i}:`, e);
+        }}
 
-  loop(buildDPS, DragonScope.dragons);}
+    //最初の個体を選択済とさせる
+    dragonManager.switch(0);
+    updateUIStatus();
 
-  function loop(buildDPS) {
+  loop();
+}
+
+  function loop() {
   function frame() {
     requestAnimationFrame(frame);
-    if(clearMode){ ctx.clearRect(0, 0, canvas.width, canvas.height); }
-    for (const d of DragonScope.dragons) {
-        d.update(mouse, rotationMode);}
+    if(clearMode){ ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); }
+    for (const individual of dragonManager.individuals) {
+    for (const d of individual.individualDragon) {
+        d.update(mouse, rotationMode);}}
     if (DragonScope.needsRebuildDPS) {
       buildDPS();
+      dragonManager.buildAllDps();
       DragonScope.needsRebuildDPS = false;}
       drawAll();}
     frame(0);}
 
   start();
+

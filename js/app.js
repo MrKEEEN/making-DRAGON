@@ -4,11 +4,12 @@ import { DragonScope } from './base/prop_schema.js';
 // 1. サンプルファイルのパス定義
 // ==============================
 const SAMPLES = {
-    "one point":    "./samples/dragon_Master_onepoint.json",
-    "First Dragon": "./samples/dragon_Master_firstDRAGON.json",
-    "Snake":        "./samples/dragon_Master_snake.json",
-    "Spider":       "./samples/dragon_Master_spider.json",
-    "Mr. Sherman":  "./samples/dragon_Master_mr-sherman.json",
+    "one point":    ["./samples/dragon_Master_onepoint.json"],
+    "First Dragon": ["./samples/dragon_Master_firstDRAGON.json"],
+    "Snake":        ["./samples/dragon_Master_snake.json"],
+    "Spider":       ["./samples/dragon_Master_spider.json"],
+    "Mr. Sherman":  ["./samples/dragon_Master_mr-sherman.json"],
+    "fantasy DRAGONS" : ["./samples/dragon_Master_snake.json", "./samples/dragon_Master_fantasyDRAGONs_2.json", "./samples/dragon_Master_fantasyDRAGONs_3.json"],
 };
 
 function showSelector() {
@@ -23,24 +24,46 @@ function showSelector() {
         appBtn.innerText = name;
         appBtn.style = "margin:10px;padding:15px 40px;font-size:18px;cursor:pointer;background:#333;color:white;border:1px solid #555;border-radius:4px;";
         appBtn.onclick = async () => {
-            try {
+            // try {
                 // ファイルをフェッチしてJSONとして解析
-                const response = await fetch(SAMPLES[name]);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
+                // const response = await fetch(SAMPLES[name]);
+                // if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                // const data = await response.json();
                 // データをセット
-                DragonScope.initialData = data;
-                overlay.remove();
+                // DragonScope.initialData = data;
 
+                DragonScope.initialData = SAMPLES[name];
+
+
+
+                overlay.remove();
                 // main.js を実行
                 await import('./main.js');
-            } catch (error) {
-                console.error("Failed to load sample:", error);
-                alert("ファイルの読み込みに失敗しました。パスを確認してください。");
-            }
+            // } catch (error) {
+            //     console.error("Failed to load sample:", error);
+            //     alert("ファイルの読み込みに失敗しました。パスを確認してください。");
+            // }
         };
         container.appendChild(appBtn);
-    });
+
+    const adjustZoom = () => {
+    // ブラウザの標準倍率（100%）を1とした時の現在の比率
+    const zoomRatio = 1 / window.devicePixelRatio;
+    const statusInfo = document.getElementById('statusInfo');
+    const controls = document.getElementById('controls');
+    const resizer = document.getElementById('resizer_v');
+    document.documentElement.style.setProperty('--zoom-ratio', window.devicePixelRatio);
+    if (statusInfo) {
+        statusInfo.style.transform = `scale(${zoomRatio})`;}
+    if (controls) {
+        controls.style.transform = `scale(${zoomRatio})`;}
+    if (resizer) {
+        resizer.style.transform = `scale(${zoomRatio})`;}
+};
+window.addEventListener('resize', adjustZoom);
+window.addEventListener('DOMContentLoaded', () => {
+    adjustZoom();});
+});
 }
 
 showSelector();

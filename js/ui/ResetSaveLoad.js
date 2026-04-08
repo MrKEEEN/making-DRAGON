@@ -2,6 +2,7 @@ import { PROP_SCHEMA, DragonScope, AllPropSchema_KEYS_excId, AllPropSchema_KEYS_
 import { MotionStrategy } from '../core/Strategies.js';
 import { Dragon } from '../core/Dragon.js';
 import { createInspectorGUI, buildDPS, rebuildDragonList } from './Inspector.js';
+import { dragonManager } from '../core/DragonManager.js';
 
 export { ResetSaveLoad };
 
@@ -104,7 +105,7 @@ if(currentImgIndex && dragon.resetParts){
     setTimeout(() => URL.revokeObjectURL(da.href), 1000);}},
 
     //初期起動時にも使用するため、load関数から独立して定義する。
-    applyData(data) {
+    async applyData(data) {
       DragonScope.dragons.length = 0;
     //Master選択時のロード
         const nameMap = {};
@@ -135,14 +136,15 @@ if(currentImgIndex && dragon.resetParts){
       AllPropSchema_KEYS_excId.forEach(key => {
         DragonScope.storage[newId].saved[key] = (key === "followId") ? follower : loadProp[key];}
       );});
-  DragonScope.selectedDragon = DragonScope.dragons[0];
-  DragonScope.master = DragonScope.dragons.find(d => d.name === "Master");
   DragonScope.dragons.forEach(d => {
     if (d.imgIndex >= DragonScope.images.length) {
         d.imgIndex = DragonScope.images.length - 1;
-        d.rebuild();
-      }});},
-
+        d.rebuild();}
+        d.currentDragon = true;
+    });
+    DragonScope.selectedDragon = DragonScope.dragons[0];
+    DragonScope.master = DragonScope.dragons.find(d => d.name === "Master");
+    MotionStrategy();},
 
 
     load(id, dragon, data) {
@@ -196,7 +198,8 @@ deleteDragon(id) {
     DragonScope.selectedDragon = DragonScope.master;
     DragonScope.selectedDragon.rebuild();
     rebuildDragonList();
-    createInspectorGUI();},
+    dragonManager.buildAllDps();
+    createInspectorGUI(DragonScope.individualCurrentIndex);},
 
 //-----------------------
 //setup -ボタンクリック-
@@ -215,7 +218,8 @@ setupUI() {
       } else {
       this.reset(d.id, d);}
   d.rebuild();
-  createInspectorGUI();};
+  dragonManager.buildAllDps();
+  createInspectorGUI(DragonScope.individualCurrentIndex);};
 
 saveBtn.onclick = () => {
   const d = DragonScope.selectedDragon;
@@ -247,9 +251,10 @@ saveBtn.onclick = () => {
         this.load(d.id, d, data);}
         rebuildDragonList();
         buildDPS();
-
-        createInspectorGUI();};
-    reader.readAsText(file);};
+        dragonManager.buildAllDps();
+        createInspectorGUI(DragonScope.individualCurrentIndex);};
+    reader.readAsText(file);
+    input.value = "";};
     input.click();};
 
 delBtn.onclick = () => {

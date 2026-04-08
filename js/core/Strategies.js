@@ -91,7 +91,6 @@ class ComplexBranchMotionStrategy  {
 
 //=========================================================================================
 
-
 // ------------------------------
 // Chain（頭・首など通常チェーン）統合版
 // ------------------------------
@@ -113,12 +112,10 @@ if (!target.followId) {
 _updateMaster(target, mouse, t){
     const resolved = target.resolvedParams;
     const root = target.parts[0];
-    let targetX = mouse.x + target.masterOffset.x;
-    let targetY = mouse.y + target.masterOffset.y;
+
     let subIsBoosting=false;
     let offX = 0;
     let offY = 0;
-
 
     if (target.flagMasterMove){
       // Orbit (旋回運動)
@@ -138,22 +135,41 @@ _updateMaster(target, mouse, t){
         offX += wave * (resolved.headBobAmpX ?? 0) * stillFactor;
         offY += Math.cos(t * speed) * (resolved.headBobAmpY ?? 0) * stillFactor;}}
 
-  //ダブルクリックでマウスに引き寄せる
-        canvas.addEventListener("dblclick", () => {
-  if (DragonScope.master) {
-    DragonScope.master.isBoosting = true;
-  } else {
-    console.warn("Master dragon not found.");}});
+    if (target._lastCurrentDragon === undefined) {
+    target._lastCurrentDragon = target.currentDragon;}
 
-        if(target.isBoosting){
-      target.masterOffset.x = 0;
-      target.masterOffset.y = 0;
+if (target._lastCurrentDragon !== target.currentDragon) {
+        if (!target.currentDragon) {
+            // true -> false: その場に留めるためマウス座標を「加算」して絶対座標化
+            target.masterOffsetX = mouse.x + target.masterOffsetX;
+            target.masterOffsetY = mouse.y + target.masterOffsetY;
+        } else {
+            // false -> true: 操作を再開するため、保持していた絶対座標からマウス座標を「減算」して相対に戻す
+            target.masterOffsetX = target.masterOffsetX - mouse.x;
+            target.masterOffsetY = target.masterOffsetY - mouse.y;
+        }
+    }
+
+
+target._lastCurrentDragon = target.currentDragon;
+
+    let targetX = mouse.x + target.masterOffsetX;
+    let targetY = mouse.y + target.masterOffsetY;
+    let nonCurrentTargetX = target.masterOffsetX;
+    let nonCurrentTargetY = target.masterOffsetY;
+
+  if(target.isBoosting && target.currentDragon && DragonScope.master === target){
+    target.masterOffsetX = 0;
+      target.masterOffsetY = 0;
       target.offsetX = 0;
       target.offsetY = 0;
       subIsBoosting=true;};
-    if (!subIsBoosting){
+
+    if (!subIsBoosting) {
       targetX += offX;
-      targetY += offY;}
+      targetY += offY;
+      nonCurrentTargetX += offX;
+      nonCurrentTargetY += offY;}
 
       const dx = targetX - root.x;
       const dy = targetY - root.y;
@@ -161,12 +177,18 @@ _updateMaster(target, mouse, t){
 
       root.activeAngle = Math.atan2(dy, dx);
       if (subIsBoosting && dist < 5) {
-        target.masterOffset.x = -offX;
-        target.masterOffset.y = -offY;
-        target.isBoosting = false;}
+        target.masterOffsetX = -offX;
+        target.masterOffsetY = -offY;
+        target.isBoosting = false;
+      }
 
-      root.x += dx * target.speed;
-      root.y += dy * target.speed;}
+      if(target.currentDragon){
+        root.x += dx * target.speed;
+        root.y += dy * target.speed;
+      } else {
+        root.x += (nonCurrentTargetX - root.x) * target.speed;
+        root.y += (nonCurrentTargetY - root.y) * target.speed;}
+    }
 
 
     //-----------------------------------------------

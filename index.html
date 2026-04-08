@@ -17,17 +17,27 @@
     <div id="dragonInputWrapper">
       <div id="dragonInputLabel">New Dragon Name</div>
       <input type="text" id="dragonInput" placeholder="Enter new name">
-      <button id="updateAddBtn">Update / Add</button>
+      <button id="updateAddBtn">【PART】update/add</button>
     </div>
-    <button id="reset-btn" id="reset-btn">Reset</button>
-    <button id="save-btn" id="save-btn">Save</button>
+    <button id="reset-btn">Reset</button>
+    <button id="save-btn">Save</button>
     <a id="master-save-link" style="display:none;"></a>
     <a id="dragon-save-link" style="display:none;"></a>
-    <button id="load-btn" id="load-btn">Load</button>
+    <button id="load-btn">Load</button>
     <input type="file" id="json-loader" accept=".json" style="display:none;">
     <button id="del-btn">DELETE PART</button>
+    <div id="manual-display"></div>
   </div>
   <div id="splitResizer">Editing</div>
+
+<div id="ui-switch-wrapper">
+  <button id="prev-ui-switch" class="ui-switch">←PREV</button>
+  <div id="current-ui-display">1 / 1</div>
+  <button id="next-ui-switch" class="ui-switch">NEXT→</button>
+  <button id="add-ui-display" class="ui-switch">ADD</button>
+  <button id="del-ui-display" class="ui-switch">DEL</button>
+</div>
+
   <div id="inspector-content"></div>
 </div>
 <script type="module" src="js/app.js"></script>

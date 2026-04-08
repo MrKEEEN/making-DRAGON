@@ -9,12 +9,14 @@ export { Dragon };
     // ============================
 const Dragon = class {
   static INTERNAL_DEFAULTS = {
-    masterOffset: { x: 0, y: 0 },
+    masterOffsetX: 0,
+    masterOffsetY: 0,
     motionAmount: 0,
     stillness: 0,
     anglePreset: 0,
     angle: 0,
-    isBoosting: false,};
+    isBoosting: false,
+    currentDragon: false,};
 
 constructor(options = {}){
     this.id = options.id ?? `dragon_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;

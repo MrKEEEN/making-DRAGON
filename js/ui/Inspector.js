@@ -6,6 +6,7 @@ import { showToast } from '../base/MathUtils.js';
 
 export { buildDPS, updateListHighlight, rebuildDragonList, paneSetupUI, createInspectorGUI };
 
+
 let dragonListEl = null;
 
 const buildDPS = () => {
@@ -53,6 +54,15 @@ dragonListEl = document.createElement("ol");
 dragonListEl.id = "DragonScope.dragons";
 dragonListEl.style.cssText = "margin: 0; padding: 0; list-style: none;";
 topContainer.prepend(dragonListEl);
+
+// --- 操作方法テキスト入力 ---
+fetch('manual.txt')
+        .then(res => res.text())
+        .then(text => {
+            // 読み込み完了後にここが実行される（コンマ数秒後）
+            document.getElementById('manual-display').innerText = text;
+        });
+
 // --- 上下リサイズ処理 ---
   const splitResizer = document.getElementById('splitResizer');
   splitResizer.onmousedown = (e) => {
@@ -77,6 +87,7 @@ new Sortable(dragonListEl, {
     DragonScope.dragons.splice(evt.newIndex, 0, movedItem);
     rebuildDragonList();
     DragonScope.needsRebuildDPS = true;}});
+
   dragonListEl.addEventListener("click", e => {
     sortableFunc(e);});
   updateAddBtn.addEventListener("click", () => {
@@ -92,7 +103,7 @@ new Sortable(dragonListEl, {
     const idx = Array.from(dragonListEl.children).indexOf(li);
     DragonScope.selectedDragon = DragonScope.dragons[idx];
     updateListHighlight();
-    createInspectorGUI();}
+    createInspectorGUI(DragonScope.individualCurrentIndex);}
 
 // ============================================================
 //   updateAdd関数
@@ -166,8 +177,9 @@ function updateAdd(dragonInput){
 
   rebuildDragonList();
   buildDPS();
+  DragonScope.needsRebuildDPS = true;
   updateListHighlight();
-  createInspectorGUI();
+  createInspectorGUI(DragonScope.individualCurrentIndex);
   dragonInput.value = "";
 }
 
@@ -175,11 +187,20 @@ function updateAdd(dragonInput){
 //=================================
 //---コントロールペイン---
 //=================================
-const createInspectorGUI = () => {
+// const createInspectorGUI = (uiContainer, individualDragon) => {
+//   const topContainer = document.getElementById('inspector-top-container');
+//   const contentArea = document.getElementById('inspector-content');
+//   if (!topContainer || !contentArea){return;}
+
+
+const createInspectorGUI = (containerIdIndex) => {
   const topContainer = document.getElementById('inspector-top-container');
-  const contentArea = document.getElementById('inspector-content');
-  if (!topContainer || !contentArea){return;}
-  // --- 下部パラメータエリアのみをクリア ---
+  const contentAreaWrapper = document.getElementById('inspector-content');
+
+  const contentArea = document.getElementById(`inspector-container-${containerIdIndex}`);
+  if (!topContainer || !contentAreaWrapper || !contentArea){return;}
+
+// --- 下部パラメータエリアのみをクリア ---
   contentArea.innerHTML = '';
   if (!DragonScope.selectedDragon){return;}
   // --- D. 「Editing: 名前」を上部エリアの末尾に追加（固定表示） ---
@@ -236,6 +257,7 @@ const createInspectorGUI = () => {
       // --- 1. テキスト入力 (name等) ---
       if (config[0] === "text") {
         input.className = "inspector-name-input";
+        input.id = `inspector-name-input-${DragonScope.individualCurrentIndex}`;
         label.innerText = "reName (Input Text)";
         input.type = "text";
         input.value = DragonScope.selectedDragon[key] ?? "";
@@ -246,6 +268,8 @@ const createInspectorGUI = () => {
       // --- 2. 画像・数値入力 (img等) ---
       else if (config[0] === "image") {
         input.className = "inspector-image-input";
+        input.id = `inspector-image-input-${DragonScope.individualCurrentIndex}`;
+
         label.innerText = "replaceImage (Select number)";
         input.type = "number";
         input.value = DragonScope.selectedDragon[key] ?? 0;
@@ -393,13 +417,16 @@ const createInspectorGUI = () => {
     else if (config[0] === "referenceId" || config[0] === "referenceIndex"){
     const followLabel = document.createElement('div');
     followLabel.className = "inspector-follow-label";
+    followLabel.id = `inspector-follow-label-${DragonScope.individualCurrentIndex}`;
     followLabel.innerText = key;
     itemRow.appendChild(followLabel);
     const followRow = document.createElement('div');
     followRow.className = "inspector-follow-row";
 const followInput = document.createElement('input');
 followInput.className = "inspector-follow-input";
+
 followInput.type = (config[0] === "referenceId") ? "text" : "number";
+followInput.id = `inspector-follow-input-${key}-${DragonScope.individualCurrentIndex}`
 followInput.dataset.key = key;
 const rawVal = DragonScope.selectedDragon[key];
 const currentVal = (rawVal?.name ?? rawVal) ?? null;
@@ -451,6 +478,7 @@ const targetDragon = DragonScope.selectedDragon.followId;
         itemRow.appendChild(label);
         const select = document.createElement('select');
         select.className = "inspector-select";
+        select.id = `inspector-select-${key}-${DragonScope.individualCurrentIndex}`
         const defIdx = config.length-1;
           for(let i =1; i <= defIdx; i++){
           const o = document.createElement('option');
@@ -517,7 +545,8 @@ const targetDragon = DragonScope.selectedDragon.followId;
           DragonScope.storage[DragonScope.selectedDragon.id].current[key] = v;
           if (["numParts"].includes(key)) {
             DragonScope.selectedDragon.rebuild();
-            rebuildDragonList();}};
+            rebuildDragonList();
+          }};
         sliderRow.appendChild(slider);
         sliderRow.appendChild(valDisp);
         itemRow.appendChild(sliderRow);

@@ -48,16 +48,16 @@ const showToast = (text) => {
       }
 })();
 
-
-
 const createResolvedParams = (dragon) => {
   const resolved = {};
   let intervalId = null;
-window.addEventListener('keydown', (e) => {
+
+  window.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
   if (intervalId || !['*', '/', '+', '-'].includes(e.key)){return;}
   const targetKey = e.key;
   intervalId = setInterval(() => {
+    if(!dragon.currentDragon){return};
     if (targetKey === '*') {
       dragon.scaleX *= 1.002;
       dragon.scaleY *= 1.002;
@@ -75,24 +75,43 @@ window.addEventListener('keyup', () => {
   clearInterval(intervalId);
   intervalId = null;});
 
-  for (const group in PROP_SCHEMA) {
-    for (const key in PROP_SCHEMA[group]) {
-      Object.defineProperty(resolved, key, {
-        get: () => {
-          if (group === 'whole'){
-              return DragonScope.master ? DragonScope.master[key] : 0;};
-          let val = dragon[key];
-          if (DragonScope.master) {
-  if (key === 'scaleX') {
-    val += DragonScope.master.wholeScaleAddX;
-    val *= DragonScope.master.wholeScaleMulX;}
-  if (key === 'scaleY') {
-    val += DragonScope.master.wholeScaleAddY;
-    val *= DragonScope.master.wholeScaleMulY;}}
-  return val;},
-        enumerable: true,
-        configurable: true
-      });}}
+for (const group in PROP_SCHEMA) {
+  for (const key in PROP_SCHEMA[group]) {
+    Object.defineProperty(resolved, key, {
+      get: () => {
+        // 1. マスターからの影響を計算する
+        if (group === 'whole') {
+          if (dragon.currentDragon && DragonScope.master) {
+            // 操作中の個体なら、Masterの値を自分のプロパティに注入して保持させる
+            dragon[key] = DragonScope.master[key];}
+          return dragon[key] ?? 0;}
+        let val = dragon[key];
+        if (dragon.currentDragon && DragonScope.master) {
+          if (key === 'scaleX') {
+            // マスターの補正値を計算し、即座に自身のプロパティに「焼き付け」て更新
+            dragon.wholeScaleAddX = DragonScope.master.wholeScaleAddX;
+            dragon.wholeScaleMulX = DragonScope.master.wholeScaleMulX;
+            val += dragon.wholeScaleAddX;
+            val *= dragon.wholeScaleMulX;}
+          if (key === 'scaleY') {
+            dragon.wholeScaleAddY = DragonScope.master.wholeScaleAddY;
+            dragon.wholeScaleMulY = DragonScope.master.wholeScaleMulY;
+            val += dragon.wholeScaleAddY;
+            val *= dragon.wholeScaleMulY;}
+        } else {
+          // スイッチ後の個体（currentDragonがfalse）は、
+          // 最後に注入（保存）されたプロパティ値を使用して計算を維持する
+          if (key === 'scaleX') {
+            val += (dragon.wholeScaleAddX ?? 0);
+            val *= (dragon.wholeScaleMulX ?? 1);}
+          if (key === 'scaleY') {
+            val += (dragon.wholeScaleAddY ?? 0);
+            val *= (dragon.wholeScaleMulY ?? 1);}}
+        return val;
+      },
+      enumerable: true,
+      configurable: true
+    });}}
 
 Object.defineProperty(resolved, 'currentScaleX', {
   get: () => {
