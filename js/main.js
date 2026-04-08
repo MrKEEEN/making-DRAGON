@@ -133,19 +133,37 @@ document.getElementById("add-ui-display").addEventListener("click", async () => 
     // 全体描画リストの更新
     updateUIStatus();});
 
-// PREVIOUS ボタン
+// PREVIOUS 切替処理_index最後に移る
 document.getElementById("prev-ui-switch").addEventListener("click", () => {
-    const newIndex = dragonManager.currentIndex - 1;
-    if (newIndex < 0){return;}
+  //switch処理は重いので、不要な時は実行しない
+  if(dragonManager.individuals.length === 1){return;}
+      const newIndex = dragonManager.currentIndex - 1;
+    if (newIndex < 0){
+      dragonManager.switch(dragonManager.individuals.length-1);
+      updateUIStatus();
+      return;}
         dragonManager.switch(newIndex);
         updateUIStatus();});
 
-// NEXT ボタン
-document.getElementById("next-ui-switch").addEventListener("click", () => {
+// NEXT 切替処理_index頭に戻る
+const switchToNext = () => {
+    //switch処理は重いので、不要な時は実行しない
+    if(dragonManager.individuals.length === 1){return;}
     const newIndex = dragonManager.currentIndex + 1;
-    if (newIndex >= dragonManager.individuals.length){return;}
+    if (newIndex >= dragonManager.individuals.length){
+      dragonManager.switch(0);
+      updateUIStatus();
+      return;}
         dragonManager.switch(newIndex);
-        updateUIStatus();});
+        updateUIStatus();};
+
+document.getElementById("next-ui-switch").addEventListener("click", switchToNext);
+
+window.addEventListener("keydown", (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
+  if (e.key === "s"){
+    switchToNext();}});
+
 
 //============================
 // individual 削除ボタン
