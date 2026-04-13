@@ -24,26 +24,9 @@ function showSelector() {
         appBtn.innerText = name;
         appBtn.style = "margin:10px;padding:15px 40px;font-size:18px;cursor:pointer;background:#333;color:white;border:1px solid #555;border-radius:4px;";
         appBtn.onclick = async () => {
-            // try {
-                // ファイルをフェッチしてJSONとして解析
-                // const response = await fetch(SAMPLES[name]);
-                // if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                // const data = await response.json();
-                // データをセット
-                // DragonScope.initialData = data;
-
                 DragonScope.initialData = SAMPLES[name];
-
-
-
                 overlay.remove();
-                // main.js を実行
-                await import('./main.js');
-            // } catch (error) {
-            //     console.error("Failed to load sample:", error);
-            //     alert("ファイルの読み込みに失敗しました。パスを確認してください。");
-            // }
-        };
+                await import('./main.js');};
         container.appendChild(appBtn);
 
     const adjustZoom = () => {

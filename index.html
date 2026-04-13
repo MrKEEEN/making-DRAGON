@@ -14,11 +14,13 @@
 <div id="resizer_v"></div>
 <div id="controls">
   <div id="inspector-top-container">
-    <div id="dragonInputWrapper">
-      <div id="dragonInputLabel">New Dragon Name</div>
-      <input type="text" id="dragonInput" placeholder="Enter new name">
-      <button id="updateAddBtn">【PART】update/add</button>
-    </div>
+    <div id="manual-display"></div>
+  </div>
+  <div id="splitResizer"></div>
+  <div id="dragonInputWrapper">
+    <div id="dragonInputLabel">New Dragon Part Name</div>
+    <input type="text" id="dragonInput" placeholder="Enter new name">
+    <button id="updateAddBtn">【PART】update/add</button>
     <button id="reset-btn">Reset</button>
     <button id="save-btn">Save</button>
     <a id="master-save-link" style="display:none;"></a>
@@ -26,9 +28,7 @@
     <button id="load-btn">Load</button>
     <input type="file" id="json-loader" accept=".json" style="display:none;">
     <button id="del-btn">DELETE PART</button>
-    <div id="manual-display"></div>
   </div>
-  <div id="splitResizer">Editing</div>
 
 <div id="ui-switch-wrapper">
   <button id="prev-ui-switch" class="ui-switch">←PREV</button>

@@ -1,9 +1,7 @@
 import { DragonScope } from './base/prop_schema.js';
 import { dragonManager } from './core/DragonManager.js';
-import { paneSetupUI, buildDPS, createInspectorGUI } from './ui/Inspector.js';
+import { paneSetupUI, buildDPS } from './ui/Inspector.js';
 import { ResetSaveLoad } from './ui/ResetSaveLoad.js';
-import { MotionStrategy } from './core/Strategies.js';
-
 
 //TODO 画面の画像を右クリックメニューで保存するとページが勝手にリロードされる。jsのコードではなくブラウザの機能だが、要修正。画像保存は必要。
 

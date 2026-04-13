@@ -67,11 +67,12 @@ fetch('manual.txt')
   const splitResizer = document.getElementById('splitResizer');
   splitResizer.onmousedown = (e) => {
     e.preventDefault();
+    const zoom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zoom-ratio')) ?? 1;
     const startY = e.clientY;
     const startHeight = topContainer.offsetHeight;
     const onMouseMove = (e) => {
       const deltaY = e.clientY - startY;
-      const newHeight = Math.max(0, startHeight + deltaY);
+      const newHeight = Math.max(0, startHeight + (deltaY) * zoom);
       topContainer.style.flex = `0 0 ${newHeight}px`;
       topContainer.style.display = newHeight === 0 ? 'none' : 'flex';};
     const onMouseUp = () => {
@@ -111,7 +112,7 @@ new Sortable(dragonListEl, {
 function updateAdd(dragonInput){
   let d = DragonScope.selectedDragon;
   //---replaceImage---
-  const imgInput = document.querySelector('.inspector-image-input');
+  const imgInput = document.getElementById(`inspector-image-input-${DragonScope.individualCurrentIndex}`);
   const newImgIndex = imgInput ? parseInt(imgInput.value, 10) : 0;
   d.imgIndex = newImgIndex;
   if (d) {
@@ -119,9 +120,8 @@ function updateAdd(dragonInput){
   d.parts.forEach(p => p.imgIndex = newImgIndex);
   DragonScope.storage[d.id].current["_imgIndex"] = newImgIndex;}
   // ---follow---
-  const inspector = document.getElementById('controls');
-  const idInput = inspector.querySelector('.inspector-follow-input[data-key="followId"]');
-  const idxInput = inspector.querySelector('.inspector-follow-input[data-key="followIndex"]');
+  const idInput = document.getElementById(`inspector-follow-input-followId-${DragonScope.individualCurrentIndex}`);
+  const idxInput = document.getElementById(`inspector-follow-input-followIndex-${DragonScope.individualCurrentIndex}`);
   const valId = idInput.value.trim();
   const valIdx = parseInt(idxInput.value, 10);
   const found = DragonScope.dragons.find(d => d.name === valId);
@@ -134,7 +134,7 @@ function updateAdd(dragonInput){
   let tentativeName = null;
   let counter = 1;
   //---reName---
-  const nameInput = document.querySelector('.inspector-name-input');
+  const nameInput = document.getElementById(`inspector-name-input-${DragonScope.individualCurrentIndex}`);
   let reName = nameInput ? nameInput.value.trim() : "";
   if (d && reName && d.name !== reName) {
     tentativeName = reName;
@@ -187,19 +187,11 @@ function updateAdd(dragonInput){
 //=================================
 //---コントロールペイン---
 //=================================
-// const createInspectorGUI = (uiContainer, individualDragon) => {
-//   const topContainer = document.getElementById('inspector-top-container');
-//   const contentArea = document.getElementById('inspector-content');
-//   if (!topContainer || !contentArea){return;}
-
-
 const createInspectorGUI = (containerIdIndex) => {
   const topContainer = document.getElementById('inspector-top-container');
   const contentAreaWrapper = document.getElementById('inspector-content');
-
   const contentArea = document.getElementById(`inspector-container-${containerIdIndex}`);
   if (!topContainer || !contentAreaWrapper || !contentArea){return;}
-
 // --- 下部パラメータエリアのみをクリア ---
   contentArea.innerHTML = '';
   if (!DragonScope.selectedDragon){return;}
@@ -269,7 +261,6 @@ const createInspectorGUI = (containerIdIndex) => {
       else if (config[0] === "image") {
         input.className = "inspector-image-input";
         input.id = `inspector-image-input-${DragonScope.individualCurrentIndex}`;
-
         label.innerText = "replaceImage (Select number)";
         input.type = "number";
         input.value = DragonScope.selectedDragon[key] ?? 0;
@@ -424,7 +415,6 @@ const createInspectorGUI = (containerIdIndex) => {
     followRow.className = "inspector-follow-row";
 const followInput = document.createElement('input');
 followInput.className = "inspector-follow-input";
-
 followInput.type = (config[0] === "referenceId") ? "text" : "number";
 followInput.id = `inspector-follow-input-${key}-${DragonScope.individualCurrentIndex}`
 followInput.dataset.key = key;
