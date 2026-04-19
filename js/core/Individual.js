@@ -34,4 +34,3 @@ export class Individual {
         this.individualDragon.forEach(p => {
             p.currentDragon = false;
             p.isBoosting = false;});}}
-

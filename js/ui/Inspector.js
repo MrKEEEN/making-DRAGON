@@ -309,6 +309,7 @@ const createInspectorGUI = (containerIdIndex) => {
                     return img;
                   }));
                   DragonScope.images.push(...newImages);
+                  DragonScope.updateWebGPUResources();
                   updateUI();
                   renderList();
                 } catch (err) {
@@ -332,6 +333,7 @@ const createInspectorGUI = (containerIdIndex) => {
                 if (draggedIdx === null || draggedIdx === idx){return;}
                 const targetImg = DragonScope.images.splice(draggedIdx, 1)[0];
                 DragonScope.images.splice(idx, 0, targetImg);
+                DragonScope.updateWebGPUResources();
                 renderList();};
               const preview = img.cloneNode();
               preview.style = "width:60px; height:60px; object-fit:contain; background:#000; pointer-events:none;";
@@ -343,6 +345,7 @@ const createInspectorGUI = (containerIdIndex) => {
                 e.stopPropagation();
                 if(idx > 0) {
                   [DragonScope.images[idx], DragonScope.images[idx-1]] = [DragonScope.images[idx-1], DragonScope.images[idx]];
+                  DragonScope.updateWebGPUResources();
                   renderList();}};
               const nextBtn = document.createElement("button");
               nextBtn.className = "move-img-btn";
@@ -351,6 +354,7 @@ const createInspectorGUI = (containerIdIndex) => {
                 e.stopPropagation();
                 if(idx < DragonScope.images.length - 1) {
                   [DragonScope.images[idx], DragonScope.images[idx+1]] = [DragonScope.images[idx+1], DragonScope.images[idx]];
+                  DragonScope.updateWebGPUResources();
                   renderList();}};
               // --- 削除ボタン制御（確認メッセージと範囲外インデックスの末尾吸着） ---
               const delBtn = document.createElement("button");
@@ -364,6 +368,7 @@ const createInspectorGUI = (containerIdIndex) => {
                 if (DragonScope.images[idx]?.src?.startsWith('blob:')) {
                   URL.revokeObjectURL(DragonScope.images[idx].src);}
                 DragonScope.images.splice(idx, 1);
+                DragonScope.updateWebGPUResources();
                 // 参照範囲外になったパートのみ、配列の新しい末尾を適用
                 DragonScope.dragons.forEach(d => {
                   if (d[key] >= DragonScope.images.length) {

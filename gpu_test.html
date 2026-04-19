@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head><title>WebGPU Test</title></head>
+<body>
+    <script type="module">
+        // あなたが配置したライブラリのパスに合わせてください
+        import * as PIXI from './lib/pixi.mjs';
+
+        async function test() {
+            const app = new PIXI.Application();
+            try {
+                await app.init({
+                    width: 100,
+                    height: 100,
+                    preference: 'webgpu'
+                });
+                
+                // 判定結果を画面とコンソールに出力
+                const result = `Renderer Type: ${app.renderer.type}`;
+                document.body.innerHTML = `<h1>${result}</h1><p>(3 = WebGPU, 2 = WebGL)</p>`;
+                console.log(result);
+
+            } catch (e) {
+                document.body.innerHTML = `<h1>Init Failed</h1><pre>${e}</pre>`;
+            }
+        }
+        test();
+    </script>
+</body>
+</html>

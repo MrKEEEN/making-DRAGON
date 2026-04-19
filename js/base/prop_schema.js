@@ -1,6 +1,6 @@
 export { DragonScope, PROP_SCHEMA, AllPropSchema_KEYS_excId, AllPropSchema_KEYS_except_id_followId_followIndex };
 
-const DragonScope = {master: null, images: [], dragons: [], dps: [], storage: {}, individualCurrentIndex: null};
+const DragonScope = {master:null, images:[], textures:[], dragons:[], dps:[], storage:{}, individualCurrentIndex:null};
 const F_1 = Number(0.1.toFixed(1));
 const F_2 = Number(0.01.toFixed(2));
 const F_3 = Number(0.001.toFixed(3));

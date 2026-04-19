@@ -5,11 +5,32 @@ import { ResetSaveLoad } from './ui/ResetSaveLoad.js';
 
 //TODO 画面の画像を右クリックメニューで保存するとページが勝手にリロードされる。jsのコードではなくブラウザの機能だが、要修正。画像保存は必要。
 
-const canvas = document.getElementById("canvas");
+
+//webGPUのライブラリ
+import * as PIXI from '../lib/pixi.mjs';
+// --- 描画モードとキャンバスの定義 ---
+let drawMode = 1;
+const canvas2d = document.getElementById("canvas-2d");
+const canvasWebGPU = document.getElementById("canvas-webgpu");
+const ctx = canvas2d.getContext("2d");
+
+export const app = new PIXI.Application();
+
+async function initPixi() {
+    await app.init({
+        canvas: canvasWebGPU, // WebGPU専用のキャンバスを指定
+        width: window.innerWidth,
+        height: window.innerHeight,
+        backgroundAlpha: 0,
+        preference: 'webgpu',
+        manageCanvasResize: false
+    });}
+initPixi();
+dragonManager.initApp(app);
 
 let rgb = { r: 0, g: 0, b: 0 };
 const changeBackgroundColor = () => {
-      canvas.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);};
+      canvasWebGPU.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);};
 window.addEventListener("keydown", (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
     const key = e.key.toLowerCase();
@@ -24,21 +45,26 @@ window.addEventListener("keydown", (e) => {
     const RGBInfo = document.getElementById('RGB-info');
     RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;});
 
-const ctx = canvas.getContext("2d");
 const resizerV = document.getElementById("resizer_v");
 const maxPaneWidth = 500;
 
+
   function resizeCanvas() {
   const dpr = window.devicePixelRatio ?? 1;
+    [canvas2d, canvasWebGPU].forEach(c => {
   // 物理ピクセルサイズを設定（解像度）
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
+  c.width = window.innerWidth * dpr;
+  c.height = window.innerHeight * dpr;
   // CSS上の見た目（論理ピクセル）を固定
-  canvas.style.width = window.innerWidth + "px";
-  canvas.style.height = window.innerHeight + "px";
+  c.style.width = window.innerWidth + "px";
+  c.style.height = window.innerHeight + "px";
+  });
   // 描画コンテキストのスケーリング（既存の描画ロジックを維持するため）
-  const ctx = canvas.getContext('2d');
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);}
+  // const ctx = canvas2d.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (app.renderer) {
+      app.renderer.resolution = dpr;
+      app.renderer.resize(window.innerWidth, window.innerHeight);}}
 
 window.addEventListener("resize", () => {
   if(!clearMode){return;}
@@ -94,25 +120,27 @@ if (e.key === "c") {
 //描画中にキャンバスサイズを変えるとリサイズイベントも発火してしまうため、clearModeがonのときのみリサイズしてキャンバスをクリアするようにする。
     if (clearMode) {
         clearMode = 0;
+        drawMode = 0;
     } else {
         clearMode = 1;
+        drawMode = 1;
         resizeCanvas();}}
     noticeMode();});
 
 let isWriting = false;
-canvas.addEventListener("mousedown", (e) => {
+canvas2d.addEventListener("mousedown", (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
   if (writeMode) isWriting = true;});
 window.addEventListener("mouseup", () => {
   isWriting = false;});
 window.addEventListener("mouseleave", () => {
   isWriting = false;});
-const mouse = { x: canvas.width/2, y: canvas.height/2 };
-canvas.addEventListener("mousemove", e => {
+const mouse = { x: canvas2d.width/2, y: canvas2d.height/2 };
+canvas2d.addEventListener("mousemove", e => {
     if(!mouseMode){return;}
     mouse.x = e.clientX;
     mouse.y = e.clientY;});
-canvas.addEventListener("dblclick", () => {
+canvas2d.addEventListener("dblclick", () => {
     DragonScope.master.isBoosting = true;});
 
 
@@ -193,17 +221,18 @@ function drawAll() {
     ctx.save();
     ctx.translate(part.x, part.y);
     ctx.rotate(part.angle);
-    const sX = part.scaleX ?? 30;
-    const sY = part.scaleY ?? 30;
+    const sX = part.scaleX;
+    const sY = part.scaleY;
     ctx.drawImage(img, -sX/2, -sY/2, sX, sY);
     ctx.restore();};
   if(reverseMode === 0){
   for (let i = displayList.length - 1; i >= 0; i--) {
     modeDrawing(displayList[i]);}
   } else if (reverseMode === 1){
-    for (let i = 0; i < displayList.length-1; i++) {
+    for (let i = 0; i < displayList.length; i++) {
     modeDrawing(displayList[i]);}
   }}
+
 
 
   //配列の途中から両端に向かって描画していく計算式（仮テスト用）
@@ -233,6 +262,13 @@ export async function loadImage(src){
     img.onerror=reject;
   });}
 
+const updateWebGPUResources = () => {
+    DragonScope.textures = DragonScope.images.map(img => {
+        const source = new PIXI.CanvasSource({ resource: img });
+        return new PIXI.Texture({ source });
+    });};
+
+DragonScope.updateWebGPUResources = updateWebGPUResources;
 
   //==========
   //start関数
@@ -250,10 +286,13 @@ export async function loadImage(src){
       running = false;}
   DragonScope.images = images;}
 
+  DragonScope.updateWebGPUResources();
+
+
 const sampleUrls = DragonScope.initialData;
 if(sampleUrls.length > 1){
   rgb.r = 255;
-  canvas.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+  canvasWebGPU.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
   const RGBInfo = document.getElementById('RGB-info');
   RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;}
 
@@ -269,8 +308,9 @@ for (let i = 0; i < sampleUrls.length; i++) {
             const jsonData = await response.json();
             // 3. 個体（Master）の器を生成
             const newDragon = new Dragon({
-                meta: { name: "Master", _imgIndex: 5, followId: null, followIndex: null },
-                basic: { numParts: 1 }});
+                meta: { name: "Master", _imgIndex: 0, followId: null, followIndex: null },
+                basic: { numParts: 1 }
+              });
             // 4. switch関数で重要な処理を行っているが、初期時に複数体を同タイミングで生成するため、順番を分けて2回呼出。
             dragonManager.add([newDragon]);
             dragonManager.switch(i);
@@ -284,22 +324,75 @@ for (let i = 0; i < sampleUrls.length; i++) {
     dragonManager.switch(0);
     updateUIStatus();
 
+    //dpr解像度を起動時にも適応させるため呼び出し
+    resizeCanvas();
+
   loop();
 }
 
+  // function loop() {
+  // function frame() {
+  //   requestAnimationFrame(frame);
+  //   if(clearMode){ ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); }
+  //   for (const individual of dragonManager.individuals) {
+  //   for (const d of individual.individualDragon) {
+  //       d.update(mouse, rotationMode);}}
+  //   if (DragonScope.needsRebuildDPS) {
+  //     buildDPS();
+  //     dragonManager.buildAllDps();
+  //     DragonScope.needsRebuildDPS = false;}
+  //     drawAll();}
+  //   frame(0);}
+
+
+
+
+
+
+    // --- main.js ---
+
   function loop() {
-  function frame() {
-    requestAnimationFrame(frame);
-    if(clearMode){ ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); }
-    for (const individual of dragonManager.individuals) {
-    for (const d of individual.individualDragon) {
-        d.update(mouse, rotationMode);}}
-    if (DragonScope.needsRebuildDPS) {
-      buildDPS();
-      dragonManager.buildAllDps();
-      DragonScope.needsRebuildDPS = false;}
-      drawAll();}
-    frame(0);}
+    function frame() {
+      requestAnimationFrame(frame);
+      // 1. 2Dキャンバスのクリア処理
+      if(clearMode){ ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); }
+
+      // 2. 座標計算（全モード共通）
+      for (const individual of dragonManager.individuals) {
+        for (const d of individual.individualDragon) {
+          d.update(mouse, rotationMode);
+        }
+      }
+
+      // 3. 描画リスト(allDps)の再構築
+      if (DragonScope.needsRebuildDPS) {
+        buildDPS();
+        dragonManager.buildAllDps();
+        DragonScope.needsRebuildDPS = false;
+      }
+
+      // else {
+      //   // 描画モードに関わらず、毎フレーム最新の計算結果を allDps に反映させる必要がある場合
+      //   dragonManager.buildAllDps();
+      // }
+
+      // 4. モードによる描画の切り替え
+      if (drawMode === 1) {
+          if(writeMode && !isWriting){return;}
+        // WebGPU モード
+        if (dragonManager.container) {dragonManager.container.visible = true;}
+        dragonManager.syncWebGPUSprites(reverseMode);
+        // dragonManager.syncWebGPUSprites();
+      } else {
+        // 2D モード
+        if (dragonManager.container) {dragonManager.container.visible = false;}
+        drawAll();
+      }
+    }
+    frame();
+  }
+
+
 
   start();
 

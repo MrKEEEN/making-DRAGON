@@ -1,5 +1,10 @@
 html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000000; }
-#canvas    { position:absolute; left:0; top:0; --bg-rgb:0,0,0; background:rgb(var(--bg-rgb));}
+/* #canvas    { position:absolute; left:0; top:0; --bg-rgb:0,0,0; background:rgb(var(--bg-rgb));} */
+
+#canvas-container { position:relative; width:100vw; height:100vh; }
+#canvas-2d { z-index:2; position:absolute; top:0; left:0; width:100%; height:100%; background: transparent; }
+#canvas-webgpu { z-index:1; position:absolute; top:0; left:0; width:100%; height:100%; --bg-rgb:0,0,0; background:rgb(var(--bg-rgb)); }
+
 #statusInfo {white-space: nowrap; transform:scale(var(--zoom-ratio)); transform-origin:left top; position:fixed;
             top:calc(10px / var(--zoom-ratio)); left: calc(10px / var(--zoom-ratio));
             flex-direction:column; align-items:flex-end; pointer-events:none; z-index:1000;}

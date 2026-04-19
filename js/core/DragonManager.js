@@ -1,14 +1,21 @@
 import { DragonScope } from '../base/prop_schema.js';
 import { buildDPS, rebuildDragonList, updateListHighlight, createInspectorGUI } from '../ui/Inspector.js';
 import { Individual } from './Individual.js';
+import * as PIXI from '../../lib/pixi.mjs';
 
-export class  DragonManager {
+
+export class DragonManager {
     constructor() {
         // Individualインスタンスを格納する配列
         this.individuals = [];
         // 描画用の配列。最小単位のパーツが入る。（Dragonインスタンス[配列]をパーツ毎に分解したもの）
         this.allDps = [];
-        this.currentIndex = 0;}
+        this.currentIndex = 0;
+        //webGPU用
+        this.spritePool = [];
+        this.container = new PIXI.Container();
+        this.app = null;
+    }
 
 //個体追加
     add(dragons) {
@@ -42,6 +49,45 @@ export class  DragonManager {
                 // 操作中じゃない個体は、deactivate時に保存したdpsを使う
                 this.allDps.push(...individual.individualDps);});}
 
+
+        // main.jsからappを注入するメソッド
+        initApp(app) {
+        this.app = app;
+        this.app.stage.addChild(this.container);}
+
+syncWebGPUSprites(reverseMode) {
+        const list = this.allDps;
+        if (!this.app) return;
+        while (this.spritePool.length < list.length) {
+            const s = new PIXI.Sprite();
+            s.anchor.set(0.5);
+            this.spritePool.push(s);
+            this.container.addChild(s);}
+        this.spritePool.forEach((s, i) => {
+            if (i < list.length) {
+
+                // const { part } = list[i];
+
+                // const dataIndex = (list.length - 1) - i;
+
+                // reverseModeがtrueなら末尾から、falseなら先頭からインデックスを計算
+                const dataIndex = !reverseMode ? (list.length - 1) - i : i;
+                const { part } = list[dataIndex];
+
+                s.texture = DragonScope.textures[part.imgIndex];
+                s.x = part.x;
+                s.y = part.y;
+                s.rotation = part.angle;
+                const tw = s.texture?.width || 1;
+                const th = s.texture?.height || 1;
+                s.scale.set(part.scaleX/tw, part.scaleY/th);
+                s.visible = true;
+            } else {
+                s.visible = false;
+            }});}
+
+
+
     current() {
         return this.individuals[this.currentIndex];}
 
@@ -63,11 +109,3 @@ export class  DragonManager {
         createInspectorGUI(index);}}
 
 export const dragonManager = new DragonManager();
-
-
-
-
-
-
-
-

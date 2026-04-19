@@ -47,8 +47,12 @@ constructor(options = {}){
 
   initParts() {
     this.parts = [];
-    const baseWidth = typeof canvas !== 'undefined' ? canvas.width / 2 : 0;
-    const baseHeight = typeof canvas !== 'undefined' ? canvas.height / 2 : 0;
+    // const baseWidth = typeof canvas !== 'undefined' ? canvas.width / 2 : 0;
+    // const baseHeight = typeof canvas !== 'undefined' ? canvas.height / 2 : 0;
+
+    const baseWidth = window.innerWidth / 2;
+    const baseHeight = window.innerHeight / 2;
+
     for (let i = 0; i < this.numParts; i++) {
       this.parts.push({
         x: baseWidth,
