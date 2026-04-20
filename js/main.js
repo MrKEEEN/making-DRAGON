@@ -146,7 +146,6 @@ window.addEventListener("mouseleave", () => {
 //     DragonScope.master.isBoosting = true;});
 
 
-
 // --- 修正：ポインター（マウス・タッチ共通）追従ロジック ---
 const mouse = { x: window.innerWidth/2, y: window.innerHeight/2 };
 let isPointerActive = false; // スマホ等で「触れている間だけ」を判定するフラグ
