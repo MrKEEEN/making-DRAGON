@@ -135,13 +135,59 @@ window.addEventListener("mouseup", () => {
   isWriting = false;});
 window.addEventListener("mouseleave", () => {
   isWriting = false;});
-const mouse = { x: canvas2d.width/2, y: canvas2d.height/2 };
-canvas2d.addEventListener("mousemove", e => {
-    if(!mouseMode){return;}
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;});
-canvas2d.addEventListener("dblclick", () => {
-    DragonScope.master.isBoosting = true;});
+
+
+// const mouse = { x: canvas2d.width/2, y: canvas2d.height/2 };
+// canvas2d.addEventListener("mousemove", e => {
+//     if(!mouseMode){return;}
+//     mouse.x = e.clientX;
+//     mouse.y = e.clientY;});
+// canvas2d.addEventListener("dblclick", () => {
+//     DragonScope.master.isBoosting = true;});
+
+
+
+// --- 修正：ポインター（マウス・タッチ共通）追従ロジック ---
+const mouse = { x: window.innerWidth/2, y: window.innerHeight/2 };
+let isPointerActive = false; // スマホ等で「触れている間だけ」を判定するフラグ
+// 座標更新用の共通関数
+const updateMouseCoordinates = (e) => {
+    if (!mouseMode) return;
+    const rect = canvas2d.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+};
+// 指が触れた / マウスが押された
+canvas2d.addEventListener("pointerdown", (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey) return;
+    isPointerActive = true;
+    updateMouseCoordinates(e);
+    // 指がキャンバス外に出ても追跡を継続（スマホ操作の安定化）
+    canvas2d.setPointerCapture(e.pointerId);
+});
+// 移動中（PCならホバー、スマホならなぞり操作）
+window.addEventListener("pointermove", (e) => {
+    // PC（mouse）の場合は常に追従。スマホ（touch）の場合は触れている間だけ追従。
+    if (e.pointerType === 'mouse' || isPointerActive) {
+        updateMouseCoordinates(e);
+    }
+});
+// 指を離した / マウスボタンを離した
+window.addEventListener("pointerup", (e) => {
+    isPointerActive = false;
+    if (canvas2d.hasPointerCapture(e.pointerId)) {
+        canvas2d.releasePointerCapture(e.pointerId);
+    }
+});
+// ダブルクリック（およびダブルタップ）
+// Pointer Eventsに統合されているため、どちらのデバイスでも共通で発火します
+canvas2d.addEventListener("dblclick", (e) => {
+    if (DragonScope.master) {
+        DragonScope.master.isBoosting = true;
+    }
+});
+
+
 
 
 //============================
