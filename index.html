@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Dragon倶楽部</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -9,8 +10,9 @@
 <div id="canvas-container">
     <canvas id="canvas-webgpu"></canvas>
     <canvas id="canvas-2d"></canvas>
+    <button id="btn-fullscreen" class="screen-button">SCREEN</button>
+    <button id="btn-hide-ui" class="screen-button">UI PANE</button>
 </div>
-<!-- <canvas id="canvas"></canvas> -->
 <div id="statusInfo">
   <div id="mode-info">MODE - Rotation(1~4):0 reverse(z):0 Mouse(m):1 Clear(c):1 Write(w):0</div>
   <div id="RGB-info">R:0 G:0 B:0</div>
@@ -33,7 +35,6 @@
     <input type="file" id="json-loader" accept=".json" style="display:none;">
     <button id="del-btn">DELETE PART</button>
   </div>
-
 <div id="ui-switch-wrapper">
   <button id="prev-ui-switch" class="ui-switch">←PREV</button>
   <div id="current-ui-display">1 / 1</div>
@@ -41,8 +42,14 @@
   <button id="add-ui-display" class="ui-switch">ADD</button>
   <button id="del-ui-display" class="ui-switch">DEL</button>
 </div>
-
   <div id="inspector-content"></div>
+
+  <div id="mobile-key-pad">
+        <button class="mobile-btn">M</button>
+        <button class="mobile-btn">Z</button>
+        <button class="mobile-btn">S</button>
+  </div>
+
 </div>
 <script type="module" src="js/app.js"></script>
 </body>

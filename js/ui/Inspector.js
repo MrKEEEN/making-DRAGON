@@ -64,25 +64,66 @@ fetch('manual.txt')
         });
 
 // --- 上下リサイズ処理 ---
+  // const splitResizer = document.getElementById('splitResizer');
+  // splitResizer.onmousedown = (e) => {
+  //   e.preventDefault();
+  //   const zoom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zoom-ratio')) ?? 1;
+  //   const startY = e.clientY;
+  //   const startHeight = topContainer.offsetHeight;
+  //   const onMouseMove = (e) => {
+  //     const deltaY = e.clientY - startY;
+  //     const newHeight = Math.max(0, startHeight + (deltaY) * zoom);
+  //     topContainer.style.flex = `0 0 ${newHeight}px`;
+  //     topContainer.style.display = newHeight === 0 ? 'none' : 'flex';};
+  //   const onMouseUp = () => {
+  //     document.removeEventListener('mousemove', onMouseMove);
+  //     document.removeEventListener('mouseup', onMouseUp);};
+  //     document.addEventListener('mousemove', onMouseMove);
+  //     document.addEventListener('mouseup', onMouseUp);};
+
+
+
   const splitResizer = document.getElementById('splitResizer');
-  splitResizer.onmousedown = (e) => {
+
+// pointerdown でマウスとタッチの両方に対応
+splitResizer.onpointerdown = (e) => {
     e.preventDefault();
+    // 指をリサイザーにガッチリ固定（これがないと指がズレた瞬間に止まる）
+    splitResizer.setPointerCapture(e.pointerId);
+
     const zoom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zoom-ratio')) ?? 1;
     const startY = e.clientY;
     const startHeight = topContainer.offsetHeight;
-    const onMouseMove = (e) => {
-      const deltaY = e.clientY - startY;
-      const newHeight = Math.max(0, startHeight + (deltaY) * zoom);
-      topContainer.style.flex = `0 0 ${newHeight}px`;
-      topContainer.style.display = newHeight === 0 ? 'none' : 'flex';};
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);};
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);};
-// --- sortable(ライブラリ)初期化 ---
+
+    const onPointerMove = (e) => {
+        const deltaY = e.clientY - startY;
+        const newHeight = Math.max(0, startHeight + (deltaY) * zoom);
+        topContainer.style.flex = `0 0 ${newHeight}px`;
+        topContainer.style.display = newHeight === 0 ? 'none' : 'flex';
+    };
+
+    const onPointerUp = (e) => {
+        // 固定を解除
+        splitResizer.releasePointerCapture(e.pointerId);
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+    };
+
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+};
+
+
+
+
+
+
+  // --- sortable(ライブラリ)初期化 ---
 new Sortable(dragonListEl, {
   animation: 150,
+  delay: 300,             // 300ミリ秒押し続けないとドラッグを開始しない
+  delayOnTouchOnly: true, // スマホ（タッチ操作）の時だけこの遅延を有効にする
+  touchStartThreshold: 5,
   onEnd: (evt) => {
     const movedItem = DragonScope.dragons.splice(evt.oldIndex, 1)[0];
     DragonScope.dragons.splice(evt.newIndex, 0, movedItem);

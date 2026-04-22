@@ -1,10 +1,10 @@
-html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000000; }
-/* #canvas    { position:absolute; left:0; top:0; --bg-rgb:0,0,0; background:rgb(var(--bg-rgb));} */
-
+html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000000;
+            -webkit-user-select:none; user-select:none; }
+input, textarea {-webkit-user-select:text; user-select:text;}
 #canvas-container { position:relative; width:100vw; height:100vh; }
 #canvas-2d { z-index:2; position:absolute; top:0; left:0; width:100%; height:100%; background: transparent; }
 #canvas-webgpu { z-index:1; position:absolute; top:0; left:0; width:100%; height:100%; --bg-rgb:0,0,0; background:rgb(var(--bg-rgb)); }
-
+:fullscreen canvas { width:100vw !important; height:100vh !important;}
 #statusInfo {white-space: nowrap; transform:scale(var(--zoom-ratio)); transform-origin:left top; position:fixed;
             top:calc(10px / var(--zoom-ratio)); left: calc(10px / var(--zoom-ratio));
             flex-direction:column; align-items:flex-end; pointer-events:none; z-index:1000;}
@@ -14,26 +14,38 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; back
                 font-size:50px; white-space:nowrap; pointer-events:none; z-index:20000; animation:fadeOut 5s forwards;}
 :root { --pane-width: 200; }
 #resizer_v { transform:scale(var(--zoom-ratio)); transform-origin:right top; position:fixed; top:0px; width:7px;
-    right:calc(var(--pane-width) * 1px / var(--zoom-ratio)); height:calc(100% * var(--zoom-ratio)); cursor:ew-resize; background:#231f24;
-    z-index:9999; border-left:1px solid #444;}
+    right:calc(var(--pane-width) * 1px / var(--zoom-ratio)); height:calc(100% * var(--zoom-ratio)); cursor:ew-resize; background:hsl(300, 3%, 17%);
+    z-index:9999; border-left:1px solid #444; touch-action: none; }
+.mode-mobile #resizer_v {width:20px; background:hsl(300, 3%, 17%);}
+#resizer_v.resizerV-hidden {display: none !important;}
 #controls { transform:scale(var(--zoom-ratio)); transform-origin:right top; position:fixed; top:0px; right:0px;
     scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
     height:calc(100% * var(--zoom-ratio)); width:calc(var(--pane-width) * 1px); max-width:500px; gap:0px; color:#b3a5ba; font-size:13px;
     overflow-y:auto; overflow-x:hidden; background:rgb(17, 29, 3); display:flex; flex-direction:column; margin:0px;
-    padding:0px; box-sizing:border-box; z-index:1000; }
+    padding:0px; box-sizing:border-box; z-index:1000;
+    overflow-y:auto; -webkit-overflow-scrolling:touch; touch-action: pan-y !important; justify-content:space-between; }
+#controls.pane-hidden {display: none !important;}
 #inspector-top-container {flex: 0 0 250px; overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column; background:#111; min-height:0;}
 .dragon-list-item {padding:4px; margin:2px; background:#222; cursor:grab; border:1px solid #444;}
 #manual-display {margin-top:10px; padding:10px; background:#222; color:#ccc; font-size:0.8rem; line-height:1.4;
-                white-space:pre-wrap; border-radius:4px;}
-#splitResizer  {font-size:15px; font-weight:bold; color:#908; padding-left:5px; background:#990; height:25px; cursor:ns-resize;
-                border-top:0px solid #722; border-bottom:0px solid #722; flex-shrink:0; margin-top:auto; position:sticky; bottom:0px; z-index:10;}
+                white-space:pre-wrap; border-radius:4px; -webkit-user-select:text; user-select:text;}
+#splitResizer {font-size:15px; font-weight:bold; color:#908; padding-left:0px; display:flex; justify-content:center; align-items:center; background:rgb(147, 147, 4);
+            height:30px; cursor:ns-resize; flex-shrink:0; margin-top:auto; position:sticky; bottom:0px; z-index:10;touch-action:none; box-sizing:border-box;
+            background-image:
+            linear-gradient(to right, rgb(230, 200, 150) 20%, transparent 40%, transparent 60%, rgb(230, 200, 150) 80%),
+            radial-gradient(circle, rgb(230, 200, 150)  2px, transparent 2.5px),
+            linear-gradient(to right, rgb(230, 200, 150) 20%, transparent 40%, transparent 60%, rgb(230, 200, 150) 80%),
+            radial-gradient(circle, rgb(230, 200, 150) 2px, transparent 2.5px);
+            background-repeat: no-repeat, repeat-x, no-repeat, repeat-x;
+            background-size: 100% 3px, 12px 3px, 100% 3px, 12px 3px;
+            background-position: top center, top center, bottom center, bottom center;}
 #dragonInputWrapper {margin-bottom: 3px;}
 #dragonInputLabel {margin-bottom: 0px;}
 #dragonInput {width: 95%;}
-#updateAddBtn {width: 80%; margin-top: 3px;}
-#reset-btn {width:100%; margin-top:1px; padding:1px; background:hsl(56, 83%, 68%); color:#000000; border:3px solid hsl(75, 91%, 8%); cursor:pointer; font-size:12px;}
-#save-btn {width:100%; margin-top:1px; padding:1px; background:hsl(98, 75%, 66%); color:#000000; border:3px solid hsl(75, 91%, 8%); cursor:pointer; font-size:12px;}
-#load-btn {width:100%; margin-top:1px; padding:1px; background:hsl(177, 65%, 76%); color:#000000; border:3px solid hsl(75, 91%, 8%); cursor:pointer; font-size:12px;}
+#updateAddBtn {width: 80%; margin-top: 3px; background:hsl(162, 69%, 71%);}
+#reset-btn {width:100%; margin-top:1px; padding:1px; background:hsl(50, 80%, 70%); color:#000000; border:3px solid hsl(75, 91%, 8%); cursor:pointer; font-size:12px;}
+#save-btn {width:100%; margin-top:1px; padding:1px; background:hsl(55, 80%, 70%); color:#000000; border:3px solid hsl(75, 91%, 8%); cursor:pointer; font-size:12px;}
+#load-btn {width:100%; margin-top:1px; padding:1px; background:hsl(60, 80%, 70%); color:#000000; border:3px solid hsl(75, 91%, 8%); cursor:pointer; font-size:12px;}
 #del-btn {width:100%; margin-top:3px; padding:1px; background:hsl(0, 100%, 35%); color:#fff; border:none; cursor:pointer; font-size:10px; font-weight:bold;}
 #ui-switch-wrapper {display:flex; align-items:center; gap:5px;}
 .ui-switch {padding:3px 2px; background:#444; color:#eee; border:none; cursor:pointer; font-size:10px;}
@@ -65,34 +77,16 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; back
 .inspector-slider-row {display:flex; align-items:center; gap:0px;}
 .inspector-slider {flex:1; height:5px; margin-right: 10px;}
 .inspector-slider-value-disp {font-size:10px; color:#fff; min-width:20px; text-align:right;}
+img {-webkit-user-drag:none;}
+canvas {touch-action:none;}
+.mode-mobile .screen-button {position:absolute; width:60px; height:30px; bottom:100px; z-index:10001; padding:3px 3px; background:rgba(0, 0, 0, 0.6);
+                            color:hwb(0 100% 0% / 0.654); border:3px solid #403838; border-radius:4px; font-size:12px; cursor:pointer; opacity: 0;
+                            visibility:hidden; transition:opacity 1s, visibility 1s;}
+.mode-mobile .screen-button.show {opacity:0.5; visibility:visible;}
+.mode-mobile #btn-fullscreen {left:30px;}
+.mode-mobile #btn-hide-ui {left:100px;}
 
 
-
-/* --- スマホ・タッチ操作の最適化 --- */
-canvas {
-    /* ブラウザのスクロールやズームを完全に封じ、指の動きをJSへ直結させる */
-    touch-action: none;
-    -webkit-user-select: none;
-    user-select: none;
-}
-
-/* --- 仮想UI（スマホ用ボタン）の住み分け --- */
-#mobile-ui {
-    display: none; /* デフォルト（PC）では隠す */
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 10000;
-    gap: 10px;
-}
-
-/* 画面幅が狭い（スマホ等）場合のみ表示 */
-@media (max-width: 768px) {
-    #mobile-ui {
-        display: flex;
-        flex-direction: column;
-    }
-}
 
 .mobile-btn {
     width: 60px;
@@ -101,10 +95,25 @@ canvas {
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.4);
-    color: white;
+    color: #1b151515;
     font-size: 12px;
     font-weight: bold;
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     /* タップ時の青い枠を消す */
     -webkit-tap-highlight-color: transparent;
 }
+
+#mobile-key-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-top: 1px solid #444;
+}
+
+@media (min-width: 769px) {
+    #mobile-key-pad { display: none; } /* PCでは隠す */
+}
+
+
