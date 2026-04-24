@@ -14,7 +14,6 @@ const canvasContainer = document.getElementById("canvas-container");
 const canvas2d = document.getElementById("canvas-2d");
 const canvasWebGPU = document.getElementById("canvas-webgpu");
 const ctx = canvas2d.getContext("2d");
-
 const app = new PIXI.Application();
 
 async function initPixi() {
@@ -46,29 +45,29 @@ window.addEventListener("keydown", (e) => {
     const RGBInfo = document.getElementById('RGB-info');
     RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;});
 
-
-let globalScale = 1.0;
 function resizeCanvas() {
   if(window.APP_MODE === "PC_MODE"){
     const dpr = window.devicePixelRatio;
     [canvas2d, canvasWebGPU].forEach(c => {
         c.width = window.innerWidth * dpr;
-        c.height = window.innerHeight * dpr;
-      });
+        c.height = window.innerHeight * dpr;});
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (app.renderer) {
-        app.renderer.resolution = dpr;
+        app.renderer.resolution = Math.max(1, Math.min(5, dpr ** 2));
         app.renderer.resize(window.innerWidth, window.innerHeight); }
     } else {
     const dpr = DragonScope.mobileRatio;
     [canvas2d, canvasWebGPU].forEach(c => {
-        c.width = window.innerWidth / dpr;
-        c.height = window.innerHeight / dpr;
-      });
+        c.width = window.innerWidth * dpr;
+        c.height = window.innerHeight * dpr;});
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (app.renderer) {
-        app.renderer.resolution = dpr;
-        app.renderer.resize(window.innerWidth/dpr, window.innerHeight/dpr);}}}
+      app.renderer.resolution = Math.max(1, Math.min(5, dpr ** 2));
+// function updateDebug() {
+//   document.getElementById('debug').innerText = `dpr:${DragonScope.mobileRatio.toFixed(3)}_resolution${app.renderer.resolution.toFixed(3)}`;
+//     requestAnimationFrame(updateDebug);}
+// updateDebug();
+      app.renderer.resize(window.innerWidth /dpr, window.innerHeight /dpr);}}}
 
 window.addEventListener("resize", () => {
   if(!clearMode){return;}
@@ -76,10 +75,12 @@ window.addEventListener("resize", () => {
 resizeCanvas();
 
 const zoomUp = () => {
+    if(DragonScope.mobileRatio > 10) return;
     const zu = document.getElementById('btn-zoomup');
     DragonScope.mobileRatio *= 1.1;
     resizeCanvas();};
 const zoomDown = () => {
+    if(DragonScope.mobileRatio < 0.01) return;
     const zu = document.getElementById('btn-zoomup');
     DragonScope.mobileRatio *= 0.9;
     resizeCanvas();};
@@ -160,7 +161,7 @@ const updateMouseCoordinates = (e) => {
     mouse.x = e.clientX / DragonScope.mobileRatio;
     mouse.y = e.clientY / DragonScope.mobileRatio;
 // function updateDebug() {
-//   document.getElementById('debug').innerText = `Ratio:${DragonScope.mobileRatio.toFixed(1)}_x:${e.clientX.toFixed(1)}_y:${e.clientY.toFixed(3)}_mX${mouse.x.toFixed(1)}_mY${mouse.y.toFixed(1)}`;
+//   document.getElementById('debug').innerText = `Ratio:${DragonScope.mobileRatio.toFixed(3)}_x:${e.clientX.toFixed(1)}_y:${e.clientY.toFixed(3)}_mX${mouse.x.toFixed(1)}_mY${mouse.y.toFixed(1)}`;
 //   requestAnimationFrame(updateDebug);}
 // updateDebug();
 }};
