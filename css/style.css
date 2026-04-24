@@ -1,5 +1,4 @@
-html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000000;
-            -webkit-user-select:none; user-select:none; }
+html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000000; -webkit-user-select:none; user-select:none; }
 input, textarea {-webkit-user-select:text; user-select:text;}
 #canvas-container { position:relative; width:100vw; height:100vh; }
 #canvas-2d { z-index:2; position:absolute; top:0; left:0; width:100%; height:100%; background: transparent; }
@@ -85,6 +84,13 @@ canvas {touch-action:none;}
 .mode-mobile .screen-button.show {opacity:0.5; visibility:visible;}
 .mode-mobile #btn-fullscreen {left:30px;}
 .mode-mobile #btn-hide-ui {left:100px;}
+
+.mode-mobile .zoom-button {position:absolute; width:60px; height:30px; bottom:200px; z-index:10001; padding:3px 3px; background:rgba(0, 0, 0, 0.6);
+                            color:hwb(0 100% 0% / 0.654); border:3px solid #403838; border-radius:4px; font-size:12px; cursor:pointer; opacity: 0;
+                            visibility:hidden; transition:opacity 1s, visibility 1s;}
+.mode-mobile .zoom-button.show {opacity:0.5; visibility:visible;}
+.mode-mobile #btn-zoomup {left:30px;}
+.mode-mobile #btn-zoomdown {left:100px;}
 
 
 

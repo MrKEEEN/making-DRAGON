@@ -65,11 +65,6 @@ syncWebGPUSprites(reverseMode) {
             this.container.addChild(s);}
         this.spritePool.forEach((s, i) => {
             if (i < list.length) {
-
-                // const { part } = list[i];
-
-                // const dataIndex = (list.length - 1) - i;
-
                 // reverseModeがtrueなら末尾から、falseなら先頭からインデックスを計算
                 const dataIndex = !reverseMode ? (list.length - 1) - i : i;
                 const { part } = list[dataIndex];

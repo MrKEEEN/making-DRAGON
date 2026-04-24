@@ -60,62 +60,30 @@ fetch('manual.txt')
         .then(res => res.text())
         .then(text => {
             // 読み込み完了後にここが実行される（コンマ数秒後）
-            document.getElementById('manual-display').innerText = text;
-        });
+            document.getElementById('manual-display').innerText = text;});
 
 // --- 上下リサイズ処理 ---
-  // const splitResizer = document.getElementById('splitResizer');
-  // splitResizer.onmousedown = (e) => {
-  //   e.preventDefault();
-  //   const zoom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zoom-ratio')) ?? 1;
-  //   const startY = e.clientY;
-  //   const startHeight = topContainer.offsetHeight;
-  //   const onMouseMove = (e) => {
-  //     const deltaY = e.clientY - startY;
-  //     const newHeight = Math.max(0, startHeight + (deltaY) * zoom);
-  //     topContainer.style.flex = `0 0 ${newHeight}px`;
-  //     topContainer.style.display = newHeight === 0 ? 'none' : 'flex';};
-  //   const onMouseUp = () => {
-  //     document.removeEventListener('mousemove', onMouseMove);
-  //     document.removeEventListener('mouseup', onMouseUp);};
-  //     document.addEventListener('mousemove', onMouseMove);
-  //     document.addEventListener('mouseup', onMouseUp);};
-
-
-
-  const splitResizer = document.getElementById('splitResizer');
-
+const splitResizer = document.getElementById('splitResizer');
 // pointerdown でマウスとタッチの両方に対応
 splitResizer.onpointerdown = (e) => {
     e.preventDefault();
     // 指をリサイザーにガッチリ固定（これがないと指がズレた瞬間に止まる）
     splitResizer.setPointerCapture(e.pointerId);
-
-    const zoom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--zoom-ratio')) ?? 1;
+    const zoom = window.devicePixelRatio;
     const startY = e.clientY;
     const startHeight = topContainer.offsetHeight;
-
     const onPointerMove = (e) => {
         const deltaY = e.clientY - startY;
         const newHeight = Math.max(0, startHeight + (deltaY) * zoom);
         topContainer.style.flex = `0 0 ${newHeight}px`;
-        topContainer.style.display = newHeight === 0 ? 'none' : 'flex';
-    };
-
+        topContainer.style.display = newHeight === 0 ? 'none' : 'flex';};
     const onPointerUp = (e) => {
         // 固定を解除
         splitResizer.releasePointerCapture(e.pointerId);
         document.removeEventListener('pointermove', onPointerMove);
-        document.removeEventListener('pointerup', onPointerUp);
-    };
-
+        document.removeEventListener('pointerup', onPointerUp);};
     document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp);
-};
-
-
-
-
+    document.addEventListener('pointerup', onPointerUp);};
 
 
   // --- sortable(ライブラリ)初期化 ---
