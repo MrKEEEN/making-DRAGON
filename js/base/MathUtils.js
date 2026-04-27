@@ -6,14 +6,14 @@ export { createResolvedParams, showToast };
 //   showToast
 // ==========================
 
-const showToast = (text) => {
+const showToast = (text, time) => {
     const toast = document.createElement('div');
     toast.className = 'toast-message';
     toast.textContent = text;
     document.body.appendChild(toast);
     setTimeout(() => {
         toast.remove();
-    }, 5000);
+    }, time);
 };
 
 // ==========================

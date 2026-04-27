@@ -1,10 +1,10 @@
 import { DragonScope } from './base/prop_schema.js';
+import { showToast } from './base/MathUtils.js';
 import { dragonManager } from './core/DragonManager.js';
 import { paneSetupUI, buildDPS } from './ui/Inspector.js';
 import { ResetSaveLoad } from './ui/ResetSaveLoad.js';
 
 //TODO 画面の画像を右クリックメニューで保存するとページが勝手にリロードされる。jsのコードではなくブラウザの機能だが、要修正。画像保存は必要。
-
 
 //webGPUのライブラリ
 import * as PIXI from '../lib/pixi.mjs';
@@ -15,6 +15,9 @@ const canvas2d = document.getElementById("canvas-2d");
 const canvasWebGPU = document.getElementById("canvas-webgpu");
 const ctx = canvas2d.getContext("2d");
 const app = new PIXI.Application();
+const modeInfo = document.getElementById('mode-info');
+const RGBInfo = document.getElementById('RGB-info');
+const ratioInfo = document.getElementById('ratio-info');
 
 async function initPixi() {
     await app.init({
@@ -23,27 +26,18 @@ async function initPixi() {
         height: window.innerHeight,
         backgroundAlpha: 0,
         preference: 'webgpu',
-        manageCanvasResize: false
-    });}
+        manageCanvasResize: false});}
 initPixi();
 dragonManager.initApp(app);
 
-let rgb = { r: 0, g: 0, b: 0 };
-const changeBackgroundColor = () => {
-      canvasWebGPU.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);};
-window.addEventListener("keydown", (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
-    const key = e.key.toLowerCase();
-    const step = e.shiftKey ? -1 : 1;
-    if (key === 'r') {
-        rgb.r = Math.min(255, Math.max(0, rgb.r + step));
-    } else if (key === 'g') {
-        rgb.g = Math.min(255, Math.max(0, rgb.g + step));
-    } else if (key === 'b') {
-        rgb.b = Math.min(255, Math.max(0, rgb.b + step));}
-    changeBackgroundColor();
-    const RGBInfo = document.getElementById('RGB-info');
-    RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;});
+  // 1,2,3,4 キーで回転モード切替. z keyで描写反転. m keyでmouse追従のon,off切替
+let rotationMode = 0;
+let reverseMode = 0;   // 0:通常順, 1:反転順後ろから描写
+let mouseOffMode = 0;  // 0:追従off, 1:追従on
+let clearOffMode = 0;  // 0:描画クリア, 1: 描画ノンクリア
+let writeMode = 0;  // 0:off, 1:on
+const noticeMode = () => {
+  modeInfo.textContent = `MODE - Rotation(1~4):${rotationMode} Reverse(z):${reverseMode} MouseOff(m):${mouseOffMode} ClearOff(c):${clearOffMode} Write(w):${writeMode}`;};
 
 function resizeCanvas() {
   if(window.APP_MODE === "PC_MODE"){
@@ -54,25 +48,25 @@ function resizeCanvas() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (app.renderer) {
         app.renderer.resolution = Math.max(1, Math.min(5, dpr ** 2));
-        app.renderer.resize(window.innerWidth, window.innerHeight); }
+        app.renderer.resize(window.innerWidth, window.innerHeight);}
+    ratioInfo.textContent = `Ratio:${dpr.toFixed(3)}`;
     } else {
     const dpr = DragonScope.mobileRatio;
     [canvas2d, canvasWebGPU].forEach(c => {
         c.width = window.innerWidth * dpr;
-        c.height = window.innerHeight * dpr;});
+        c.height = window.innerHeight * dpr;
+        c.style.width = "100%";
+        c.style.height = "100%";
+      });
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (app.renderer) {
       app.renderer.resolution = Math.max(1, Math.min(5, dpr ** 2));
-// function updateDebug() {
-//   document.getElementById('debug').innerText = `dpr:${DragonScope.mobileRatio.toFixed(3)}_resolution${app.renderer.resolution.toFixed(3)}`;
-//     requestAnimationFrame(updateDebug);}
-// updateDebug();
-      app.renderer.resize(window.innerWidth /dpr, window.innerHeight /dpr);}}}
+      app.renderer.resize(window.innerWidth /dpr, window.innerHeight /dpr);}
+      ratioInfo.textContent = `Ratio:${dpr.toFixed(3)}`;}}
 
 window.addEventListener("resize", () => {
-  if(!clearMode){return;}
+  if(clearOffMode){return;}
   resizeCanvas()});
-resizeCanvas();
 
 const zoomUp = () => {
     if(DragonScope.mobileRatio > 10) return;
@@ -91,101 +85,155 @@ resizerV.addEventListener("pointerdown", (e) => {
     isDraggingV = true;
     resizerV.setPointerCapture(e.pointerId);});
 window.addEventListener("pointermove", (e) => {
-    if (!isDraggingV || !clearMode) return;
+    if (!isDraggingV || clearOffMode) return;
     const dpr = window.devicePixelRatio;
     const newWidth = window.innerWidth - e.clientX;
     const finalWidth = Math.max(0, Math.min(maxPaneWidth / dpr, newWidth));
     document.documentElement.style.setProperty('--pane-width', finalWidth * dpr);});
-window.addEventListener("pointerup", () => {
-    isDraggingV = false;});
 
+const btnIds = ["r-color", "g-color", "b-color", "rotation", "reverse", "mouse-off", "clear-off", "write", "fullscreen", "hide-ui", "zoomup", "zoomdown"];
+const [rColorBtn, gColorBtn, bColorBtn, rotationBtn, reverseBtn, mouseOffBtn, clearOffBtn, writeBtn, fsBtn, hideUiBtn, zuBtn, zdBtn] =
+      btnIds.map(id => document.getElementById(`btn-${id}`));
+const touchButtons = [rColorBtn, gColorBtn, bColorBtn, rotationBtn, reverseBtn, mouseOffBtn, clearOffBtn, writeBtn, fsBtn, hideUiBtn, zuBtn, zdBtn ];
+let uiTimer = null;
+let colorChangeFlag = 0;
+const showMobileButtons = () => {
+    // クラスを付与して表示
+    for (const btn of touchButtons.values()) {btn.classList.add('show');}
+    // 既存のタイマーがあればリセット
+    if (uiTimer) {clearTimeout(uiTimer);}
+    // 3秒後にクラスを外して隠す
+    uiTimer = setTimeout(() => {
+        for (const btn of touchButtons.values()) {
+          btn.classList.remove('show');}
+          colorChangeFlag = 0;
+          //色編集もリセットされるのでボタンハイライトも元に戻す
+          [rColorBtn, gColorBtn, bColorBtn].forEach(button => {
+            button.style.borderColor = "#403838";
+            button.style.background = "rgba(0, 0, 0, 0.6)";});
+      }, 3000);};
 
-  // 1,2,3,4 キーで回転モード切替. z keyで描写反転. m keyでmouse追従のon,off切替
-let rotationMode = 0;
-let reverseMode = 0;   // 0:通常順, 1:反転順後ろから描写
-let mouseMode = 1;  // 0:追従off, 1:追従on
-let clearMode = 1;  // 0:描画クリア, 1: 描画ノンクリア
-let writeMode = 0;  // 0:off, 1:on
-window.addEventListener("keydown", e => {
-if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
-const noticeMode = () => {
-  const modeInfo = document.getElementById('mode-info');
-  modeInfo.textContent = `MODE - Rotation(1~4):${rotationMode} reverse(z):${reverseMode} Mouse(m):${mouseMode} Clear(c):${clearMode} Write(w):${writeMode}`;};
-if (e.key === "1") {
-    rotationMode = (rotationMode === 1) ? 0 : 1;}
-if (e.key === "2") {
-    rotationMode = (rotationMode === 2) ? 0 : 2;}
-if (e.key === "3"){
-    rotationMode = (rotationMode === 3) ? 0 : 3;}
-if (e.key === "4"){
-    rotationMode = (rotationMode === 4) ? 0 : 4;}
-if (e.key === "z"){
-    reverseMode = (reverseMode === 1) ? 0 : 1;}
-if (e.key === "m") {
-    mouseMode = (mouseMode === 1) ? 0 : 1;}
-if (e.key === "w") {
-    writeMode = (writeMode === 1) ? 0 : 1;}
-if (e.key === "c") {
-//描画中にキャンバスサイズを変えるとリサイズイベントも発火してしまうため、clearModeがonのときのみリサイズしてキャンバスをクリアするようにする。
-    if (clearMode) {
-        clearMode = 0;
-        drawMode = 0;
-    } else {
-        clearMode = 1;
-        drawMode = 1;
-        resizeCanvas();}}
-    noticeMode();});
+//ボタン操作中は表示継続のため呼び出し続ける
+for (const btn of touchButtons.values()) {
+    btn.addEventListener('pointerdown', () => {
+        showMobileButtons();});};
+
+const editingColor = (myColor) => {
+    colorChangeFlag = colorChangeFlag === myColor ? 0 : myColor;
+    [{btn:rColorBtn, key:"r"}, {btn:gColorBtn, key:"g"}, {btn:bColorBtn, key:"b"}].forEach(({btn, key}) => {
+        const isActive = colorChangeFlag === key;
+        btn.style.borderColor = isActive ? "#2a8" : "#403838";
+        btn.style.background = isActive ? "#242" : "rgba(0, 0, 0, 0.6)";});};
+
+rColorBtn.addEventListener("click", () => {
+  editingColor("r");});
+gColorBtn.addEventListener("click", () => {
+  editingColor("g" );});
+bColorBtn.addEventListener("click", () => {
+  editingColor("b");});
+
+let rgb = { r: 0, g: 0, b: 0 };
+const changeBackgroundColor = () => {
+      canvasWebGPU.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);};
+window.addEventListener("keydown", (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
+    const key = e.key.toLowerCase();
+    const step = e.shiftKey ? -1 : 1;
+    if (key === 'r') {
+      rgb.r = Math.min(255, Math.max(0, rgb.r + step));
+    } else if (key === 'g') {
+        rgb.g = Math.min(255, Math.max(0, rgb.g + step));
+    } else if (key === 'b') {
+        rgb.b = Math.min(255, Math.max(0, rgb.b + step));}
+    changeBackgroundColor();
+    RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;});
 
 let isWriting = false;
-canvas2d.addEventListener("mousedown", (e) => {
+canvas2d.addEventListener("pointerdown", (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
   if (writeMode) isWriting = true;});
-window.addEventListener("mouseup", () => {
+window.addEventListener("pointerup", () => {
   isWriting = false;});
-window.addEventListener("mouseleave", () => {
+window.addEventListener("pointerleave", () => {
   isWriting = false;});
-
 
 // --- ポインター（マウス・タッチ共通）追従ロジック ---
 const mouse = window.APP_MODE === "PC_MODE" ? { x: window.innerWidth/2, y: window.innerHeight/2 } :
-            { x: window.innerWidth/(DragonScope.mobileRatio * 2), y: window.innerHeight/(DragonScope.mobileRatio * 2) };
-
-let isPointerActive = false; // スマホ等で「触れている間だけ」を判定するフラグ
+      { x: window.innerWidth/(DragonScope.mobileRatio * 2), y: window.innerHeight/(DragonScope.mobileRatio * 2) };
 const updateMouseCoordinates = (e) => {
-    if (!mouseMode) return;
-    const rect = canvas2d.getBoundingClientRect();
+    if (mouseOffMode) return;
       if(window.APP_MODE === "PC_MODE"){
     mouse.x = e.clientX;
     mouse.y = e.clientY;
       }else{
     mouse.x = e.clientX / DragonScope.mobileRatio;
-    mouse.y = e.clientY / DragonScope.mobileRatio;
-// function updateDebug() {
-//   document.getElementById('debug').innerText = `Ratio:${DragonScope.mobileRatio.toFixed(3)}_x:${e.clientX.toFixed(1)}_y:${e.clientY.toFixed(3)}_mX${mouse.x.toFixed(1)}_mY${mouse.y.toFixed(1)}`;
-//   requestAnimationFrame(updateDebug);}
-// updateDebug();
-}};
-// 指が触れた / マウスが押された
+    mouse.y = e.clientY / DragonScope.mobileRatio;}};
+
+const activePointers = new Map();
+let lastPinchDistance = 0; // 前回の2本指の距離を保持
+const COLOR_THRESHOLD = 1; // 色変更の値（ピクセル）
+const ZOOM_THRESHOLD = 30; // ズーム判定を行う距離のしきい値（ピクセル）
+const getDistance = (p1, p2) => Math.hypot(p2.x - p1.x, p2.y - p1.y); // 2点間の距離を計算するヘルパー
+
+// 指がタッチ（１～３本） / マウスが押された
 canvas2d.addEventListener("pointerdown", (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey) return;
-    isPointerActive = true;
-    updateMouseCoordinates(e);
-    // 指がキャンバス外に出ても追跡を継続（スマホ操作の安定化）
-    canvas2d.setPointerCapture(e.pointerId);
-});
+  activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  // 3本以上の指が検知されたら表示
+  if (activePointers.size >= 3) {
+      showMobileButtons();
+    } else if (activePointers.size === 2) {
+        // 2本目が触れた瞬間の距離を初期値として保存
+        const points = Array.from(activePointers.values());
+        lastPinchDistance = getDistance(points[0], points[1]);}
+    canvas2d.setPointerCapture(e.pointerId);});
+
 // 移動中（PCならホバー、スマホならなぞり操作）
 window.addEventListener("pointermove", (e) => {
-// PC（mouse）の場合は常に追従。スマホ（touch）の場合は触れている間だけ追従。
-    if (e.pointerType === 'mouse' || isPointerActive) {
-        updateMouseCoordinates(e);}});
-window.addEventListener("pointerup", (e) => {
-    isPointerActive = false;
-    if (canvas2d.hasPointerCapture(e.pointerId)) {
-        canvas2d.releasePointerCapture(e.pointerId);}});
-canvas2d.addEventListener("dblclick", (e) => {
-    if (DragonScope.master) {
-        DragonScope.master.isBoosting = true;}});
+    if(window.APP_MODE === "PC_MODE" && e.pointerType === 'mouse'){
+      return updateMouseCoordinates(e);}
+    if (!activePointers.has(e.pointerId)) {return;}
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
+    if (activePointers.size === 1) {
+        updateMouseCoordinates(e);
+      } else if (activePointers.size === 2) {
+        const points = Array.from(activePointers.values());
+        const currentDistance = getDistance(points[0], points[1]);
+        // 前回の距離との差分を計算
+        const diff = currentDistance - lastPinchDistance;
+
+          if(colorChangeFlag === 0 && !clearOffMode){
+                if (Math.abs(diff) >= ZOOM_THRESHOLD) {
+                  if (diff > 0) {
+                    zoomUp();
+                  } else {
+                  zoomDown();}
+              lastPinchDistance = currentDistance;}
+            } else {
+              if (colorChangeFlag === 'r') {
+                rgb.r = Math.min(255, Math.max(0, rgb.r + COLOR_THRESHOLD * Math.sign(diff)));}
+              if (colorChangeFlag === 'g') {
+                rgb.g = Math.min(255, Math.max(0, rgb.g + COLOR_THRESHOLD * Math.sign(diff)));}
+              if (colorChangeFlag === 'b') {
+                rgb.b = Math.min(255, Math.max(0, rgb.b + COLOR_THRESHOLD * Math.sign(diff)));}
+            showToast(`edit:【${colorChangeFlag.toUpperCase()}】`, 300);
+            lastPinchDistance = currentDistance;
+            changeBackgroundColor();
+            //ボタン表示継続
+            showMobileButtons();
+            RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;}}});
+
+const removePointer = (e) => {
+    isDraggingV = false;
+    activePointers.delete(e.pointerId);
+    canvas2d.releasePointerCapture(e.pointerId);};
+
+canvas2d.addEventListener("dblclick", (e) => {
+    if (window.APP_MODE === "MOBILE_MODE") {
+    mouse.x = e.clientX / DragonScope.mobileRatio;
+    mouse.y = e.clientY / DragonScope.mobileRatio;}
+        DragonScope.master.isBoosting = true;});
 
 // ==============================
 // 全画面表示 & UI非表示 制御
@@ -206,36 +254,60 @@ const toggleUIPane = () => {
     pane.classList.toggle('pane-hidden');
     resizerV.classList.toggle('resizerV-hidden');};
 
-const fsBtn = document.getElementById("btn-fullscreen");
-const hideUiBtn = document.getElementById("btn-hide-ui");
-const zuBtn = document.getElementById("btn-zoomup");
-const zdBtn = document.getElementById("btn-zoomdown");
-let uiTimer = null;
-const activePointers = new Set();
-const showMobileButtons = () => {
-    // クラスを付与して表示
-    fsBtn?.classList.add('show');
-    hideUiBtn?.classList.add('show');
-    zuBtn?.classList.add('show');
-    zdBtn?.classList.add('show');
-    // 既存のタイマーがあればリセット
-    if (uiTimer) clearTimeout(uiTimer);
-    // 3秒後にクラスを外して隠す
-    uiTimer = setTimeout(() => {
-        fsBtn?.classList.remove('show');
-        hideUiBtn?.classList.remove('show');
-        zuBtn?.classList.remove('show');
-        zdBtn?.classList.remove('show');
-      }, 3000);};
+window.addEventListener("keydown", e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
+  const num = parseInt(e.key, 10);
+  if (num >= 1 && num <= 4) {rotationMode = (rotationMode === num) ? 0 : num;}
+  if (e.key === "z") {reverseMode ^= 1;}
+  if (e.key === "m") {mouseOffMode ^= 1;}
+  if (e.key === "w") {writeMode ^= 1;}
+  if (e.key === "c") {
+    //描画中にキャンバスサイズを変えるとリサイズイベントも発火してしまうため、clearModeがonのときのみリサイズしてキャンバスをクリアするようにする。
+    if (clearOffMode) {
+        clearOffMode = 0;
+        drawMode = 1;
+        resizeCanvas();
+    } else {
+        clearOffMode = 1;
+        drawMode = 0;
+        resizeCanvas();
+      }
+    resizeCanvas();
+    }
+    noticeMode();});
 
-window.addEventListener("pointerdown", (e) => {
-    activePointers.add(e.pointerId);
-    // 3本以上の指が検知されたら表示
-    if (activePointers.size >= 3) {
-        showMobileButtons();}});
-// ポインターが離れた時、またはキャンセルされた時
-const removePointer = (e) => {
-    activePointers.delete(e.pointerId);};
+const modeActiveStyle = (btn, mode) => {
+  btn.style.borderColor = mode === 0 ? "#403838" : "#2a8";
+  btn.style.background = mode === 0 ? "rgba(0, 0, 0, 0.6)" : "#242";};
+
+rotationBtn.addEventListener("click", () => {
+// 0, 1, 2, 3, 4 の範囲でループさせる（5になったら0に戻る）
+  rotationMode = (++ rotationMode) % 5;
+  modeActiveStyle(rotationBtn, rotationMode);
+  noticeMode();});
+reverseBtn.addEventListener("click", () => {
+  reverseMode ^= 1;
+  modeActiveStyle(reverseBtn, reverseMode);
+  noticeMode();});
+mouseOffBtn.addEventListener("click", () => {
+  mouseOffMode ^= 1;
+  modeActiveStyle(mouseOffBtn, mouseOffMode);
+  noticeMode();});
+writeBtn.addEventListener("click", () => {
+  writeMode ^= 1;
+  modeActiveStyle(writeBtn, writeMode);
+  noticeMode();});
+clearOffBtn.addEventListener("click", () => {
+      if (clearOffMode) {
+        clearOffMode = 0;
+        drawMode = 1;
+    } else {
+        clearOffMode = 1;
+        drawMode = 0;
+        // resizeCanvas();
+    }
+  modeActiveStyle(clearOffBtn, clearOffMode);
+  noticeMode();});
 
 window.addEventListener("pointerup", removePointer);
 window.addEventListener("pointercancel", removePointer);
@@ -243,6 +315,7 @@ fsBtn.addEventListener("click", toggleFullscreen);
 hideUiBtn.addEventListener("click", toggleUIPane);
 zuBtn.addEventListener("click", zoomUp);
 zdBtn.addEventListener("click", zoomDown);
+
 
 //============================
 //新個体-individual作成ボタン
@@ -419,9 +492,13 @@ for (let i = 0; i < sampleUrls.length; i++) {
   //最初の個体を選択済とさせる
   dragonManager.switch(0);
   updateUIStatus();
-  //dpr解像度を起動時にも適応させるため呼び出し
-  resizeCanvas();
-  loop();}
+  // dpr解像度を起動時にも適応させるため呼び出し
+  if(window.devicePixelRatio >= 1){
+    resizeCanvas();}
+  const dpr = window.APP_MODE === "PC_MODE" ? window.devicePixelRatio : DragonScope.mobileRatio;
+  ratioInfo.textContent = `Ratio:${dpr.toFixed(3)}`;
+  loop();
+}
 
 
   function loop() {

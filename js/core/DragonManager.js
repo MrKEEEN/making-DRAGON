@@ -14,8 +14,7 @@ export class DragonManager {
         //webGPU用
         this.spritePool = [];
         this.container = new PIXI.Container();
-        this.app = null;
-    }
+        this.app = null;}
 
 //個体追加
     add(dragons) {
@@ -49,7 +48,6 @@ export class DragonManager {
                 // 操作中じゃない個体は、deactivate時に保存したdpsを使う
                 this.allDps.push(...individual.individualDps);});}
 
-
         // main.jsからappを注入するメソッド
         initApp(app) {
         this.app = app;
@@ -73,15 +71,13 @@ syncWebGPUSprites(reverseMode) {
                 s.x = part.x;
                 s.y = part.y;
                 s.rotation = part.angle;
-                const tw = s.texture?.width || 1;
-                const th = s.texture?.height || 1;
+                const tw = s.texture?.width ?? 1;
+                const th = s.texture?.height ?? 1;
                 s.scale.set(part.scaleX/tw, part.scaleY/th);
                 s.visible = true;
             } else {
                 s.visible = false;
             }});}
-
-
 
     current() {
         return this.individuals[this.currentIndex];}

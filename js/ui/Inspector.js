@@ -6,7 +6,6 @@ import { showToast } from '../base/MathUtils.js';
 
 export { buildDPS, updateListHighlight, rebuildDragonList, paneSetupUI, createInspectorGUI };
 
-
 let dragonListEl = null;
 
 const buildDPS = () => {
@@ -32,7 +31,6 @@ const rebuildDragonList = () => {
       dragonsLi.style.background = "#242";}
     dragonListEl.appendChild(dragonsLi);});}
 
-
 // 選択状態を視覚的に更新する補助関数
 const updateListHighlight = () => {
     if (!dragonListEl){return;}
@@ -40,7 +38,6 @@ const updateListHighlight = () => {
       const isSelected = (DragonScope.dragons[i] === DragonScope.selectedDragon);
       listEl.style.borderColor = isSelected ? "#2a8" : "#444";
       listEl.style.background = isSelected ? "#242" : "#222";});}
-
 
 // ============================================================
 //   ペイン初期セットアップ
@@ -69,12 +66,11 @@ splitResizer.onpointerdown = (e) => {
     e.preventDefault();
     // 指をリサイザーにガッチリ固定（これがないと指がズレた瞬間に止まる）
     splitResizer.setPointerCapture(e.pointerId);
-    const zoom = window.devicePixelRatio;
     const startY = e.clientY;
     const startHeight = topContainer.offsetHeight;
     const onPointerMove = (e) => {
         const deltaY = e.clientY - startY;
-        const newHeight = Math.max(0, startHeight + (deltaY) * zoom);
+        const newHeight = Math.max(0, startHeight + (deltaY) * window.devicePixelRatio);
         topContainer.style.flex = `0 0 ${newHeight}px`;
         topContainer.style.display = newHeight === 0 ? 'none' : 'flex';};
     const onPointerUp = (e) => {
@@ -84,7 +80,6 @@ splitResizer.onpointerdown = (e) => {
         document.removeEventListener('pointerup', onPointerUp);};
     document.addEventListener('pointermove', onPointerMove);
     document.addEventListener('pointerup', onPointerUp);};
-
 
   // --- sortable(ライブラリ)初期化 ---
 new Sortable(dragonListEl, {
@@ -176,7 +171,7 @@ function updateAdd(dragonInput){
       }});
     DragonScope.dragons.push(newDragon);
     DragonScope.selectedDragon = newDragon;
-    showToast(`New dragon added: ${newDragon.name}`);}
+    showToast(`New dragon added: ${newDragon.name}`, 5000);}
 //---update---
   d.parts.forEach(p => {
     p.vx = 0;
@@ -267,157 +262,161 @@ const createInspectorGUI = (containerIdIndex) => {
         itemRow.appendChild(input);
         contentWrapper.appendChild(itemRow);}
       // --- 2. 画像・数値入力 (img等) ---
-      else if (config[0] === "image") {
-        input.className = "inspector-image-input";
-        input.id = `inspector-image-input-${DragonScope.individualCurrentIndex}`;
-        label.innerText = "replaceImage (Select number)";
-        input.type = "number";
-        input.value = DragonScope.selectedDragon[key] ?? 0;
-        input.min = 0;
-        input.max = DragonScope.images.length - 1;
-        const controls = document.createElement("div");
-        const countDisplay = document.createElement("span");
-        countDisplay.className = "inspector-countDisplay";
-        countDisplay.innerText = ` / 0 ~ ${DragonScope.images.length-1}`;
-        // --- LIST/EDITボタン: ドラッグ、矢印、削除、アップロードをこのボタン内に集約 ---
-        const listBtn = document.createElement("button");
-        listBtn.className = "inspector-list-btn";
-        listBtn.innerText = "LIST/EDIT";
-        listBtn.onclick = () => {
-          // モーダル外枠の作成
-          const modal = document.createElement("div");
-          modal.id = "image-list-modal";
-          const content = document.createElement("div");
-          content.id = "image-list-content";
-          // ドラッグ中の要素インデックス保持用
-          let draggedIdx = null;
-          // リスト再描画用関数
-          const renderList = () => {
+    else if (config[0] === "image") {
+    input.className = "inspector-image-input";
+    input.id = `inspector-image-input-${DragonScope.individualCurrentIndex}`;
+    label.innerText = "replaceImage (Select number)";
+    input.type = "number";
+    input.value = DragonScope.selectedDragon[key] ?? 0;
+    input.min = 0;
+    input.max = DragonScope.images.length - 1;
+    const controls = document.createElement("div");
+    const countDisplay = document.createElement("span");
+    countDisplay.className = "inspector-countDisplay";
+    countDisplay.innerText = ` / 0 ~ ${DragonScope.images.length - 1}`;
+    // --- LIST/EDITボタン: ドラッグ、矢印、削除、アップロードをこのボタン内に集約 ---
+    const listBtn = document.createElement("button");
+    listBtn.className = "inspector-list-btn";
+    listBtn.innerText = "LIST/EDIT";
+    listBtn.onclick = () => {
+      // モーダル外枠の作成
+        const modal = document.createElement("div");
+        modal.id = "image-list-modal";
+        const content = document.createElement("div");
+        content.id = "image-list-content";
+        // UI更新用
+        const updateUI = () => {
+            input.max = DragonScope.images.length - 1;
+            input.value = DragonScope.selectedDragon[key] ?? 0;
+            countDisplay.innerText = ` / 0 ~ ${DragonScope.images.length - 1}`;};
+        // リスト再描画用関数
+        const renderList = () => {
             content.innerHTML = "";
             const header = document.createElement("div");
             header.id = "image-list-header";
             header.innerHTML = "<h3 style='color:#eee; margin:0;'>Image List / Edit (Drag or Arrows)</h3>";
-            // モーダル内専用UPLOADボタン
+        // モーダル内専用UPLOADボタン
             const innerUploadBtn = document.createElement("button");
             innerUploadBtn.id = "inner-upload-btn";
             innerUploadBtn.innerText = "UPLOAD";
             innerUploadBtn.onclick = () => {
-              const fileInput = document.createElement('input');
-              fileInput.type = 'file';
-              fileInput.accept = 'image/*';
-              fileInput.multiple = true;
-              fileInput.onchange = async (e) => {
-                const files = Array.from(e.target.files);
-                if (files.length === 0){return;}
-                let url;
-                try {
-                  const newImages = await Promise.all(files.map(async (file) => {
-                    url = URL.createObjectURL(file);
-                    const { loadImage } = await import('../main.js');
-                    const img = await loadImage(url);
-                    return img;
-                  }));
-                  DragonScope.images.push(...newImages);
-                  DragonScope.updateWebGPUResources();
-                  updateUI();
-                  renderList();
-                } catch (err) {
-                  console.error("Upload failed", err);
-                }};
-              fileInput.click();};
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.multiple = true;
+                fileInput.onchange = async (e) => {
+                    const files = Array.from(e.target.files);
+                    if (files.length === 0) return;
+                    try {
+                        const newImages = await Promise.all(files.map(async (file) => {
+                            const url = URL.createObjectURL(file);
+                            const { loadImage } = await import('../main.js');
+                            const img = await loadImage(url);
+                            return img;
+                        }));
+                        DragonScope.images.push(...newImages);
+                        DragonScope.updateWebGPUResources();
+                        updateUI();
+                        renderList();
+                    } catch (err) {
+                        console.error("Upload failed", err);}};
+                fileInput.click();};
             header.appendChild(innerUploadBtn);
             content.appendChild(header);
             const grid = document.createElement("div");
             grid.id = "image-list-grid";
             DragonScope.images.forEach((img, idx) => {
-              const item = document.createElement("div");
-              item.className = "image-list-item";
-              item.draggable = true;
-              // --- ドラッグ＆ドロップ制御 ---
-              item.ondragstart = () => { draggedIdx = idx; item.style.opacity = "0.5"; };
-              item.ondragend = () => { item.style.opacity = "1"; };
-              item.ondragover = (e) => e.preventDefault();
-              item.ondrop = (e) => {
-                e.preventDefault();
-                if (draggedIdx === null || draggedIdx === idx){return;}
-                const targetImg = DragonScope.images.splice(draggedIdx, 1)[0];
-                DragonScope.images.splice(idx, 0, targetImg);
-                DragonScope.updateWebGPUResources();
-                renderList();};
-              const preview = img.cloneNode();
-              preview.style = "width:60px; height:60px; object-fit:contain; background:#000; pointer-events:none;";
-              // --- 矢印ボタンによる並べ替え制御 ---
-              const prevBtn = document.createElement("button");
-              prevBtn.className = "move-img-btn";
-              prevBtn.innerText = "←";
-              prevBtn.onclick = (e) => {
-                e.stopPropagation();
-                if(idx > 0) {
-                  [DragonScope.images[idx], DragonScope.images[idx-1]] = [DragonScope.images[idx-1], DragonScope.images[idx]];
-                  DragonScope.updateWebGPUResources();
-                  renderList();}};
-              const nextBtn = document.createElement("button");
-              nextBtn.className = "move-img-btn";
-              nextBtn.innerText = "→";
-              nextBtn.onclick = (e) => {
-                e.stopPropagation();
-                if(idx < DragonScope.images.length - 1) {
-                  [DragonScope.images[idx], DragonScope.images[idx+1]] = [DragonScope.images[idx+1], DragonScope.images[idx]];
-                  DragonScope.updateWebGPUResources();
-                  renderList();}};
-              // --- 削除ボタン制御（確認メッセージと範囲外インデックスの末尾吸着） ---
-              const delBtn = document.createElement("button");
-              delBtn.className = "delete-img-btn";
-              delBtn.innerText = "DEL";
-              delBtn.onclick = (e) => {
-                e.stopPropagation();
-                if(DragonScope.images.length <= 1){
-                  return alert("Cannot delete last image.");}
-                if (!confirm(`Delete image [index: ${idx}]?`)){return;}
-                if (DragonScope.images[idx]?.src?.startsWith('blob:')) {
-                  URL.revokeObjectURL(DragonScope.images[idx].src);}
-                DragonScope.images.splice(idx, 1);
-                DragonScope.updateWebGPUResources();
+                const item = document.createElement("div");
+                item.className = "image-list-item";
+                // プレビュー
+                const preview = img.cloneNode();
+                preview.style = "width:60px; height:60px; object-fit:contain; background:#000; pointer-events:none;";
+                // インデックス情報
+                const info = document.createElement("div");
+                info.className = "image-index-info";
+                info.innerText = `idx:${idx}`;
+                // 矢印コンテナ
+                const moveContainer = document.createElement("div");
+                moveContainer.className = "move-img-container";
+                const prevBtn = document.createElement("button");
+                prevBtn.className = "move-img-btn";
+                prevBtn.innerText = "←";
+                prevBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (idx > 0) {
+                        [DragonScope.images[idx], DragonScope.images[idx - 1]] = [DragonScope.images[idx - 1], DragonScope.images[idx]];
+                        DragonScope.updateWebGPUResources();
+                        renderList();}};
+                const nextBtn = document.createElement("button");
+                nextBtn.className = "move-img-btn";
+                nextBtn.innerText = "→";
+                nextBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (idx < DragonScope.images.length - 1) {
+                        [DragonScope.images[idx], DragonScope.images[idx + 1]] = [DragonScope.images[idx + 1], DragonScope.images[idx]];
+                        DragonScope.updateWebGPUResources();
+                        renderList();
+                    }};
+                moveContainer.appendChild(prevBtn);
+                moveContainer.appendChild(nextBtn);
+                // 削除ボタン
+                const delBtn = document.createElement("button");
+                delBtn.className = "delete-img-btn";
+                delBtn.innerText = "DEL";
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (DragonScope.images.length <= 1) {
+                      return alert("Cannot delete last image.");}
+                    if (!confirm(`Delete image [index: ${idx}]?`)) {return;}
+                    if (DragonScope.images[idx]?.src?.startsWith('blob:')) {
+                        URL.revokeObjectURL(DragonScope.images[idx].src);}
+                    DragonScope.images.splice(idx, 1);
+                    DragonScope.updateWebGPUResources();
                 // 参照範囲外になったパートのみ、配列の新しい末尾を適用
-                DragonScope.dragons.forEach(d => {
-                  if (d[key] >= DragonScope.images.length) {
-                    d[key] = DragonScope.images.length - 1;
-                    d.rebuild();}});
-                updateUI();
-                renderList();};
-              item.appendChild(preview);
-              const info = document.createElement("div");
-              info.className = "image-index-info";
-              info.innerText = `idx:${idx}`;
-              item.appendChild(info);
-              const moveContainer = document.createElement("div");
-              moveContainer.className = "move-img-container";
-              moveContainer.appendChild(prevBtn);
-              moveContainer.appendChild(nextBtn);
-              item.appendChild(moveContainer);
-              item.appendChild(delBtn);
-              grid.appendChild(item);});
+                    DragonScope.dragons.forEach(d => {
+                        if (d[key] >= DragonScope.images.length) {
+                            d[key] = DragonScope.images.length - 1;
+                            d.rebuild();}});
+                    updateUI();
+                    renderList();};
+                item.appendChild(preview);
+                item.appendChild(info);
+                item.appendChild(moveContainer);
+                item.appendChild(delBtn);
+                grid.appendChild(item);});
             content.appendChild(grid);
+            // SortableJSの初期化 (タッチとドラッグを有効化)
+            new Sortable(grid, {
+                animation: 150,
+                delay: 300,
+                delayOnTouchOnly: true,
+                touchStartThreshold: 5,
+                onEnd: (evt) => {
+                    const { oldIndex, newIndex } = evt;
+                    if (oldIndex === newIndex) {return;}
+                    const targetImg = DragonScope.images.splice(oldIndex, 1)[0];
+                    DragonScope.images.splice(newIndex, 0, targetImg);
+                    DragonScope.updateWebGPUResources();
+                    renderList(); // 並び順確定後にidxテキストを更新
+                }});
             const closeBtn = document.createElement("button");
             closeBtn.id = "close-modal-btn";
             closeBtn.innerText = "CLOSE";
-            closeBtn.onclick = () => document.body.removeChild(modal);
+            closeBtn.onclick = () => {
+                document.body.removeChild(modal);
+                updateUI(); // 最終的なインデックスを反映
+                };
             content.appendChild(closeBtn);};
-          // インスペクター上の数値を最新の状態に更新する関数
-          const updateUI = () => {
-            input.max = DragonScope.images.length - 1;
-            input.value = DragonScope.selectedDragon[key] ?? 0;
-            countDisplay.innerText = ` / 0 ~ ${DragonScope.images.length-1}`;};
-          renderList();
-          modal.appendChild(content);
-          document.body.appendChild(modal);};
-        lockedProperty(isLocked);
-        itemRow.appendChild(label);
-        controls.appendChild(input);
-        controls.appendChild(countDisplay);
-        controls.appendChild(listBtn);
-        itemRow.appendChild(controls);
-        contentWrapper.appendChild(itemRow);}
+        renderList();
+        modal.appendChild(content);
+        document.body.appendChild(modal);};
+    lockedProperty(isLocked);
+    itemRow.appendChild(label);
+    controls.appendChild(input);
+    controls.appendChild(countDisplay);
+    controls.appendChild(listBtn);
+    itemRow.appendChild(controls);
+    contentWrapper.appendChild(itemRow);}
       // --- 3. followId入力 ---
     else if (config[0] === "referenceId" || config[0] === "referenceIndex"){
     const followLabel = document.createElement('div');

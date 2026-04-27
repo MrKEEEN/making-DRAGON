@@ -10,15 +10,24 @@
 <div id="canvas-container">
     <canvas id="canvas-webgpu"></canvas>
     <canvas id="canvas-2d"></canvas>
-    <button id="btn-fullscreen" class="screen-button">SCREEN</button>
-    <button id="btn-hide-ui" class="screen-button">UI PANE</button>
-    <button id="btn-zoomup" class="zoom-button">+</button>
-    <button id="btn-zoomdown" class="zoom-button">-</button>
-    <div id="debug" style="position:fixed; top:10px; left:10px; z-index:100; color:white; background:rgba(0,0,0,0.5); pointer-events:none; font-family:monospace;"></div>
+    <button id="btn-r-color" class="touch-button" class="color-button">R</button>
+    <button id="btn-g-color" class="touch-button" class="color-button">G</button>
+    <button id="btn-b-color" class="touch-button" class="color-button">B</button>
+    <button id="btn-rotation" class="touch-button">1-4</button>
+    <button id="btn-reverse" class="touch-button">z</button>
+    <button id="btn-mouse-off" class="touch-button">m</button>
+    <button id="btn-clear-off" class="touch-button">c</button>
+    <button id="btn-write" class="touch-button">w</button>
+    <button id="btn-fullscreen" class="touch-button">SCREEN</button>
+    <button id="btn-hide-ui" class="touch-button">UI PANE</button>
+    <button id="btn-zoomup" class="touch-button">+</button>
+    <button id="btn-zoomdown" class="touch-button">-</button>
+    <!-- <div id="debug" style="position:fixed; top:10px; left:10px; z-index:100; color:white; background:rgba(0,0,0,0.5); pointer-events:none; font-family:monospace;"></div> -->
 </div>
 <div id="statusInfo">
   <div id="mode-info">MODE - Rotation(1~4):0 reverse(z):0 Mouse(m):1 Clear(c):1 Write(w):0</div>
   <div id="RGB-info">R:0 G:0 B:0</div>
+  <div id="ratio-info">Ratio:</div>
 </div>
 <div id="resizer_v"></div>
 <div id="controls">
@@ -46,13 +55,6 @@
   <button id="del-ui-display" class="ui-switch">DEL</button>
 </div>
   <div id="inspector-content"></div>
-
-  <div id="mobile-key-pad">
-        <button class="mobile-btn">M</button>
-        <button class="mobile-btn">Z</button>
-        <button class="mobile-btn">S</button>
-  </div>
-
 </div>
 <script type="module" src="js/app.js"></script>
 </body>
