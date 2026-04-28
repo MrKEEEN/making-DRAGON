@@ -13,8 +13,7 @@ const showToast = (text, time) => {
     document.body.appendChild(toast);
     setTimeout(() => {
         toast.remove();
-    }, time);
-};
+    }, time);};
 
 // ==========================
 //  scaleFunc
@@ -48,14 +47,21 @@ const showToast = (text, time) => {
       }
 })();
 
+//タッチパネル用 非同期でインポート
+let lumpCalculationKey;
+let showMobileButtons;
+(async () => {
+const mainMod = await import  ('../main.js');
+lumpCalculationKey = mainMod.lumpCalculationKey;
+showMobileButtons = mainMod.showMobileButtons;
+})();
+
 const createResolvedParams = (dragon) => {
   const resolved = {};
   let intervalId = null;
 
-  window.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
-  if (intervalId || !['*', '/', '+', '-'].includes(e.key)){return;}
-  const targetKey = e.key;
+//pc,タッチパネル共通処理
+  const lumpCalculation = (targetKey) => {
   intervalId = setInterval(() => {
     if(!dragon.currentDragon){return};
     if (targetKey === '*') {
@@ -69,11 +75,42 @@ const createResolvedParams = (dragon) => {
       dragon.scaleY += 0.2;
     } else if (targetKey === '-') {
       dragon.scaleX -= 0.2;
-      dragon.scaleY -= 0.2;
-    }}, 16);});
-window.addEventListener('keyup', () => {
-  clearInterval(intervalId);
-  intervalId = null;});
+      dragon.scaleY -= 0.2;}
+  showMobileButtons();
+  }, 32);};
+
+//PC用のキー操作
+  window.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey) {return;}
+    if (intervalId || !['*', '/', '+', '-'].includes(e.key)) {return;}
+    const targetKey = e.key;
+    lumpCalculation(targetKey);});
+//キーを離したとき
+  window.addEventListener('keyup', () => {
+    clearInterval(intervalId);
+    intervalId = null;});
+
+//タッチパネル用の操作
+  const symbols = { m: '*', d: '/', a: '+', s: '-' };
+  Object.entries(lumpCalculationKey).forEach(([id, el]) => {
+  el.addEventListener('pointerdown', () => {
+    if (intervalId || !lumpCalculationKey) {return;}
+    const targetKey = symbols[id];
+    el.style.borderColor = "#2a8";
+    el.style.background = "#242";
+    lumpCalculation(targetKey);
+    showToast(`【${targetKey}】`, 1000);
+  });});
+
+//指を離したとき
+['pointerup', 'pointerleave', 'pointercancel'].forEach(type => {
+    window.addEventListener(type, () => {
+      clearInterval(intervalId);
+      intervalId = null;
+      Object.values(lumpCalculationKey).forEach(el => {
+        el.style.borderColor = "";
+        el.style.background = "";
+  });});});
 
 for (const group in PROP_SCHEMA) {
   for (const key in PROP_SCHEMA[group]) {

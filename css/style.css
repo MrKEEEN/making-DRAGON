@@ -8,14 +8,14 @@ input, textarea {-webkit-user-select:text; user-select:text;}
             top:calc(10px / var(--zoom-ratio)); left: calc(10px / var(--zoom-ratio));
             flex-direction:column; align-items:flex-end; pointer-events:none; z-index:1000;}
 #mode-info, #RGB-info, #ratio-info {color:rgba(255,255,255,0.5); font-size:12px; line-height: 1.5;}
-@keyframes fadeOut {0%{opacity:0;} 50%{opacity:0.3;} 100%{opacity:0;}}
+@keyframes fadeOut {0%{opacity:0;} 50%{opacity:0.1;} 100%{opacity:0;}}
 .toast-message {position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); color:rgba(255, 255, 255, 0.5);
-                font-size:50px; white-space:nowrap; pointer-events:none; z-index:20000; animation:fadeOut 5s forwards;}
+                font-size:50px; white-space:nowrap; pointer-events:none; z-index:20000; animation:fadeOut 3s forwards;}
 :root { --pane-width: 200; }
 #resizer_v { transform:scale(var(--zoom-ratio)); transform-origin:right top; position:fixed; top:0px; width:7px;
-    right:calc(var(--pane-width) * 1px / var(--zoom-ratio)); height:calc(100% * var(--zoom-ratio)); cursor:ew-resize; background:hsl(300, 3%, 17%);
+    right:calc(var(--pane-width) * 1px / var(--zoom-ratio)); height:calc(100% * var(--zoom-ratio)); cursor:ew-resize; background:hsla(300, 3%, 17%, 0.173);
     z-index:9999; border-left:1px solid #444; touch-action: none; }
-.mode-mobile #resizer_v {width:20px; background:hsl(300, 3%, 17%);}
+.mode-mobile #resizer_v {width:40px; background:hsla(173, 45%, 20%, 0.087);}
 #resizer_v.resizerV-hidden {display: none !important;}
 #controls { transform:scale(var(--zoom-ratio)); transform-origin:right top; position:fixed; top:0px; right:0px;
     scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
@@ -85,6 +85,10 @@ canvas {touch-action:none;}
 #btn-r-color {left:30px; bottom:200px; width:30px;}
 #btn-g-color {left:70px; bottom:200px; width:30px;}
 #btn-b-color {left:110px; bottom:200px; width:30px;}
+#btn-multiply {left:150px; bottom:200px; width:30px;}
+#btn-divide {left:190px; bottom:200px; width:30px;}
+#btn-add {left:230px; bottom:200px; width:30px;}
+#btn-subtract {left:270px; bottom:200px; width:30px;}
 #btn-rotation {left:30px; bottom:150px; width:30px;}
 #btn-reverse {left:70px; bottom:150px; width:30px;}
 #btn-mouse-off {left:110px; bottom:150px; width:30px;}

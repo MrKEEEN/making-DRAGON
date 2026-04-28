@@ -74,7 +74,7 @@ const zoomUp = () => {
     DragonScope.mobileRatio *= 1.1;
     resizeCanvas();};
 const zoomDown = () => {
-    if(DragonScope.mobileRatio < 0.01) return;
+    if(DragonScope.mobileRatio < 0.1) return;
     const zu = document.getElementById('btn-zoomup');
     DragonScope.mobileRatio *= 0.9;
     resizeCanvas();};
@@ -91,13 +91,14 @@ window.addEventListener("pointermove", (e) => {
     const finalWidth = Math.max(0, Math.min(maxPaneWidth / dpr, newWidth));
     document.documentElement.style.setProperty('--pane-width', finalWidth * dpr);});
 
-const btnIds = ["r-color", "g-color", "b-color", "rotation", "reverse", "mouse-off", "clear-off", "write", "fullscreen", "hide-ui", "zoomup", "zoomdown"];
-const [rColorBtn, gColorBtn, bColorBtn, rotationBtn, reverseBtn, mouseOffBtn, clearOffBtn, writeBtn, fsBtn, hideUiBtn, zuBtn, zdBtn] =
+const btnIds = ["r-color", "g-color", "b-color", "multiply", "divide", "add", "subtract", "rotation", "reverse", "mouse-off", "clear-off", "write", "fullscreen", "hide-ui", "zoomup", "zoomdown"];
+const [rColorBtn, gColorBtn, bColorBtn, multiplyBtn, divideBtn, addBtn, subtractBtn, rotationBtn, reverseBtn, mouseOffBtn, clearOffBtn, writeBtn, fsBtn, hideUiBtn, zuBtn, zdBtn] =
       btnIds.map(id => document.getElementById(`btn-${id}`));
-const touchButtons = [rColorBtn, gColorBtn, bColorBtn, rotationBtn, reverseBtn, mouseOffBtn, clearOffBtn, writeBtn, fsBtn, hideUiBtn, zuBtn, zdBtn ];
+const touchButtons = [rColorBtn, gColorBtn, bColorBtn, multiplyBtn, divideBtn, addBtn, subtractBtn, rotationBtn, reverseBtn, mouseOffBtn, clearOffBtn, writeBtn, fsBtn, hideUiBtn, zuBtn, zdBtn];
+export const lumpCalculationKey = { m:multiplyBtn, d:divideBtn, a:addBtn, s:subtractBtn };
 let uiTimer = null;
 let colorChangeFlag = 0;
-const showMobileButtons = () => {
+export const showMobileButtons = () => {
     // クラスを付与して表示
     for (const btn of touchButtons.values()) {btn.classList.add('show');}
     // 既存のタイマーがあればリセット
@@ -109,22 +110,21 @@ const showMobileButtons = () => {
           colorChangeFlag = 0;
           //色編集もリセットされるのでボタンハイライトも元に戻す
           [rColorBtn, gColorBtn, bColorBtn].forEach(button => {
-            button.style.borderColor = "#403838";
-            button.style.background = "rgba(0, 0, 0, 0.6)";});
+            button.style.borderColor = "";
+            button.style.background = "";});
       }, 3000);};
-
 //ボタン操作中は表示継続のため呼び出し続ける
 for (const btn of touchButtons.values()) {
     btn.addEventListener('pointerdown', () => {
         showMobileButtons();});};
 
+//タッチパネル用 背景色変更
 const editingColor = (myColor) => {
     colorChangeFlag = colorChangeFlag === myColor ? 0 : myColor;
     [{btn:rColorBtn, key:"r"}, {btn:gColorBtn, key:"g"}, {btn:bColorBtn, key:"b"}].forEach(({btn, key}) => {
         const isActive = colorChangeFlag === key;
-        btn.style.borderColor = isActive ? "#2a8" : "#403838";
-        btn.style.background = isActive ? "#242" : "rgba(0, 0, 0, 0.6)";});};
-
+        btn.style.borderColor = isActive ? "#2a8" : "";
+        btn.style.background = isActive ? "#242" : "";});};
 rColorBtn.addEventListener("click", () => {
   editingColor("r");});
 gColorBtn.addEventListener("click", () => {
@@ -152,10 +152,6 @@ let isWriting = false;
 canvas2d.addEventListener("pointerdown", (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
   if (writeMode) isWriting = true;});
-window.addEventListener("pointerup", () => {
-  isWriting = false;});
-window.addEventListener("pointerleave", () => {
-  isWriting = false;});
 
 // --- ポインター（マウス・タッチ共通）追従ロジック ---
 const mouse = window.APP_MODE === "PC_MODE" ? { x: window.innerWidth/2, y: window.innerHeight/2 } :
@@ -170,23 +166,35 @@ const updateMouseCoordinates = (e) => {
     mouse.y = e.clientY / DragonScope.mobileRatio;}};
 
 const activePointers = new Map();
-let lastPinchDistance = 0; // 前回の2本指の距離を保持
 const COLOR_THRESHOLD = 1; // 色変更の値（ピクセル）
 const ZOOM_THRESHOLD = 30; // ズーム判定を行う距離のしきい値（ピクセル）
-const getDistance = (p1, p2) => Math.hypot(p2.x - p1.x, p2.y - p1.y); // 2点間の距離を計算するヘルパー
+let lastPinchDistance = 0; // 前回の2本指の距離を保持
+// 2本指の距離を計算するヘルパー関数
+const getDistance = () => {
+  const points = Array.from(activePointers.values());
+  if (points.length !== 2) {return;}
+  return Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y);};
+// 3本指用 重心（X座標の平均）を計算するヘルパー関数
+const getCentroidX = () => {
+    const points = Array.from(activePointers.values());
+    if (points.length === 0) {return 0;}
+    const sumX = points.reduce((sum, p) => sum + p.x, 0);
+    return sumX / points.length;};
+let touchStartCentroidX = null; //3本指スワイプの初期座標値
+let THREE_SWIPE_THRESHOLD = 100; //3本指スワイプの閾値
 
 // 指がタッチ（１～３本） / マウスが押された
 canvas2d.addEventListener("pointerdown", (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey) return;
   activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  // 3本以上の指が検知されたら表示
-  if (activePointers.size >= 3) {
-      showMobileButtons();
+      if (activePointers.size === 3) {
+        showMobileButtons();
+        touchStartCentroidX = getCentroidX();
     } else if (activePointers.size === 2) {
-        // 2本目が触れた瞬間の距離を初期値として保存
-        const points = Array.from(activePointers.values());
-        lastPinchDistance = getDistance(points[0], points[1]);}
+        lastPinchDistance = getDistance();
+    }
     canvas2d.setPointerCapture(e.pointerId);});
+
 
 // 移動中（PCならホバー、スマホならなぞり操作）
 window.addEventListener("pointermove", (e) => {
@@ -194,15 +202,15 @@ window.addEventListener("pointermove", (e) => {
       return updateMouseCoordinates(e);}
     if (!activePointers.has(e.pointerId)) {return;}
     activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
+// -----=====1本指処理=====-----
     if (activePointers.size === 1) {
         updateMouseCoordinates(e);
+// -----=====2本指処理=====-----
       } else if (activePointers.size === 2) {
-        const points = Array.from(activePointers.values());
-        const currentDistance = getDistance(points[0], points[1]);
+        const currentDistance = getDistance();
         // 前回の距離との差分を計算
         const diff = currentDistance - lastPinchDistance;
-
+// -----拡大縮小-----
           if(colorChangeFlag === 0 && !clearOffMode){
                 if (Math.abs(diff) >= ZOOM_THRESHOLD) {
                   if (diff > 0) {
@@ -211,6 +219,7 @@ window.addEventListener("pointermove", (e) => {
                   zoomDown();}
               lastPinchDistance = currentDistance;}
             } else {
+// -----背景色変更-----
               if (colorChangeFlag === 'r') {
                 rgb.r = Math.min(255, Math.max(0, rgb.r + COLOR_THRESHOLD * Math.sign(diff)));}
               if (colorChangeFlag === 'g') {
@@ -222,18 +231,52 @@ window.addEventListener("pointermove", (e) => {
             changeBackgroundColor();
             //ボタン表示継続
             showMobileButtons();
-            RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;}}});
+            RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;}
+// -----=====3本指スワイプ処理=====-----
+          } else if (activePointers.size === 3 && touchStartCentroidX !== null){
+            const total = dragonManager.individuals.length;
+            if (total === 1) {return;}
 
+//----- 3本指スワイプの時はボタン消す 単発なので直書き ------
+              for (const btn of touchButtons.values()) {
+                  btn.classList.remove('show');}
+                  colorChangeFlag = 0;
+              [rColorBtn, gColorBtn, bColorBtn].forEach(button => {
+                  button.style.borderColor = "";
+                  button.style.background = "";});
+
+            const currentCentroidX = getCentroidX();
+            const diffThreeX = currentCentroidX - touchStartCentroidX;
+
+// function debug(){
+// const debugLog = document.getElementById("debug");
+// debugLog.textContent = `${touchStartCentroidX}_${diffThreeX}`;};
+// debug();
+
+            if (Math.abs(diffThreeX) >= THREE_SWIPE_THRESHOLD) {
+              // 座標をnullにして指を離すまでロック（物理ロック）
+                touchStartCentroidX = null;
+                if (diffThreeX > 0) {
+                    switchToNext();
+                } else {
+                    switchToPrev();}
+                showToast(` current:【${dragonManager.currentIndex + 1} / ${total}】`, 3000);
+              }}});
+
+//指が離れた時の処理をまとめる
 const removePointer = (e) => {
+    isWriting = false;
     isDraggingV = false;
     activePointers.delete(e.pointerId);
+    if (activePointers.size === 0) {
+        touchStartCentroidX = null;}
     canvas2d.releasePointerCapture(e.pointerId);};
 
 canvas2d.addEventListener("dblclick", (e) => {
     if (window.APP_MODE === "MOBILE_MODE") {
     mouse.x = e.clientX / DragonScope.mobileRatio;
     mouse.y = e.clientY / DragonScope.mobileRatio;}
-        DragonScope.master.isBoosting = true;});
+    DragonScope.master.isBoosting = true;});
 
 // ==============================
 // 全画面表示 & UI非表示 制御
@@ -243,8 +286,12 @@ const toggleFullscreen = async () => {
     if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen().catch(err => {
             console.error(`Error: ${err.message}`);});
+        fsBtn.style.borderColor = "#2a8";
+        fsBtn.style.background = "#242";
     } else {
-        await document.exitFullscreen();}};
+        await document.exitFullscreen();
+        fsBtn.style.borderColor = "";
+        fsBtn.style.background = "";}};
 
 // 2. ペイン非表示トリガー（UIを隠して描画に集中）
 const toggleUIPane = () => {
@@ -252,7 +299,9 @@ const toggleUIPane = () => {
     const resizerV = document.getElementById("resizer_v");
     if (!pane) return;
     pane.classList.toggle('pane-hidden');
-    resizerV.classList.toggle('resizerV-hidden');};
+    resizerV.classList.toggle('resizerV-hidden');
+    hideUiBtn.style.borderColor = pane.classList.contains('pane-hidden') ? "#2a8" : "";
+    hideUiBtn.style.background = pane.classList.contains('pane-hidden') ? "#242" : "";};
 
 window.addEventListener("keydown", e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
@@ -277,8 +326,8 @@ window.addEventListener("keydown", e => {
     noticeMode();});
 
 const modeActiveStyle = (btn, mode) => {
-  btn.style.borderColor = mode === 0 ? "#403838" : "#2a8";
-  btn.style.background = mode === 0 ? "rgba(0, 0, 0, 0.6)" : "#242";};
+  btn.style.borderColor = mode === 0 ? "" : "#2a8";
+  btn.style.background = mode === 0 ? "" : "#242";};
 
 rotationBtn.addEventListener("click", () => {
 // 0, 1, 2, 3, 4 の範囲でループさせる（5になったら0に戻る）
@@ -309,8 +358,8 @@ clearOffBtn.addEventListener("click", () => {
   modeActiveStyle(clearOffBtn, clearOffMode);
   noticeMode();});
 
-window.addEventListener("pointerup", removePointer);
-window.addEventListener("pointercancel", removePointer);
+//removePointerにまとめてるので、それを呼び出し
+['pointerup', 'pointerleave', 'pointercancel'].forEach(type => {window.addEventListener(type, removePointer);});
 fsBtn.addEventListener("click", toggleFullscreen);
 hideUiBtn.addEventListener("click", toggleUIPane);
 zuBtn.addEventListener("click", zoomUp);
@@ -332,22 +381,10 @@ document.getElementById("add-ui-display").addEventListener("click", async () => 
     // 全体描画リストの更新
     updateUIStatus();});
 
-// PREVIOUS 切替処理_index最後に移る
-document.getElementById("prev-ui-switch").addEventListener("click", () => {
-  //switch処理は重いので、不要な時は実行しない
-  if(dragonManager.individuals.length === 1){return;}
-      const newIndex = dragonManager.currentIndex - 1;
-    if (newIndex < 0){
-      dragonManager.switch(dragonManager.individuals.length-1);
-      updateUIStatus();
-      return;}
-        dragonManager.switch(newIndex);
-        updateUIStatus();});
-
 // NEXT 切替処理_index頭に戻る
-const switchToNext = () => {
-    //switch処理は重いので、不要な時は実行しない
-    if(dragonManager.individuals.length === 1){return;}
+function switchToNext() {
+  //switch処理は重いので、不要な時は実行しない
+    if(dragonManager.individuals.length === 1) {return;}
     const newIndex = dragonManager.currentIndex + 1;
     if (newIndex >= dragonManager.individuals.length){
       dragonManager.switch(0);
@@ -355,13 +392,25 @@ const switchToNext = () => {
       return;}
         dragonManager.switch(newIndex);
         updateUIStatus();};
-
 document.getElementById("next-ui-switch").addEventListener("click", switchToNext);
-
+//PCはsキーのみなので、nextのみ
 window.addEventListener("keydown", (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
   if (e.key === "s"){
     switchToNext();}});
+
+// PREVIOUS 切替処理_index最後に移る(タッチパネル用にprevも用意。ホイスティングの為,function宣言)
+function switchToPrev() {
+    //switch処理は重いので、不要な時は実行しない
+  if(dragonManager.individuals.length === 1){return;}
+    const newIndex = dragonManager.currentIndex - 1;
+    if (newIndex < 0){
+      dragonManager.switch(dragonManager.individuals.length-1);
+      updateUIStatus();
+      return;}
+        dragonManager.switch(newIndex);
+        updateUIStatus();};
+document.getElementById("prev-ui-switch").addEventListener("click", switchToPrev);
 
 
 //============================
@@ -370,8 +419,7 @@ window.addEventListener("keydown", (e) => {
 document.getElementById("del-ui-display").addEventListener("click", () => {
   const deletedIndex = DragonScope.individualCurrentIndex;
   dragonManager.deleteCurrentIndividual(deletedIndex);
-  updateUIStatus();
-});
+  updateUIStatus();});
 
 // UI上の「0 / 1」などのテキスト更新関数
 function updateUIStatus() {
@@ -379,7 +427,9 @@ function updateUIStatus() {
     if (display) {
         const current = dragonManager.currentIndex + 1;
         const total = dragonManager.individuals.length;
-        display.textContent = `${current} / ${total}`;}}
+        display.textContent = `${current} / ${total}`;
+        return `${current} / ${total}`;
+      }}
 
 // ==============================
 // 描画
