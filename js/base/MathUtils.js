@@ -59,6 +59,7 @@ showMobileButtons = mainMod.showMobileButtons;
 const createResolvedParams = (dragon) => {
   const resolved = {};
   let intervalId = null;
+  let flagShowMobileButtons = false;
 
 //pc,タッチパネル共通処理
   const lumpCalculation = (targetKey) => {
@@ -76,7 +77,8 @@ const createResolvedParams = (dragon) => {
     } else if (targetKey === '-') {
       dragon.scaleX -= 0.2;
       dragon.scaleY -= 0.2;}
-  showMobileButtons();
+    if(flagShowMobileButtons) {
+      showMobileButtons();}
   }, 32);};
 
 //PC用のキー操作
@@ -100,6 +102,7 @@ const createResolvedParams = (dragon) => {
     el.style.background = "#242";
     lumpCalculation(targetKey);
     showToast(`【${targetKey}】`, 1000);
+    flagShowMobileButtons = true;
   });});
 
 //指を離したとき
@@ -107,6 +110,7 @@ const createResolvedParams = (dragon) => {
     window.addEventListener(type, () => {
       clearInterval(intervalId);
       intervalId = null;
+      flagShowMobileButtons = false;
       Object.values(lumpCalculationKey).forEach(el => {
         el.style.borderColor = "";
         el.style.background = "";

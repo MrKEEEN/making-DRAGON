@@ -510,12 +510,17 @@ const targetDragon = DragonScope.selectedDragon.followId;
         slider.max = config[1];
         const baseStep = config[2] ?? F_1;
         slider.step = baseStep;
-        const valDisp = document.createElement('span');
-        valDisp.className = "inspector-slider-value-disp";
         const currentVal = DragonScope.selectedDragon[key] ?? config[defInd];
+        const valDisp = document.createElement('input');
+        valDisp.type = "number";
+        valDisp.className = "inspector-slider-value-disp";
+        const negBtn = document.createElement('input');
+        negBtn.type = "button";
+        negBtn.value = "±";
         slider.value = currentVal;
-        valDisp.innerText = currentVal;
-      // -------------------キーボード操作ロジック--------------
+        valDisp.value = currentVal;
+
+        // -------------------キーボード操作ロジック--------------
         slider.addEventListener('keydown', e => {
           e.preventDefault();
           let v = parseFloat(slider.value);
@@ -537,20 +542,162 @@ const targetDragon = DragonScope.selectedDragon.followId;
             const stepDec = baseStep.toString().includes('.') ? baseStep.toString().split('.')[1].length : 0;
             const finalV = parseFloat(v.toFixed(stepDec + 1));
             slider.value = finalV;
-            valDisp.innerText = finalV;
+            valDisp.value = finalV;
             DragonScope.selectedDragon[key] = finalV;
             slider.dispatchEvent(new Event('input'));
             DragonScope.storage[DragonScope.selectedDragon.id].current[key] = finalV;}});
-        slider.oninput = (e) => {
-          const v = parseFloat(e.target.value);
-          valDisp.innerText = v;
+
+
+
+            slider.oninput = (e) => {
+              const v = parseFloat(e.target.value);
+              valDisp.value = v;
+              DragonScope.selectedDragon[key] = v;
+              DragonScope.storage[DragonScope.selectedDragon.id].current[key] = v;
+              if (["numParts"].includes(key)) {
+                DragonScope.selectedDragon.rebuild();
+                rebuildDragonList();
+              }};
+
+
+
+            let isDragging = false;
+let longPressTimer = null;
+let startX, startV;
+
+slider.addEventListener('pointerdown', (e) => {
+    // タッチパネルの場合は長押しタイマーを開始
+    const isTouch = e.pointerType === 'touch';
+    const delay = isTouch ? 5000 : 0; // マウスは即時、タッチは500ms
+
+    longPressTimer = setTimeout(() => {
+        isDragging = true;
+        startX = e.clientX;
+        startV = parseFloat(slider.value);
+        slider.setPointerCapture(e.pointerId);
+    }, delay);
+});
+
+window.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+
+    // スライダーからの垂直距離（Y軸のズレ）を取得
+    const rect = slider.getBoundingClientRect();
+    const distY = Math.abs(e.clientY - (rect.top + rect.height / 2));
+    // 距離が離れるほど感度を下げる（100px離れると1/10の精度にする例）
+    const sensitivity = Math.max(0.001, 1 / (1 + distY / 10));
+    const deltaX = (e.clientX - startX) * sensitivity;
+    // スライダーの全幅に対する移動割合を値に変換
+    const range = config[1] - config[0];
+    const newValue = startV + (deltaX / rect.width) * range;
+    // 範囲制限
+    const finalV = Math.max(config[0], Math.min(config[1], newValue));
+    // 反映（既存の共通処理を呼び出し）
+    slider.value = finalV;
+    slider.oninput({ target: slider });
+});
+
+window.addEventListener('pointerup', (e) => {
+    clearTimeout(longPressTimer);
+    isDragging = false;
+});
+
+// 標準のドラッグ挙動を無効化（独自ロジックと干渉させないため）
+slider.addEventListener('mousedown', e => e.preventDefault());
+
+
+// スライダーの標準挙動を完全に制御下に置く
+slider.style.touchAction = 'none'; // ブラウザのスクロールを禁止
+slider.oncontextmenu = (e) => e.preventDefault(); // 長押し時のメニュー禁止
+
+let isDragging = false;
+let longPressTimer = null;
+let startX, startV;
+
+slider.addEventListener('pointerdown', (e) => {
+    // 既存のタイマーがあればクリア
+    clearTimeout(longPressTimer);
+
+    // タッチの場合は500ms待機。マウスなら即時（または任意の時間）
+    const delay = e.pointerType === 'touch' ? 500 : 0;
+
+    longPressTimer = setTimeout(() => {
+        isDragging = true;
+        startX = e.clientX;
+        startV = parseFloat(slider.value);
+        slider.setPointerCapture(e.pointerId); // 指が外れても追跡
+        slider.style.cursor = 'grabbing';
+    }, delay);
+});
+
+window.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+
+    const rect = slider.getBoundingClientRect();
+    // 垂直方向の距離を計算
+    const distY = Math.abs(e.clientY - (rect.top + rect.height / 2));
+    
+    // 距離が離れるほど感度を下げる（150px以上離れると非常に細かくなる）
+    const sensitivity = Math.max(0.05, 1 / (1 + distY / 50));
+    
+    const deltaX = (e.clientX - startX) * sensitivity;
+    const range = config[1] - config[0];
+    const newValue = startV + (deltaX / rect.width) * range;
+    
+    const finalV = Math.max(config[0], Math.min(config[1], newValue));
+    
+    slider.value = finalV;
+    slider.oninput({ target: slider });
+});
+
+window.addEventListener('pointerup', (e) => {
+    clearTimeout(longPressTimer); // 長押し成立前に離したらキャンセル
+    isDragging = false;
+    slider.style.cursor = 'pointer';
+});
+
+window.addEventListener('pointercancel', (e) => {
+    clearTimeout(longPressTimer);
+    isDragging = false;
+});
+
+
+
+        valDisp.oninput = () => {
+          try {
+          const v = parseFloat(valDisp.value);
+          // parseFloatがNaNを返した場合、または値が不正な場合は意図的にエラーを発生させてcatchへ飛ばす.3つのkeyは個別にclamp
+        if (isNaN(v) || (["spacing"].includes(key) && v<0) || (["speed"].includes(key) && v<0) || (["numParts"].includes(key) && v<=0 || !Number.isInteger(v))){
+            throw new Error("Invalid Number");}
+            slider.value = v;
+            valDisp.value = v;
+            DragonScope.selectedDragon[key] = v;
+            DragonScope.storage[DragonScope.selectedDragon.id].current[key] = v;
+            if (["numParts"].includes(key)) {
+              DragonScope.selectedDragon.rebuild();
+              rebuildDragonList();}
+          } catch (e) {
+        // エラー（NaN）時は現在の保持値（currentVal）に差し戻す
+              slider.value = currentVal;
+              valDisp.value = currentVal;
+              DragonScope.selectedDragon[key] = currentVal;
+              DragonScope.storage[DragonScope.selectedDragon.id].current[key] = currentVal;
+              if (["numParts"].includes(key)) {
+                DragonScope.selectedDragon.rebuild();
+                rebuildDragonList();}}};
+
+        negBtn.onclick = () => {
+          if (["spacing"].includes(key) || ["speed"].includes(key) || ["numParts"].includes(key)) {return;}
+          const rawVal = valDisp.value;
+          let v = parseFloat(rawVal);
+          v = -v;
+          slider.value = v;
+          valDisp.value = v;
           DragonScope.selectedDragon[key] = v;
-          DragonScope.storage[DragonScope.selectedDragon.id].current[key] = v;
-          if (["numParts"].includes(key)) {
-            DragonScope.selectedDragon.rebuild();
-            rebuildDragonList();
-          }};
+          DragonScope.storage[DragonScope.selectedDragon.id].current[key] = v;};
+
         sliderRow.appendChild(slider);
+        sliderRow.appendChild(negBtn);
         sliderRow.appendChild(valDisp);
         itemRow.appendChild(sliderRow);
         contentWrapper.appendChild(itemRow);}}
