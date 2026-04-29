@@ -606,60 +606,7 @@ window.addEventListener('pointerup', (e) => {
 slider.addEventListener('mousedown', e => e.preventDefault());
 
 
-// スライダーの標準挙動を完全に制御下に置く
-slider.style.touchAction = 'none'; // ブラウザのスクロールを禁止
-slider.oncontextmenu = (e) => e.preventDefault(); // 長押し時のメニュー禁止
 
-let isDragging = false;
-let longPressTimer = null;
-let startX, startV;
-
-slider.addEventListener('pointerdown', (e) => {
-    // 既存のタイマーがあればクリア
-    clearTimeout(longPressTimer);
-
-    // タッチの場合は500ms待機。マウスなら即時（または任意の時間）
-    const delay = e.pointerType === 'touch' ? 500 : 0;
-
-    longPressTimer = setTimeout(() => {
-        isDragging = true;
-        startX = e.clientX;
-        startV = parseFloat(slider.value);
-        slider.setPointerCapture(e.pointerId); // 指が外れても追跡
-        slider.style.cursor = 'grabbing';
-    }, delay);
-});
-
-window.addEventListener('pointermove', (e) => {
-    if (!isDragging) return;
-
-    const rect = slider.getBoundingClientRect();
-    // 垂直方向の距離を計算
-    const distY = Math.abs(e.clientY - (rect.top + rect.height / 2));
-    
-    // 距離が離れるほど感度を下げる（150px以上離れると非常に細かくなる）
-    const sensitivity = Math.max(0.05, 1 / (1 + distY / 50));
-    
-    const deltaX = (e.clientX - startX) * sensitivity;
-    const range = config[1] - config[0];
-    const newValue = startV + (deltaX / rect.width) * range;
-    
-    const finalV = Math.max(config[0], Math.min(config[1], newValue));
-    
-    slider.value = finalV;
-    slider.oninput({ target: slider });
-});
-
-window.addEventListener('pointerup', (e) => {
-    clearTimeout(longPressTimer); // 長押し成立前に離したらキャンセル
-    isDragging = false;
-    slider.style.cursor = 'pointer';
-});
-
-window.addEventListener('pointercancel', (e) => {
-    clearTimeout(longPressTimer);
-    isDragging = false;
-});
 
 
 
