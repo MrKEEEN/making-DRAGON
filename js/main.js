@@ -6,6 +6,12 @@ import { ResetSaveLoad } from './ui/ResetSaveLoad.js';
 
 //TODO 画面の画像を右クリックメニューで保存するとページが勝手にリロードされる。jsのコードではなくブラウザの機能だが、要修正。画像保存は必要。
 
+//スマホのデバッグ用ログ表示関数
+// function debug(){
+// const debugLog = document.getElementById("debug");
+// debugLog.textContent = `${window.innerWidth}_${window.innerHeight}_${canvas2d.width}_${canvasWebGPU.width}`;};
+// debug();
+
 //webGPUのライブラリ
 import * as PIXI from '../lib/pixi.mjs';
 // --- 描画モードとキャンバスの定義 ---
@@ -42,39 +48,46 @@ const noticeMode = () => {
 function resizeCanvas() {
   if(window.APP_MODE === "PC_MODE"){
     const dpr = window.devicePixelRatio;
-    [canvas2d, canvasWebGPU].forEach(c => {
-        c.width = window.innerWidth * dpr;
-        c.height = window.innerHeight * dpr;});
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const clampedDpr = Math.max(1, Math.min(5, dpr ** 2));
+    //pc,2Dキャンバス
+        canvas2d.width = window.innerWidth * clampedDpr;
+        canvas2d.height = window.innerHeight * clampedDpr;
+        ctx.setTransform(clampedDpr, 0, 0, clampedDpr, 0, 0);
+    //pc,webGPUキャンバス
     if (app.renderer) {
-        app.renderer.resolution = Math.max(1, Math.min(5, dpr ** 2));
+        app.renderer.resolution = clampedDpr;
         app.renderer.resize(window.innerWidth, window.innerHeight);}
-    ratioInfo.textContent = `Ratio:${dpr.toFixed(3)}`;
+      ratioInfo.textContent = `Ratio:${dpr.toFixed(3)}`;
     } else {
     const dpr = DragonScope.mobileRatio;
-    [canvas2d, canvasWebGPU].forEach(c => {
-        c.width = window.innerWidth * dpr;
-        c.height = window.innerHeight * dpr;
-        c.style.width = "100%";
-        c.style.height = "100%";
-      });
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (app.renderer) {
-      app.renderer.resolution = Math.max(1, Math.min(5, dpr ** 2));
-      app.renderer.resize(window.innerWidth /dpr, window.innerHeight /dpr);}
-      ratioInfo.textContent = `Ratio:${dpr.toFixed(3)}`;}}
+    const clampedDpr = Math.max(1, Math.min(5, dpr ** 2));
+    //モバイル,2Dキャンバス_inner値固定の為、スマホでの解像度はdprが1を境に逆転するので(clampなし)
+    if(dpr <= 1){
+        canvas2d.width = window.innerWidth / dpr;
+        canvas2d.height = window.innerHeight / dpr;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+    } else {
+      canvas2d.width = window.innerWidth;
+      canvas2d.height = window.innerHeight;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);}
+    //モバイル,webGPUキャンバス
+      if (app.renderer) {
+          app.renderer.resolution = clampedDpr;
+          app.renderer.resize(window.innerWidth /dpr, window.innerHeight /dpr);}
+      ratioInfo.textContent = `Ratio:${dpr.toFixed(3)}`;
+    }}
 
 window.addEventListener("resize", () => {
   if(clearOffMode){return;}
   resizeCanvas()});
 
 const zoomUp = () => {
-    if(DragonScope.mobileRatio > 10) return;
+    if(DragonScope.mobileRatio > 10) {return;}
     const zu = document.getElementById('btn-zoomup');
     DragonScope.mobileRatio *= 1.1;
     resizeCanvas();};
 const zoomDown = () => {
-    if(DragonScope.mobileRatio < 0.1) return;
+    if(DragonScope.mobileRatio < 0.15) {return;}
     const zu = document.getElementById('btn-zoomup');
     DragonScope.mobileRatio *= 0.9;
     resizeCanvas();};
@@ -85,7 +98,7 @@ resizerV.addEventListener("pointerdown", (e) => {
     isDraggingV = true;
     resizerV.setPointerCapture(e.pointerId);});
 window.addEventListener("pointermove", (e) => {
-    if (!isDraggingV || clearOffMode) return;
+    if (!isDraggingV) {return;}
     const dpr = window.devicePixelRatio;
     const newWidth = window.innerWidth - e.clientX;
     const finalWidth = Math.max(0, Math.min(maxPaneWidth / dpr, newWidth));
@@ -234,8 +247,6 @@ window.addEventListener("pointermove", (e) => {
             RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;}
 // -----=====3本指スワイプ処理=====-----
           } else if (activePointers.size === 3 && touchStartCentroidX !== null){
-            const total = dragonManager.individuals.length;
-            if (total === 1) {return;}
 
 //----- 3本指スワイプの時はボタン消す 単発なので直書き ------
               for (const btn of touchButtons.values()) {
@@ -245,14 +256,11 @@ window.addEventListener("pointermove", (e) => {
                   button.style.borderColor = "";
                   button.style.background = "";});
 
+            const total = dragonManager.individuals.length;
+//----- 複数個体がないときは不要なので処理しない ------
+            if (total === 1) {return;}
             const currentCentroidX = getCentroidX();
             const diffThreeX = currentCentroidX - touchStartCentroidX;
-
-// function debug(){
-// const debugLog = document.getElementById("debug");
-// debugLog.textContent = `${touchStartCentroidX}_${diffThreeX}`;};
-// debug();
-
             if (Math.abs(diffThreeX) >= THREE_SWIPE_THRESHOLD) {
               // 座標をnullにして指を離すまでロック（物理ロック）
                 touchStartCentroidX = null;
@@ -307,22 +315,18 @@ window.addEventListener("keydown", e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey){return;}
   const num = parseInt(e.key, 10);
   if (num >= 1 && num <= 4) {rotationMode = (rotationMode === num) ? 0 : num;}
-  if (e.key === "z") {reverseMode ^= 1;}
+  if (e.key === "z") {
+    reverseMode ^= 1;}
   if (e.key === "m") {mouseOffMode ^= 1;}
   if (e.key === "w") {writeMode ^= 1;}
   if (e.key === "c") {
-    //描画中にキャンバスサイズを変えるとリサイズイベントも発火してしまうため、clearModeがonのときのみリサイズしてキャンバスをクリアするようにする。
     if (clearOffMode) {
         clearOffMode = 0;
         drawMode = 1;
         resizeCanvas();
     } else {
         clearOffMode = 1;
-        drawMode = 0;
-        resizeCanvas();
-      }
-    resizeCanvas();
-    }
+        drawMode = 0;}}
     noticeMode();});
 
 const modeActiveStyle = (btn, mode) => {
@@ -350,11 +354,10 @@ clearOffBtn.addEventListener("click", () => {
       if (clearOffMode) {
         clearOffMode = 0;
         drawMode = 1;
+        resizeCanvas();
     } else {
         clearOffMode = 1;
-        drawMode = 0;
-        // resizeCanvas();
-    }
+        drawMode = 0;}
   modeActiveStyle(clearOffBtn, clearOffMode);
   noticeMode();});
 
