@@ -191,6 +191,10 @@ function updateAdd(dragonInput){
 //=================================
 //---コントロールペイン---
 //=================================
+
+//複数スライダーが同時発火しないように共通の変数を関数外に用意
+let sliderLocked = false;
+
 const createInspectorGUI = (containerIdIndex) => {
   const topContainer = document.getElementById('inspector-top-container');
   const contentAreaWrapper = document.getElementById('inspector-content');
@@ -547,9 +551,18 @@ const targetDragon = DragonScope.selectedDragon.followId;
             slider.dispatchEvent(new Event('input'));
             DragonScope.storage[DragonScope.selectedDragon.id].current[key] = finalV;}});
 
-
+            let isSliderDragging = false;
+            let activePointerId = null;
+            let longPressTimer = null;
+            let startX;
+            let startV;
 
             slider.oninput = (e) => {
+              if (!isSliderDragging) {
+    // 長押し確定前なら、表示上の値を元の値に戻して処理を中断する
+              slider.value = startV;
+              return;}
+
               const v = parseFloat(e.target.value);
               valDisp.value = v;
               DragonScope.selectedDragon[key] = v;
@@ -561,31 +574,35 @@ const targetDragon = DragonScope.selectedDragon.followId;
 
 
 
-            let isDragging = false;
-let longPressTimer = null;
-let startX, startV;
-
 slider.addEventListener('pointerdown', (e) => {
-    // タッチパネルの場合は長押しタイマーを開始
-    const isTouch = e.pointerType === 'touch';
-    const delay = isTouch ? 5000 : 0; // マウスは即時、タッチは500ms
-
-    longPressTimer = setTimeout(() => {
-        isDragging = true;
-        startX = e.clientX;
-        startV = parseFloat(slider.value);
-        slider.setPointerCapture(e.pointerId);
-    }, delay);
+  if(sliderLocked || activePointerId) return;
+  e.preventDefault();
+  const isTouch = e.pointerType === 'touch';
+  const delay = isTouch ? 500 : 0;
+  // 2. ブラウザが値を書き換える前の「本当の初期値」を即座に保存
+  startX = e.clientX;
+  startV = parseFloat(slider.value);
+  // 3. 500ms待たずに即座にキャプチャを開始（指の動きを逃さないため）
+  slider.setPointerCapture(e.pointerId);
+  activePointerId = e.pointerId;
+  longPressTimer = setTimeout(() => {
+    // 500ms経過したらドラッグ有効フラグを立てる
+    isSliderDragging = true;
+    sliderLocked = true;
+    // 基準座標と基準値を最新（長押し確定時）に更新したい場合はここで再代入
+    startX = e.clientX;
+    startV = parseFloat(slider.value);
+  }, delay);
 });
 
-window.addEventListener('pointermove', (e) => {
-    if (!isDragging) return;
 
+window.addEventListener('pointermove', (e) => {
+    if (!isSliderDragging || e.pointerId !== activePointerId) return;
     // スライダーからの垂直距離（Y軸のズレ）を取得
     const rect = slider.getBoundingClientRect();
     const distY = Math.abs(e.clientY - (rect.top + rect.height / 2));
     // 距離が離れるほど感度を下げる（100px離れると1/10の精度にする例）
-    const sensitivity = Math.max(0.001, 1 / (1 + distY / 10));
+    const sensitivity = Math.max(0.001, 1 / (1 + distY / 5));
     const deltaX = (e.clientX - startX) * sensitivity;
     // スライダーの全幅に対する移動割合を値に変換
     const range = config[1] - config[0];
@@ -599,23 +616,18 @@ window.addEventListener('pointermove', (e) => {
 
 window.addEventListener('pointerup', (e) => {
     clearTimeout(longPressTimer);
-    isDragging = false;
+    isSliderDragging = false;
+    sliderLocked = false;
+    activePointerId = null;
 });
 
-// 標準のドラッグ挙動を無効化（独自ロジックと干渉させないため）
-slider.addEventListener('mousedown', e => e.preventDefault());
 
-
-
-
-
-
-        valDisp.oninput = () => {
+        valDisp.onchange = () => {
           try {
           const v = parseFloat(valDisp.value);
           // parseFloatがNaNを返した場合、または値が不正な場合は意図的にエラーを発生させてcatchへ飛ばす.3つのkeyは個別にclamp
-        if (isNaN(v) || (["spacing"].includes(key) && v<0) || (["speed"].includes(key) && v<0) || (["numParts"].includes(key) && v<=0 || !Number.isInteger(v))){
-            throw new Error("Invalid Number");}
+        if (isNaN(v) || (["spacing"].includes(key) && v<0) || (["speed"].includes(key) && v<0) || (["numParts"].includes(key) && v<=0)){
+          throw new Error("Invalid Number");}
             slider.value = v;
             valDisp.value = v;
             DragonScope.selectedDragon[key] = v;

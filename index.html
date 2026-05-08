@@ -26,12 +26,17 @@
     <button id="btn-hide-ui" class="touch-button">UI OFF</button>
     <button id="btn-zoomup" class="touch-button">Z↑</button>
     <button id="btn-zoomdown" class="touch-button">Z↓</button>
-    <!-- <div id="debug" style="position:fixed; top:10px; left:10px; z-index:100; color:white; background:rgba(0,0,0,0.5); pointer-events:none; font-family:monospace;"></div> -->
-</div>
+
+    <div id="debug" style="position:fixed; top:10px; left:10px; z-index:100; color:white; background:rgba(0,0,0,0.5); pointer-events:none; font-family:monospace;"></div>
+    <div id="debug1" style="position:fixed; top:40px; left:10px; z-index:100; color:white; background:rgba(0,0,0,0.5); pointer-events:none; font-family:monospace;"></div>
+
+  </div>
 <div id="statusInfo">
   <div id="mode-info">MODE - Rotation(1~4):0 Reverse(z):0 MouseOff(m):0 ClearOff(c):0 Write(w):0</div>
-  <div id="RGB-info">R:0 G:0 B:0</div>
-  <div id="ratio-info">Ratio:</div>
+  <div id="ratio-RGB-infoWrapper" style="display:flex; gap:20px;">
+    <div id="ratio-info">Ratio:</div>
+    <div id="RGB-info">R:0 G:0 B:0</div>
+  </div>
 </div>
 <div id="resizer_v"></div>
 <div id="controls">
