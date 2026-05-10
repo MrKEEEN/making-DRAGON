@@ -35,12 +35,13 @@ const adjustZoom = () => {
 // 3. サンプル定義とセレクター
 // ==============================
 const SAMPLES = {
-    "one point":    ["./samples/dragon_Master_onepoint.json"],
-    "First Dragon": ["./samples/dragon_Master_firstDRAGON.json"],
-    "Snake":        ["./samples/dragon_Master_snake.json"],
-    "Spider":       ["./samples/dragon_Master_spider.json"],
-    "Mr. Sherman":  ["./samples/dragon_Master_mr-sherman.json"],
-    "fantasy DRAGONS" : ["./samples/dragon_Master_fantasyDRAGONs_1.json", "./samples/dragon_Master_fantasyDRAGONs_2.json", "./samples/dragon_Master_fantasyDRAGONs_3.json"],
+    //配列最後は初期背景色のrgb値
+    "one point":    ["./samples/dragon_Master_onepoint.json", [0, 0, 0]],
+    "First Dragon": ["./samples/dragon_Master_firstDRAGON.json", [150, 120, 0]],
+    "Snake":        ["./samples/dragon_Master_snake.json", [0, 0, 0]],
+    "Spider":       ["./samples/dragon_Master_spider.json", [0, 0, 0]],
+    "Mr. Sherman":  ["./samples/dragon_Master_mr-sherman.json", [0, 0, 0]],
+    "fantasy DRAGONS" : ["./samples/dragon_Master_fantasyDRAGONs_1.json", "./samples/dragon_Master_fantasyDRAGONs_2.json", "./samples/dragon_Master_fantasyDRAGONs_3.json", [255, 0, 0]],
 };
 
 function showSelector() {
@@ -54,17 +55,39 @@ function showSelector() {
     document.body.appendChild(overlay);
     const container = overlay.querySelector('#btn-container');
 container.style = "display:flex;flex-direction:column;align-items:center;width:100%;max-height:70vh;overflow-y:auto;background: #25caca59";
-    Object.keys(SAMPLES).forEach(name => {
+
+// ボタン生成の共通処理
+    const addSelectButton = (name, data, isUserSave = false) => {
         const appBtn = document.createElement('button');
-        appBtn.innerText = name;
-        appBtn.style = "margin:5px; padding:5px 40px; font-size:18px; cursor:pointer; background:#691; color:white;\
-                        border:5px solid #d9e12f; border-radius:4px; width:250px;";
+        appBtn.innerText = isUserSave ? `Save: ${name}` : name;
+        // ユーザーデータは青、プリセットは緑
+        const bgColor = isUserSave ? "#148" : "#691";
+        const borderColor = isUserSave ? "#38f" : "#d9e12f";
+        appBtn.style = `margin:5px; padding:5px 40px; font-size:18px; cursor:pointer; background:${bgColor}; color:white;\
+                        border:5px solid ${borderColor}; border-radius:4px; width:280px;`;
         appBtn.onclick = async () => {
-            DragonScope.initialData = SAMPLES[name];
+            DragonScope.initialData = data;
             overlay.remove();
-            await import('./main.js');};
-        container.appendChild(appBtn);
-    });}
+            await import('./main.js');
+        };
+        container.appendChild(appBtn);};
+
+    // デフォルトサンプルの表示
+    Object.keys(SAMPLES).forEach(name => {
+        addSelectButton(name, SAMPLES[name]);});
+
+    // ユーザーセーブデータの表示
+    for (let i = 1; i <= 10; i++) {
+        const rawData = localStorage.getItem(`userSAVE_${i}`);
+    // データが存在しない（空）場合はスキップ
+        if (!rawData) continue;
+        try {
+            const data = JSON.parse(rawData);
+        // データが存在していれば無条件でボタンを追加
+            addSelectButton(`Slot ${i}`, data, true);
+        } catch (e) {
+            console.error(`invalid Slot ${i}`);
+    }}}
 
 // ==============================
 // 4. 初期化

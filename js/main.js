@@ -1,4 +1,4 @@
-import { DragonScope } from './base/prop_schema.js';
+import { DragonScope, AllPropSchema_KEYS_excId, AllPropSchema_KEYS_except_id_followId_followIndex } from './base/prop_schema.js';
 import { showToast } from './base/MathUtils.js';
 import { dragonManager } from './core/DragonManager.js';
 import { paneSetupUI, buildDPS } from './ui/Inspector.js';
@@ -42,8 +42,8 @@ let reverseMode = 0;   // 0:通常順, 1:反転順後ろから描写
 let mouseOffMode = 0;  // 0:追従off, 1:追従on
 let clearOffMode = 0;  // 0:描画クリア, 1: 描画ノンクリア
 let writeMode = 0;  // 0:off, 1:on
-const noticeMode = () => {
-  modeInfo.textContent = `MODE - Rotation(1~4):${rotationMode} Reverse(z):${reverseMode} MouseOff(m):${mouseOffMode} ClearOff(c):${clearOffMode} Write(w):${writeMode}`;};
+const noticeMode = () => { modeInfo.textContent =
+  `MODE - Rotation(1~4):${rotationMode} Reverse(z):${reverseMode} MouseOff(m):${mouseOffMode} ClearOff(c):${clearOffMode} Write(w):${writeMode}`;};
 
 function resizeCanvas() {
   if(window.APP_MODE === "PC_MODE"){
@@ -111,6 +111,16 @@ const touchButtons = [rColorBtn, gColorBtn, bColorBtn, multiplyBtn, divideBtn, a
 export const lumpCalculationKey = { m:multiplyBtn, d:divideBtn, a:addBtn, s:subtractBtn };
 let uiTimer = null;
 let colorChangeFlag = 0;
+
+const removeTouchButtons = () => {
+      for (const btn of touchButtons.values()) {
+          btn.classList.remove('show');}
+      colorChangeFlag = 0;
+          //色編集もリセットされるのでボタンハイライトも元に戻す
+      [rColorBtn, gColorBtn, bColorBtn].forEach(button => {
+          button.style.borderColor = "";
+          button.style.background = "";});};
+
 export const showMobileButtons = () => {
     // クラスを付与して表示
     for (const btn of touchButtons.values()) {btn.classList.add('show');}
@@ -118,13 +128,7 @@ export const showMobileButtons = () => {
     if (uiTimer) {clearTimeout(uiTimer);}
     // 3秒後にクラスを外して隠す
     uiTimer = setTimeout(() => {
-        for (const btn of touchButtons.values()) {
-          btn.classList.remove('show');}
-          colorChangeFlag = 0;
-          //色編集もリセットされるのでボタンハイライトも元に戻す
-          [rColorBtn, gColorBtn, bColorBtn].forEach(button => {
-            button.style.borderColor = "";
-            button.style.background = "";});
+        removeTouchButtons();
       }, 3000);};
 //ボタン操作中は表示継続のため呼び出し続ける
 for (const btn of touchButtons.values()) {
@@ -247,21 +251,15 @@ window.addEventListener("pointermove", (e) => {
             RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;}
 // -----=====3本指スワイプ処理=====-----
           } else if (activePointers.size === 3 && touchStartCentroidX !== null){
-
-//----- 3本指スワイプの時はボタン消す 単発なので直書き ------
-              for (const btn of touchButtons.values()) {
-                  btn.classList.remove('show');}
-                  colorChangeFlag = 0;
-              [rColorBtn, gColorBtn, bColorBtn].forEach(button => {
-                  button.style.borderColor = "";
-                  button.style.background = "";});
-
-            const total = dragonManager.individuals.length;
-//----- 複数個体がないときは不要なので処理しない ------
-            if (total === 1) {return;}
             const currentCentroidX = getCentroidX();
             const diffThreeX = currentCentroidX - touchStartCentroidX;
-            if (Math.abs(diffThreeX) >= THREE_SWIPE_THRESHOLD) {
+            const absDiffThreeX = Math.abs(diffThreeX);
+//----- 3本指で少しスワイプすると操作ボタンを消す ------
+            if (absDiffThreeX >= 10) {
+                removeTouchButtons();
+//----- 複数個体がないときは不要なので処理しない ------
+            const total = dragonManager.individuals.length;
+            if (total > 1 && absDiffThreeX >= THREE_SWIPE_THRESHOLD) {
               // 座標をnullにして指を離すまでロック（物理ロック）
                 touchStartCentroidX = null;
                 if (diffThreeX > 0) {
@@ -269,7 +267,7 @@ window.addEventListener("pointermove", (e) => {
                 } else {
                     switchToPrev();}
                 showToast(` current:【${dragonManager.currentIndex + 1} / ${total}】`, 3000);
-              }}});
+            }}}});
 
 //指が離れた時の処理をまとめる
 const removePointer = (e) => {
@@ -415,7 +413,6 @@ function switchToPrev() {
         updateUIStatus();};
 document.getElementById("prev-ui-switch").addEventListener("click", switchToPrev);
 
-
 //============================
 // individual 削除ボタン
 //============================
@@ -433,6 +430,53 @@ function updateUIStatus() {
         display.textContent = `${current} / ${total}`;
         return `${current} / ${total}`;
       }}
+
+
+
+//=============================================
+// ローカルにセーブデータ保存。複数個体、背景色
+//=============================================
+const localSaveButton = document.getElementById('save-localStorage');
+localSaveButton.addEventListener('click', () => {
+  // 1. 各スロットの状況を確認してメッセージを作成
+    let statusMsg = "enter number of the save slot (1-10)\n";
+    for (let i = 1; i <= 10; i++) {
+        const data = localStorage.getItem(`userSAVE_${i}`);
+        const status = data ? "【occupied】" : "【vacant】";
+        // 番号を2桁に揃える (1→01, 10→10)
+        const slotLabel = i.toString().padStart(2, '0');
+        statusMsg += `slot ${slotLabel}:  ${status}\n`;}
+    const slotInput = window.prompt(statusMsg, "1");
+    if (slotInput === null || slotInput === "") return;
+    const slotNumber = parseInt(slotInput, 10);
+    if (isNaN(slotNumber) || slotNumber < 1 || slotNumber > 10) {
+        alert("Please enter a number between 1 and 10.");
+        return;}
+    const allData = [];
+    //  描画データと完全に縁を切ったコピーを作成
+    dragonManager.individuals.forEach(individual => {
+      allData.push(JSON.parse(JSON.stringify(individual.individualDragon, AllPropSchema_KEYS_excId)));});
+    // followIdにはfollow先パーツの全情報が入っているので、nameだけの文字列に差し替える(入れ子になっているので２階層目までループ)
+    allData.forEach(individualData => {
+      individualData.forEach((dragon, index) => {
+        dragon.followId = (dragon.followId && dragon.followId.name) ? dragon.followId.name : null;});});
+    // 背景色データを追加
+    allData.push([rgb.r, rgb.g, rgb.b]);
+    // 文字列化してからlocalStorageに保存
+    const saveString = JSON.stringify(allData);
+    try {
+        // 保存実行
+        localStorage.setItem(`userSAVE_${slotNumber}`, saveString);
+        alert(`Slot ${slotNumber} saved successfully.`);
+    } catch (e) {
+        // 容量オーバーまたはその他の書き込みエラーの処理
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            alert("Error: The browser's storage capacity (5MB) has been exceeded. Please delete unused slots or organize your data.");
+        } else {
+            alert("Error: An unexpected issue occurred while saving.");
+            console.error(e);
+        }}});
+
 
 // ==============================
 // 描画
@@ -512,35 +556,42 @@ DragonScope.updateWebGPUResources = updateWebGPUResources;
   DragonScope.updateWebGPUResources();
 
 const sampleUrls = DragonScope.initialData;
-if(sampleUrls.length > 1){
-  rgb.r = 255;
+
+//初期背景色の設定
+if(Array.isArray(sampleUrls[sampleUrls.length -1])){
+  const backColor = sampleUrls[sampleUrls.length - 1];
+  rgb = { r: backColor[0], g: backColor[1], b: backColor[2] };
   canvasWebGPU.style.setProperty('--bg-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
   const RGBInfo = document.getElementById('RGB-info');
-  RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;}
+  RGBInfo.textContent = `R:${rgb.r} G:${rgb.g} B:${rgb.b}`;};
 
 paneSetupUI();
 ResetSaveLoad.setupUI();
 const { Dragon } = await import('./core/Dragon.js');
 
-for (let i = 0; i < sampleUrls.length; i++) {
-        try {
-            // i番目のパスのみを読み込む
-            const url = sampleUrls[i];
-            const response = await fetch(url);
-            const jsonData = await response.json();
-            // 3. 個体（Master）の器を生成
-            const newDragon = new Dragon({
-                meta: { name: "Master", _imgIndex: 0, followId: null, followIndex: null },
-                basic: { numParts: 1 }
-              });
-            // 4. switch関数で重要な処理を行っているが、初期時に複数体を同タイミングで生成するため、順番を分けて2回呼出。
-            dragonManager.add([newDragon]);
-            dragonManager.switch(i);
-            ResetSaveLoad.applyData(jsonData);
-            dragonManager.switch(i);
-        } catch (e) {
-            console.error(`Failed at index ${i}:`, e);
-        }}
+for (let i = 0; i < sampleUrls.length - 1; i++) {
+    try {
+        const item = sampleUrls[i];
+        let jsonData;
+        // 文字列(デフォルトのサンプルファイル)なら fetch、オブジェクト(ローカルにセーブしてるユーザーファイル)ならそのまま使用
+        if (typeof item === 'string') {
+            const response = await fetch(item);
+            jsonData = await response.json();
+        } else {
+            jsonData = item;}
+
+        const newDragon = new Dragon({
+            meta: { name: "Master", _imgIndex: 0, followId: null, followIndex: null },
+            basic: { numParts: 1 }
+        });
+        // 4. switch関数で重要な処理を行っているが、初期時に複数体を同タイミングで生成するため、順番を分けて2回呼出。
+        dragonManager.add([newDragon]);
+        dragonManager.switch(i);
+        ResetSaveLoad.applyData(jsonData);
+        dragonManager.switch(i);
+    } catch (e) {
+        console.error(`Failed at index ${i}:`, e);
+    }}
 
   //最初の個体を選択済とさせる
   dragonManager.switch(0);
