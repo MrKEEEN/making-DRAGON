@@ -1,9 +1,7 @@
 import { DragonScope } from '../base/prop_schema.js';
 import { buildDPS, rebuildDragonList, updateListHighlight, createInspectorGUI } from '../ui/Inspector.js';
 import { Individual } from './Individual.js';
-import * as PIXI from '../../lib/pixi.mjs';
-
-
+import * as PIXI from '../lib/pixi.mjs';
 export class DragonManager {
     constructor() {
         // Individualインスタンスを格納する配列
@@ -14,20 +12,23 @@ export class DragonManager {
         //webGPU用
         this.spritePool = [];
         this.container = new PIXI.Container();
-        this.app = null;}
-
-//個体追加
+        this.app = null;
+    }
+    //個体追加
     add(dragons) {
         const index = this.individuals.length;
         const newIndividual = new Individual(dragons, index);
-        this.individuals.push(newIndividual);}
-
-//個体削除
+        this.individuals.push(newIndividual);
+    }
+    //個体削除
     deleteCurrentIndividual(deletedIndex) {
-        if (!confirm(`Delete This Whole Individual?`)){return;}
+        if (!confirm(`Delete This Whole Individual?`)) {
+            return;
+        }
         const deletedIndividual = this.individuals[deletedIndex];
         deletedIndividual.individualDragon.forEach((dragons) => {
-            delete DragonScope.storage[dragons.id];});
+            delete DragonScope.storage[dragons.id];
+        });
         this.individuals.splice(deletedIndex, 1);
         const contentArea = document.getElementById("inspector-content");
         contentArea.innerHTML = "";
@@ -37,59 +38,68 @@ export class DragonManager {
             individual.uiContainer.style.display = "none";
             contentArea.appendChild(individual.uiContainer);
             this.switch(newIndex);
-        });}
-
-        buildAllDps() {
+        });
+    }
+    buildAllDps() {
         this.allDps = [];
         this.individuals.forEach((individual, idx) => {
             if (idx === this.currentIndex) {
                 // 操作中の個体は、今まさに計算されている最新のdpsをそのまま使う
-                individual.individualDps = [...DragonScope.dps];}
-                // 操作中じゃない個体は、deactivate時に保存したdpsを使う
-                this.allDps.push(...individual.individualDps);});}
-
-        // main.jsからappを注入するメソッド
-        initApp(app) {
+                individual.individualDps = [...DragonScope.dps];
+            }
+            // 操作中じゃない個体は、deactivate時に保存したdpsを使う
+            this.allDps.push(...individual.individualDps);
+        });
+    }
+    // main.jsからappを注入するメソッド
+    initApp(app) {
         this.app = app;
-        this.app.stage.addChild(this.container);}
-
-syncWebGPUSprites(reverseMode) {
+        this.app.stage.addChild(this.container);
+    }
+    syncWebGPUSprites(reverseMode) {
         const list = this.allDps;
-        if (!this.app) return;
+        if (!this.app)
+            return;
         while (this.spritePool.length < list.length) {
             const s = new PIXI.Sprite();
             s.anchor.set(0.5);
             this.spritePool.push(s);
-            this.container.addChild(s);}
+            this.container.addChild(s);
+        }
         this.spritePool.forEach((s, i) => {
             if (i < list.length) {
                 // reverseModeがtrueなら末尾から、falseなら先頭からインデックスを計算
                 const dataIndex = !reverseMode ? (list.length - 1) - i : i;
                 const { part } = list[dataIndex];
-
                 s.texture = DragonScope.textures[part.imgIndex];
                 s.x = part.x;
                 s.y = part.y;
                 s.rotation = part.angle;
                 const tw = s.texture?.width ?? 1;
                 const th = s.texture?.height ?? 1;
-                s.scale.set(part.scaleX/tw, part.scaleY/th);
+                s.scale.set(part.scaleX / tw, part.scaleY / th);
                 s.visible = true;
-            } else {
+            }
+            else {
                 s.visible = false;
-            }});}
-
+            }
+        });
+    }
     current() {
-        return this.individuals[this.currentIndex];}
-
+        return this.individuals[this.currentIndex];
+    }
     switch(index) {
-        if (index < 0 || index >= this.individuals.length) return;
+        if (index < 0 || index >= this.individuals.length)
+            return;
         // 全個体の状態を一括更新
         this.individuals.forEach((individual, idx) => {
             if (idx === index) {
                 individual.activate();
-            } else {
-                individual.deactivate();}});
+            }
+            else {
+                individual.deactivate();
+            }
+        });
         this.currentIndex = index;
         DragonScope.individualCurrentIndex = index;
         buildDPS();
@@ -97,6 +107,7 @@ syncWebGPUSprites(reverseMode) {
         this.buildAllDps();
         rebuildDragonList();
         updateListHighlight();
-        createInspectorGUI(index);}}
-
+        createInspectorGUI(index);
+    }
+}
 export const dragonManager = new DragonManager();

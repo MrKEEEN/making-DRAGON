@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowJs": true,            // JSファイルを許可
+    "checkJs": false,           // JSファイル内の型チェックはVS Code（JSDoc）に任せる
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "skipLibCheck": true,       // ライブラリ（pixi等）の内部エラーを無視して高速化
+
+    /* 最適化オプション */
+    "sourceMap": true,          // ブラウザのデバッガーで「元のTS/JSコード」を表示可能にする
+    "strict": true,             // TS移行時にバグを厳格に見つけるための基本設定
+    "noImplicitAny": false,     // 移行を楽にするため、型が不明な変数（any）を許容する
+    "forceConsistentCasingInFileNames": true // ファイル名の大文字小文字ミスを防ぐ
+  },
+  "include": ["src/**/*"]
+}
+
+
+
+

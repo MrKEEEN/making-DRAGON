@@ -13,7 +13,9 @@ import { ResetSaveLoad } from './ui/ResetSaveLoad.js';
 // debug();
 
 //webGPUのライブラリ
-import * as PIXI from '../lib/pixi.mjs';
+// import * as PIXI from '../lib/pixi.mjs';
+import * as PIXI from './lib/pixi.mjs';
+
 // --- 描画モードとキャンバスの定義 ---
 let drawMode = 1;
 const canvasContainer = document.getElementById("canvas-container");

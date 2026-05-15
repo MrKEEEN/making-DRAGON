@@ -1,0 +1,6 @@
+# 依存ライブラリ（容量が巨大なため、GitHubには上げない）
+node_modules/
+
+# OSが生成する一時ファイル（Macの.DS_Storeなど）
+.DS_Store
+Thumbs.db

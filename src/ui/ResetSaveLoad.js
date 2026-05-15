@@ -44,7 +44,10 @@ if(currentImgIndex && dragon.resetParts){
             return;}
     const allData = {};
     const arrStrFollowId = [];
-    await import('../../jszip.min.js');
+    // await import('../../jszip.min.js');
+    await import('../lib/jszip.min.js');
+
+
     const JSZip = window.JSZip;
     //読み込み完了後にZIPインスタンスの作成
     const zip = new JSZip();
