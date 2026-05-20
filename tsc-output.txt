@@ -1,0 +1,432 @@
+src/app.ts(24,17): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/app.ts(29,64): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/app.ts(49,40): error TS2339: Property 'APP_MODE' does not exist on type 'Window & typeof globalThis'.
+src/app.ts(57,1): error TS18047: 'container' is possibly 'null'.
+src/app.ts(57,11): error TS2339: Property 'style' does not exist on type 'Element'.
+src/app.ts(73,9): error TS18047: 'container' is possibly 'null'.
+src/core/Dragon.ts(22,10): error TS2339: Property 'id' does not exist on type 'Dragon'.
+src/core/Dragon.ts(22,23): error TS2339: Property 'id' does not exist on type '{}'.
+src/core/Dragon.ts(23,10): error TS2339: Property 'history' does not exist on type 'Dragon'.
+src/core/Dragon.ts(25,30): error TS2339: Property 'id' does not exist on type 'Dragon'.
+src/core/Dragon.ts(34,30): error TS2339: Property 'id' does not exist on type 'Dragon'.
+src/core/Dragon.ts(37,10): error TS2339: Property 'resolvedParams' does not exist on type 'Dragon'.
+src/core/Dragon.ts(39,10): error TS2339: Property 'isBoosting' does not exist on type 'Dragon'.
+src/core/Dragon.ts(41,32): error TS2551: Property '_imgIndex' does not exist on type 'Dragon'. Did you mean 'imgIndex'?
+src/core/Dragon.ts(44,14): error TS2551: Property '_imgIndex' does not exist on type 'Dragon'. Did you mean 'imgIndex'?
+src/core/Dragon.ts(46,10): error TS2551: Property '_imgIndex' does not exist on type 'Dragon'. Did you mean 'imgIndex'?
+src/core/Dragon.ts(49,10): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(56,30): error TS2339: Property 'numParts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(57,12): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(63,24): error TS2551: Property '_imgIndex' does not exist on type 'Dragon'. Did you mean 'imgIndex'?
+src/core/Dragon.ts(67,30): error TS2339: Property 'numParts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(68,14): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(73,21): error TS2339: Property 'needsRebuildDPS' does not exist on type 'DragonScopeType'.
+src/core/Dragon.ts(76,35): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(81,10): error TS2339: Property 'history' does not exist on type 'Dragon'.
+src/core/Dragon.ts(82,15): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(82,29): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(83,23): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(84,46): error TS2339: Property 'spacing' does not exist on type 'Dragon'.
+src/core/Dragon.ts(85,30): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(87,12): error TS2339: Property 'history' does not exist on type 'Dragon'.
+src/core/Dragon.ts(90,23): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(99,10): error TS2339: Property 'strategy' does not exist on type 'Dragon'.
+src/core/Dragon.ts(104,10): error TS2339: Property 'motionAmount' does not exist on type 'Dragon'.
+src/core/Dragon.ts(105,26): error TS2339: Property 'motionAmount' does not exist on type 'Dragon'.
+src/core/Dragon.ts(106,10): error TS2339: Property 'stillness' does not exist on type 'Dragon'.
+src/core/Dragon.ts(106,49): error TS2339: Property 'stillness' does not exist on type 'Dragon'.
+src/core/Dragon.ts(119,23): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(126,47): error TS2339: Property 'stillness' does not exist on type 'Dragon'.
+src/core/Dragon.ts(131,10): error TS2339: Property 'history' does not exist on type 'Dragon'.
+src/core/Dragon.ts(132,46): error TS2339: Property 'spacing' does not exist on type 'Dragon'.
+src/core/Dragon.ts(133,30): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(134,25): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(135,27): error TS2339: Property 'history' does not exist on type 'Dragon'.
+src/core/Dragon.ts(135,53): error TS2339: Property 'history' does not exist on type 'Dragon'.
+src/core/Dragon.ts(135,66): error TS2339: Property 'history' does not exist on type 'Dragon'.
+src/core/Dragon.ts(140,14): error TS2339: Property 'history' does not exist on type 'Dragon'.
+src/core/Dragon.ts(140,36): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(140,67): error TS2339: Property 'history' does not exist on type 'Dragon'.
+src/core/Dragon.ts(145,30): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(146,25): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(149,90): error TS2339: Property 'stillness' does not exist on type 'Dragon'.
+src/core/Dragon.ts(156,20): error TS2339: Property 'resolvedParams' does not exist on type 'Dragon'.
+src/core/Dragon.ts(162,28): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(163,23): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(164,24): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(164,53): error TS2339: Property 'parts' does not exist on type 'Dragon'.
+src/core/Dragon.ts(170,14): error TS2339: Property 'flagScaleFunc' does not exist on type 'Dragon'.
+src/core/Dragon.ts(173,16): error TS2339: Property 'methodX' does not exist on type 'Dragon'.
+src/core/Dragon.ts(174,21): error TS2339: Property 'methodX' does not exist on type 'Dragon'.
+src/core/Dragon.ts(175,21): error TS2339: Property 'methodX' does not exist on type 'Dragon'.
+src/core/Dragon.ts(176,21): error TS2339: Property 'methodX' does not exist on type 'Dragon'.
+src/core/Dragon.ts(180,16): error TS2339: Property 'methodY' does not exist on type 'Dragon'.
+src/core/Dragon.ts(181,21): error TS2339: Property 'methodY' does not exist on type 'Dragon'.
+src/core/Dragon.ts(182,21): error TS2339: Property 'methodY' does not exist on type 'Dragon'.
+src/core/Dragon.ts(183,21): error TS2339: Property 'methodY' does not exist on type 'Dragon'.
+src/core/Dragon.ts(194,14): error TS2339: Property 'breatheProfile' does not exist on type 'Dragon'.
+src/core/Dragon.ts(194,48): error TS2339: Property 'flagBreath' does not exist on type 'Dragon'.
+src/core/Dragon.ts(195,28): error TS2339: Property 'breatheProfile' does not exist on type 'Dragon'.
+src/core/Dragon.ts(196,40): error TS2339: Property 'breatheProfile' does not exist on type 'Dragon'.
+src/core/DragonManager.ts(10,14): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(12,14): error TS2339: Property 'allDps' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(13,14): error TS2339: Property 'currentIndex' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(15,14): error TS2339: Property 'spritePool' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(16,14): error TS2339: Property 'container' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(17,14): error TS2339: Property 'app' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(21,28): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(23,14): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(28,40): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(31,14): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(33,9): error TS18047: 'contentArea' is possibly 'null'.
+src/core/DragonManager.ts(34,14): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(38,13): error TS18047: 'contentArea' is possibly 'null'.
+src/core/DragonManager.ts(43,14): error TS2339: Property 'allDps' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(44,14): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(45,30): error TS2339: Property 'currentIndex' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(49,22): error TS2339: Property 'allDps' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(53,14): error TS2339: Property 'app' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(54,14): error TS2339: Property 'app' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(54,38): error TS2339: Property 'container' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(57,27): error TS2339: Property 'allDps' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(58,19): error TS2339: Property 'app' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(59,21): error TS2339: Property 'spritePool' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(62,18): error TS2339: Property 'spritePool' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(63,18): error TS2339: Property 'container' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(64,14): error TS2339: Property 'spritePool' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(83,21): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(83,38): error TS2339: Property 'currentIndex' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(86,40): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(88,14): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/core/DragonManager.ts(93,14): error TS2339: Property 'currentIndex' does not exist on type 'DragonManager'.
+src/core/Individual.ts(6,14): error TS2339: Property 'individualDragon' does not exist on type 'Individual'.
+src/core/Individual.ts(7,14): error TS2339: Property 'index' does not exist on type 'Individual'.
+src/core/Individual.ts(8,14): error TS2339: Property 'individualDps' does not exist on type 'Individual'.
+src/core/Individual.ts(10,14): error TS2339: Property 'uiContainer' does not exist on type 'Individual'.
+src/core/Individual.ts(11,14): error TS2339: Property 'uiContainer' does not exist on type 'Individual'.
+src/core/Individual.ts(12,14): error TS2339: Property 'uiContainer' does not exist on type 'Individual'.
+src/core/Individual.ts(14,56): error TS2339: Property 'uiContainer' does not exist on type 'Individual'.
+src/core/Individual.ts(16,33): error TS2339: Property 'index' does not exist on type 'Individual'.
+src/core/Individual.ts(20,14): error TS2339: Property 'uiContainer' does not exist on type 'Individual'.
+src/core/Individual.ts(21,14): error TS2339: Property 'individualDragon' does not exist on type 'Individual'.
+src/core/Individual.ts(23,36): error TS2339: Property 'individualDragon' does not exist on type 'Individual'.
+src/core/Individual.ts(24,21): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/core/Individual.ts(24,43): error TS2339: Property 'individualDragon' does not exist on type 'Individual'.
+src/core/Individual.ts(25,35): error TS2339: Property 'individualDragon' does not exist on type 'Individual'.
+src/core/Individual.ts(30,19): error TS2339: Property 'individualDragon' does not exist on type 'Individual'.
+src/core/Individual.ts(32,14): error TS2339: Property 'individualDps' does not exist on type 'Individual'.
+src/core/Individual.ts(33,14): error TS2339: Property 'uiContainer' does not exist on type 'Individual'.
+src/core/Individual.ts(34,14): error TS2339: Property 'individualDragon' does not exist on type 'Individual'.
+src/core/Strategies.ts(30,25): error TS2869: Right operand of ?? is unreachable because the left operand is never nullish.
+src/core/Strategies.ts(31,25): error TS2869: Right operand of ?? is unreachable because the left operand is never nullish.
+src/main.ts(24,13): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(24,22): error TS2339: Property 'getContext' does not exist on type 'HTMLElement'.
+src/main.ts(47,28): error TS18047: 'modeInfo' is possibly 'null'.
+src/main.ts(51,13): error TS2339: Property 'APP_MODE' does not exist on type 'Window & typeof globalThis'.
+src/main.ts(55,9): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(55,18): error TS2339: Property 'width' does not exist on type 'HTMLElement'.
+src/main.ts(56,9): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(56,18): error TS2339: Property 'height' does not exist on type 'HTMLElement'.
+src/main.ts(61,22): error TS2554: Expected 3 arguments, but got 2.
+src/main.ts(62,7): error TS18047: 'ratioInfo' is possibly 'null'.
+src/main.ts(64,29): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(68,9): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(68,18): error TS2339: Property 'width' does not exist on type 'HTMLElement'.
+src/main.ts(69,9): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(69,18): error TS2339: Property 'height' does not exist on type 'HTMLElement'.
+src/main.ts(72,7): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(72,16): error TS2339: Property 'width' does not exist on type 'HTMLElement'.
+src/main.ts(73,7): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(73,16): error TS2339: Property 'height' does not exist on type 'HTMLElement'.
+src/main.ts(78,24): error TS2554: Expected 3 arguments, but got 2.
+src/main.ts(79,7): error TS18047: 'ratioInfo' is possibly 'null'.
+src/main.ts(87,20): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(89,17): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(92,20): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(94,17): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(99,1): error TS18047: 'resizerV' is possibly 'null'.
+src/main.ts(101,5): error TS18047: 'resizerV' is possibly 'null'.
+src/main.ts(107,64): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/main.ts(119,11): error TS18047: 'btn' is possibly 'null'.
+src/main.ts(123,11): error TS18047: 'button' is possibly 'null'.
+src/main.ts(124,11): error TS18047: 'button' is possibly 'null'.
+src/main.ts(128,47): error TS18047: 'btn' is possibly 'null'.
+src/main.ts(132,5): error TS2322: Type 'number' is not assignable to type 'null'.
+src/main.ts(137,5): error TS18047: 'btn' is possibly 'null'.
+src/main.ts(144,26): error TS2367: This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.
+src/main.ts(145,9): error TS18047: 'btn' is possibly 'null'.
+src/main.ts(146,9): error TS18047: 'btn' is possibly 'null'.
+src/main.ts(147,1): error TS18047: 'rColorBtn' is possibly 'null'.
+src/main.ts(149,1): error TS18047: 'gColorBtn' is possibly 'null'.
+src/main.ts(151,1): error TS18047: 'bColorBtn' is possibly 'null'.
+src/main.ts(156,7): error TS18047: 'canvasWebGPU' is possibly 'null'.
+src/main.ts(158,9): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(158,18): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(158,41): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(158,50): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(168,5): error TS18047: 'RGBInfo' is possibly 'null'.
+src/main.ts(171,1): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(172,7): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(172,16): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(172,39): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(172,48): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(176,22): error TS2339: Property 'APP_MODE' does not exist on type 'Window & typeof globalThis'.
+src/main.ts(177,43): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(177,96): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(180,17): error TS2339: Property 'APP_MODE' does not exist on type 'Window & typeof globalThis'.
+src/main.ts(184,39): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(185,39): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(206,1): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(207,9): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(207,18): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(207,41): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(207,50): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(211,9): error TS2322: Type 'number' is not assignable to type 'null'.
+src/main.ts(213,9): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/main.ts(215,5): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(220,15): error TS2339: Property 'APP_MODE' does not exist on type 'Window & typeof globalThis'.
+src/main.ts(231,22): error TS18048: 'currentDistance' is possibly 'undefined'.
+src/main.ts(239,15): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/main.ts(242,19): error TS2367: This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.
+src/main.ts(244,19): error TS2367: This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.
+src/main.ts(246,19): error TS2367: This comparison appears to be unintentional because the types 'number' and 'string' have no overlap.
+src/main.ts(248,48): error TS2339: Property 'toUpperCase' does not exist on type 'number'.
+src/main.ts(249,13): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/main.ts(253,13): error TS18047: 'RGBInfo' is possibly 'null'.
+src/main.ts(263,41): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/main.ts(271,54): error TS2339: Property 'currentIndex' does not exist on type 'DragonManager'.
+src/main.ts(281,5): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(283,1): error TS18047: 'canvas2d' is possibly 'null'.
+src/main.ts(284,16): error TS2339: Property 'APP_MODE' does not exist on type 'Window & typeof globalThis'.
+src/main.ts(285,39): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(286,39): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(297,9): error TS18047: 'fsBtn' is possibly 'null'.
+src/main.ts(298,9): error TS18047: 'fsBtn' is possibly 'null'.
+src/main.ts(301,9): error TS18047: 'fsBtn' is possibly 'null'.
+src/main.ts(302,9): error TS18047: 'fsBtn' is possibly 'null'.
+src/main.ts(310,5): error TS18047: 'resizerV' is possibly 'null'.
+src/main.ts(311,5): error TS18047: 'hideUiBtn' is possibly 'null'.
+src/main.ts(312,5): error TS18047: 'hideUiBtn' is possibly 'null'.
+src/main.ts(315,7): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(315,16): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(315,39): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(315,48): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(336,1): error TS18047: 'rotationBtn' is possibly 'null'.
+src/main.ts(341,1): error TS18047: 'reverseBtn' is possibly 'null'.
+src/main.ts(345,1): error TS18047: 'mouseOffBtn' is possibly 'null'.
+src/main.ts(349,1): error TS18047: 'writeBtn' is possibly 'null'.
+src/main.ts(353,1): error TS18047: 'clearOffBtn' is possibly 'null'.
+src/main.ts(366,1): error TS18047: 'fsBtn' is possibly 'null'.
+src/main.ts(367,1): error TS18047: 'hideUiBtn' is possibly 'null'.
+src/main.ts(368,1): error TS18047: 'zuBtn' is possibly 'null'.
+src/main.ts(369,1): error TS18047: 'zdBtn' is possibly 'null'.
+src/main.ts(375,1): error TS2531: Object is possibly 'null'.
+src/main.ts(382,36): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/main.ts(390,22): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/main.ts(391,36): error TS2339: Property 'currentIndex' does not exist on type 'DragonManager'.
+src/main.ts(392,35): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/main.ts(398,1): error TS2531: Object is possibly 'null'.
+src/main.ts(401,7): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(401,16): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(401,39): error TS18047: 'e.target' is possibly 'null'.
+src/main.ts(401,48): error TS2339: Property 'tagName' does not exist on type 'EventTarget'.
+src/main.ts(408,20): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/main.ts(409,36): error TS2339: Property 'currentIndex' does not exist on type 'DragonManager'.
+src/main.ts(411,42): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/main.ts(416,1): error TS2531: Object is possibly 'null'.
+src/main.ts(421,1): error TS2531: Object is possibly 'null'.
+src/main.ts(430,39): error TS2339: Property 'currentIndex' does not exist on type 'DragonManager'.
+src/main.ts(431,37): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/main.ts(442,1): error TS18047: 'localSaveButton' is possibly 'null'.
+src/main.ts(459,19): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/main.ts(460,20): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+src/main.ts(463,22): error TS2339: Property 'forEach' does not exist on type 'never'.
+src/main.ts(466,18): error TS2345: Argument of type 'number[]' is not assignable to parameter of type 'never'.
+src/main.ts(475,13): error TS18046: 'e' is of type 'unknown'.
+src/main.ts(475,48): error TS18046: 'e' is of type 'unknown'.
+src/main.ts(488,37): error TS2339: Property 'allDps' does not exist on type 'DragonManager'.
+src/main.ts(541,13): error TS2339: Property 'updateWebGPUResources' does not exist on type 'DragonScopeType'.
+src/main.ts(553,19): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'never'.
+src/main.ts(559,15): error TS2339: Property 'updateWebGPUResources' does not exist on type 'DragonScopeType'.
+src/main.ts(567,3): error TS18047: 'canvasWebGPU' is possibly 'null'.
+src/main.ts(569,3): error TS18047: 'RGBInfo' is possibly 'null'.
+src/main.ts(605,22): error TS2339: Property 'APP_MODE' does not exist on type 'Window & typeof globalThis'.
+src/main.ts(605,85): error TS2339: Property 'mobileRatio' does not exist on type 'DragonScopeType'.
+src/main.ts(606,3): error TS18047: 'ratioInfo' is possibly 'null'.
+src/main.ts(615,46): error TS2339: Property 'individuals' does not exist on type 'DragonManager'.
+src/main.ts(619,23): error TS2339: Property 'needsRebuildDPS' does not exist on type 'DragonScopeType'.
+src/main.ts(622,21): error TS2339: Property 'needsRebuildDPS' does not exist on type 'DragonScopeType'.
+src/main.ts(627,27): error TS2339: Property 'container' does not exist on type 'DragonManager'.
+src/main.ts(627,53): error TS2339: Property 'container' does not exist on type 'DragonManager'.
+src/main.ts(631,27): error TS2339: Property 'container' does not exist on type 'DragonManager'.
+src/main.ts(631,53): error TS2339: Property 'container' does not exist on type 'DragonManager'.
+src/ui/Inspector.ts(25,16): error TS2339: Property 'innerHTML' does not exist on type 'never'.
+src/ui/Inspector.ts(31,21): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(34,5): error TS18047: 'dragonListEl' is possibly 'null'.
+src/ui/Inspector.ts(39,29): error TS2339: Property 'children' does not exist on type 'never'.
+src/ui/Inspector.ts(40,66): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(41,7): error TS18046: 'listEl' is of type 'unknown'.
+src/ui/Inspector.ts(42,7): error TS18046: 'listEl' is of type 'unknown'.
+src/ui/Inspector.ts(52,1): error TS2322: Type 'HTMLOListElement' is not assignable to type 'null'.
+src/ui/Inspector.ts(53,1): error TS18047: 'dragonListEl' is possibly 'null'.
+src/ui/Inspector.ts(54,1): error TS18047: 'dragonListEl' is possibly 'null'.
+src/ui/Inspector.ts(55,1): error TS18047: 'topContainer' is possibly 'null'.
+src/ui/Inspector.ts(55,22): error TS2345: Argument of type 'null' is not assignable to parameter of type 'string | Node'.
+src/ui/Inspector.ts(62,13): error TS2531: Object is possibly 'null'.
+src/ui/Inspector.ts(67,1): error TS18047: 'splitResizer' is possibly 'null'.
+src/ui/Inspector.ts(70,5): error TS18047: 'splitResizer' is possibly 'null'.
+src/ui/Inspector.ts(72,25): error TS18047: 'topContainer' is possibly 'null'.
+src/ui/Inspector.ts(76,9): error TS18047: 'topContainer' is possibly 'null'.
+src/ui/Inspector.ts(77,9): error TS18047: 'topContainer' is possibly 'null'.
+src/ui/Inspector.ts(80,9): error TS18047: 'splitResizer' is possibly 'null'.
+src/ui/Inspector.ts(87,14): error TS2345: Argument of type 'null' is not assignable to parameter of type 'HTMLElement'.
+src/ui/Inspector.ts(96,17): error TS2339: Property 'needsRebuildDPS' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(98,3): error TS18047: 'dragonListEl' is possibly 'null'.
+src/ui/Inspector.ts(100,3): error TS18047: 'updateAddBtn' is possibly 'null'.
+src/ui/Inspector.ts(110,28): error TS18047: 'dragonListEl' is possibly 'null'.
+src/ui/Inspector.ts(111,17): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(119,23): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(122,52): error TS2339: Property 'value' does not exist on type 'HTMLElement'.
+src/ui/Inspector.ts(131,17): error TS18047: 'idInput' is possibly 'null'.
+src/ui/Inspector.ts(131,25): error TS2339: Property 'value' does not exist on type 'HTMLElement'.
+src/ui/Inspector.ts(132,27): error TS18047: 'idxInput' is possibly 'null'.
+src/ui/Inspector.ts(132,36): error TS2339: Property 'value' does not exist on type 'HTMLElement'.
+src/ui/Inspector.ts(144,38): error TS2339: Property 'value' does not exist on type 'HTMLElement'.
+src/ui/Inspector.ts(175,17): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(176,46): error TS2339: Property 'name' does not exist on type 'Dragon'.
+src/ui/Inspector.ts(186,15): error TS2339: Property 'needsRebuildDPS' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(207,20): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(210,5): error TS18047: 'splitResizer' is possibly 'null'.
+src/ui/Inspector.ts(210,54): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(225,48): error TS2339: Property 'groupVisibility' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(231,23): error TS2339: Property 'groupVisibility' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(232,22): error TS2339: Property 'groupVisibility' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(233,19): error TS2339: Property 'groupVisibility' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(245,42): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(246,20): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(247,41): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(249,40): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(265,35): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(276,31): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(277,5): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(278,5): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(295,13): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(296,39): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(314,46): error TS18047: 'e.target' is possibly 'null'.
+src/ui/Inspector.ts(314,55): error TS2339: Property 'files' does not exist on type 'EventTarget'.
+src/ui/Inspector.ts(318,61): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Blob | MediaSource'.
+src/ui/Inspector.ts(323,49): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'HTMLImageElement'.
+src/ui/Inspector.ts(324,37): error TS2339: Property 'updateWebGPUResources' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(339,25): error TS2339: Property 'style' does not exist on type 'Node'.
+src/ui/Inspector.ts(354,37): error TS2339: Property 'updateWebGPUResources' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(363,37): error TS2339: Property 'updateWebGPUResources' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(380,33): error TS2339: Property 'updateWebGPUResources' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(405,33): error TS2339: Property 'updateWebGPUResources' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(440,28): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(443,1): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(444,34): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(446,5): error TS2322: Type 'number | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/ui/Inspector.ts(472,39): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(474,39): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(475,23): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(477,43): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(480,25): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(497,36): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(499,23): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(499,45): error TS18047: 'e.target' is possibly 'null'.
+src/ui/Inspector.ts(499,54): error TS2339: Property 'value' does not exist on type 'EventTarget'.
+src/ui/Inspector.ts(500,43): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(500,77): error TS18047: 'e.target' is possibly 'null'.
+src/ui/Inspector.ts(500,86): error TS2339: Property 'value' does not exist on type 'EventTarget'.
+src/ui/Inspector.ts(517,39): error TS2304: Cannot find name 'F_1'.
+src/ui/Inspector.ts(519,40): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(550,13): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(551,13): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(552,25): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(554,45): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(568,36): error TS18047: 'e.target' is possibly 'null'.
+src/ui/Inspector.ts(568,45): error TS2339: Property 'value' does not exist on type 'EventTarget'.
+src/ui/Inspector.ts(569,15): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(570,27): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(571,47): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(573,29): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(589,3): error TS2322: Type 'number' is not assignable to type 'null'.
+src/ui/Inspector.ts(590,3): error TS2322: Type 'number' is not assignable to type 'null'.
+src/ui/Inspector.ts(615,5): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(616,5): error TS2721: Cannot invoke an object which is possibly 'null'.
+src/ui/Inspector.ts(616,20): error TS2345: Argument of type '{ target: HTMLInputElement; }' is not assignable to parameter of type 'InputEvent'.
+  Type '{ target: HTMLInputElement; }' is missing the following properties from type 'InputEvent': data, dataTransfer, inputType, isComposing, and 26 more.
+src/ui/Inspector.ts(620,18): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number | undefined'.
+src/ui/Inspector.ts(633,13): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(634,13): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(635,25): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(636,45): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(638,27): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(644,27): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(645,47): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(647,29): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(655,11): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(656,11): error TS2322: Type 'number' is not assignable to type 'string'.
+src/ui/Inspector.ts(657,23): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/Inspector.ts(658,43): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(37,25): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(51,26): error TS2339: Property 'JSZip' does not exist on type 'Window & typeof globalThis'.
+src/ui/ResetSaveLoad.ts(63,29): error TS2345: Argument of type '{ followId: any; }' is not assignable to parameter of type 'never'.
+src/ui/ResetSaveLoad.ts(73,30): error TS2345: Argument of type '{ followId: null; }' is not assignable to parameter of type 'never'.
+src/ui/ResetSaveLoad.ts(76,44): error TS18046: 'key' is of type 'unknown'.
+src/ui/ResetSaveLoad.ts(76,81): error TS2339: Property 'followId' does not exist on type 'never'.
+src/ui/ResetSaveLoad.ts(80,5): error TS18047: 'ma' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(80,8): error TS2339: Property 'href' does not exist on type 'HTMLElement'.
+src/ui/ResetSaveLoad.ts(81,5): error TS18047: 'ma' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(81,8): error TS2551: Property 'download' does not exist on type 'HTMLElement'. Did you mean 'onload'?
+src/ui/ResetSaveLoad.ts(82,5): error TS18047: 'ma' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(83,42): error TS18047: 'ma' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(83,45): error TS2339: Property 'href' does not exist on type 'HTMLElement'.
+src/ui/ResetSaveLoad.ts(88,7): error TS18047: 'da' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(88,10): error TS2339: Property 'href' does not exist on type 'HTMLElement'.
+src/ui/ResetSaveLoad.ts(89,7): error TS18047: 'da' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(89,10): error TS2551: Property 'download' does not exist on type 'HTMLElement'. Did you mean 'onload'?
+src/ui/ResetSaveLoad.ts(90,7): error TS18047: 'da' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(92,44): error TS18047: 'da' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(92,47): error TS2339: Property 'href' does not exist on type 'HTMLElement'.
+src/ui/ResetSaveLoad.ts(105,5): error TS18047: 'da' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(105,8): error TS2339: Property 'href' does not exist on type 'HTMLElement'.
+src/ui/ResetSaveLoad.ts(106,5): error TS18047: 'da' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(106,8): error TS2551: Property 'download' does not exist on type 'HTMLElement'. Did you mean 'onload'?
+src/ui/ResetSaveLoad.ts(107,5): error TS18047: 'da' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(108,42): error TS18047: 'da' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(108,45): error TS2339: Property 'href' does not exist on type 'HTMLElement'.
+src/ui/ResetSaveLoad.ts(130,16): error TS2339: Property 'meta' does not exist on type '{}'.
+src/ui/ResetSaveLoad.ts(135,23): error TS2339: Property 'name' does not exist on type 'Dragon'.
+src/ui/ResetSaveLoad.ts(137,29): error TS2339: Property 'id' does not exist on type 'Dragon'.
+src/ui/ResetSaveLoad.ts(148,17): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(154,27): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(188,19): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(191,38): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(193,66): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(193,121): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(201,17): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(202,17): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(216,3): error TS18047: 'resetBtn' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(217,27): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(227,1): error TS18047: 'saveBtn' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(228,25): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(229,8): error TS2554: Expected 4 arguments, but got 2.
+src/ui/ResetSaveLoad.ts(231,3): error TS18047: 'loadBtn' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(232,25): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(234,3): error TS18047: 'input' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(235,18): error TS18047: 'e.target' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(235,27): error TS2339: Property 'files' does not exist on type 'EventTarget'.
+src/ui/ResetSaveLoad.ts(239,33): error TS18047: 'event.target' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(239,33): error TS2345: Argument of type 'string | ArrayBuffer | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/ui/ResetSaveLoad.ts(260,5): error TS18047: 'input' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(260,11): error TS2339: Property 'value' does not exist on type 'HTMLElement'.
+src/ui/ResetSaveLoad.ts(261,5): error TS18047: 'input' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(263,1): error TS18047: 'delBtn' is possibly 'null'.
+src/ui/ResetSaveLoad.ts(264,23): error TS2339: Property 'selectedDragon' does not exist on type 'DragonScopeType'.
+src/ui/ResetSaveLoad.ts(265,26): error TS2554: Expected 1 arguments, but got 2.

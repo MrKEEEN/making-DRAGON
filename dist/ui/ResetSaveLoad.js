@@ -3,15 +3,18 @@ import { MotionStrategy } from '../core/Strategies.js';
 import { Dragon } from '../core/Dragon.js';
 import { createInspectorGUI, buildDPS, rebuildDragonList } from './Inspector.js';
 import { dragonManager } from '../core/DragonManager.js';
-export { ResetSaveLoad };
 const ResetSaveLoad = {
     sync(id, dragon, toDragon = true) {
         AllPropSchema_KEYS_excId.forEach((key) => {
-            if (toDragon) { //reset,load処理
+            //reset,load処理
+            if (toDragon) {
+                // NOTE: ループによる動的代入において、左右の key の型同期をTypeScriptが静的解析できないため、一括処理のDRY性を優先して as any を許容
                 dragon[key] = DragonScope.storage[id].saved[key];
+                //save,init処理
             }
-            else { //save,init処理
+            else {
                 if (dragon[key] !== undefined) {
+                    // NOTE: 同上
                     DragonScope.storage[id].saved[key] = dragon[key];
                 }
             }
@@ -40,63 +43,36 @@ const ResetSaveLoad = {
     },
     async save(id, dragon, blobMaster, blobPart) {
         const d = DragonScope.selectedDragon;
+        if (!d) {
+            return;
+        }
         if (d.name === "Master") {
-            if (!confirm(`want to download JSON Files, too?`)) {
-                DragonScope.dragons.forEach((dragon) => {
-                    //現時点情報セーブ・current空のみの処理
-                    this.sync(dragon.id, dragon, false);
-                    DragonScope.storage[dragon.id].current = {};
-                });
-                return;
-            }
-            const allData = {};
-            const arrStrFollowId = [];
-            // await import('../../jszip.min.js');
-            await import('../lib/jszip.min.js');
-            const JSZip = window.JSZip;
-            //読み込み完了後にZIPインスタンスの作成
-            const zip = new JSZip();
             DragonScope.dragons.forEach((dragon) => {
-                //現時点情報セーブ・current空
+                //現時点情報セーブ・current空のみの処理
                 this.sync(dragon.id, dragon, false);
                 DragonScope.storage[dragon.id].current = {};
-                //Master処理↓
-                allData[dragon.id] = DragonScope.storage[dragon.id].saved;
-                //followIdのみ個別処理
-                if (dragon.followId || dragon.followIndex) {
-                    const valStrFollowId = (dragon.followId).name;
-                    arrStrFollowId.push({ followId: valStrFollowId });
-                }
-                //Master選択時に、各パートも個別に保存
-                if (dragon.name !== "Master") {
-                    ///Master以外は、followIdとfollowIndexプロパティを含めない(Master選択時の各パート処理)
-                    blobPart = new Blob([JSON.stringify(DragonScope.storage[dragon.id].saved, AllPropSchema_KEYS_except_id_followId_followIndex, 2)], { type: 'application/json' });
-                    // 修正箇所：a.click()による個別保存を削除し、ZIPへ追加
-                    const fileNamePart = `dragon_${dragon.name}_${Date.now()}.json`;
-                    zip.file(fileNamePart, blobPart);
-                }
             });
-            //Master分のnullを先頭に追加
-            arrStrFollowId.unshift({ followId: null });
-            //followIdのみ、オブジェクト情報から、名前情報のみに置き換え
-            const flattedAllData = Object.entries(allData).flatMap(([key, value]) => value);
-            flattedAllData.forEach((key, index) => { key.followId = arrStrFollowId[index].followId; });
-            //Master選択時は、followIdとfollowIndexプロパティも含める
-            blobMaster = new Blob([JSON.stringify(flattedAllData, AllPropSchema_KEYS_excId, 2)], { type: 'application/json' });
+            //jsonファイル保存しない場合は終了
+            if (!confirm(`want to download JSON Files, too?`)) {
+                return;
+            }
+            // mapで中身を SaveDragon[] に変換しながらディープコピーする(followIdを文字列に変換するため)
+            const allData = DragonScope.dragons.map(dragon => {
+                // ディープコピーを作成
+                const copy = JSON.parse(JSON.stringify(dragon, AllPropSchema_KEYS_excId));
+                // コピー直後のタイミングで followId を文字列（またはnull）に差し替える
+                copy.followId = (copy.followId && copy.followId.name) ? copy.followId.name : null;
+                // この時点でこのオブジェクトは SaveDragon 型として成立する
+                return copy;
+            });
+            blobMaster = new Blob([JSON.stringify(allData, AllPropSchema_KEYS_excId, 2)], { type: 'application/json' });
             const ma = document.getElementById('master-save-link');
-            ma.href = URL.createObjectURL(blobMaster);
-            ma.download = `dragon_${dragon.name}_${Date.now()}.json`;
-            ma.click();
-            setTimeout(() => URL.revokeObjectURL(ma.href), 1000);
-            // 修正箇所：Master保存後にZIPファイルを生成して保存
-            zip.generateAsync({ type: "blob" }).then((content) => {
-                const da = document.getElementById('dragon-save-link');
-                da.href = URL.createObjectURL(content);
-                da.download = `parts_${Date.now()}.zip`;
-                da.click();
-                // メモリ解放
-                setTimeout(() => URL.revokeObjectURL(da.href), 1000);
-            });
+            if (ma) {
+                ma.href = URL.createObjectURL(blobMaster);
+                ma.download = `dragon_${dragon.name}_${Date.now()}.json`;
+                ma.click();
+                setTimeout(() => URL.revokeObjectURL(ma.href), 1000);
+            }
             //改めて現時点の情報セーブ
             DragonScope.dragons.forEach((dragon) => {
                 this.sync(dragon.id, dragon, false);
@@ -112,12 +88,59 @@ const ResetSaveLoad = {
             //Master以外は、followIdとfollowIndexプロパティを含めない（各パート処理）
             blobPart = new Blob([JSON.stringify(DragonScope.storage[id].saved, AllPropSchema_KEYS_except_id_followId_followIndex, 2)], { type: 'application/json' });
             const da = document.getElementById('dragon-save-link');
-            da.href = URL.createObjectURL(blobPart);
-            da.download = `dragon_${dragon.name}_${Date.now()}.json`;
-            da.click();
-            setTimeout(() => URL.revokeObjectURL(da.href), 1000);
+            if (da) {
+                da.href = URL.createObjectURL(blobPart);
+                da.download = `dragon_${dragon.name}_${Date.now()}.json`;
+                da.click();
+                setTimeout(() => URL.revokeObjectURL(da.href), 1000);
+            }
+            ;
         }
     },
+    //   //初期起動時にも使用するため、load関数から独立して定義する。
+    //   async applyData(data: SaveDragonJson[]) {
+    //     DragonScope.dragons.length = 0;
+    //   //Master選択時のロード
+    //       const nameMap: { [key: string]: IDragonPropSchema } = {};
+    //       data.forEach((loadProp) => {
+    //   // 追従先オブジェクトの解決
+    //           const follower = loadProp.followId ? nameMap[loadProp.followId] : null;
+    //           const loadSchema: Partial<IDragonPropSchemaWithGroupKey> = {};
+    //           (Object.keys(PROP_SCHEMA) as Array<keyof typeof PROP_SCHEMA>).forEach((groupKey) => {
+    //           if (groupKey === "id"){return;}
+    //           loadSchema[groupKey] = {};
+    //   // カテゴリ内の各プロパティ（name, scaleX等）をループ
+    //           (Object.keys(PROP_SCHEMA[groupKey]) as Array< keyof IDragonPropSchema>).forEach((key) => {
+    //             let defIdx: number = PROP_SCHEMA[groupKey][key].length -1;
+    //           if (loadProp.hasOwnProperty(key)) {
+    //             loadSchema[groupKey][key] = loadProp[key];
+    //           } else {
+    //             loadSchema[groupKey][key] = PROP_SCHEMA[groupKey][key][defIdx];
+    //           }});});
+    //   // 文字列になっているfollowIdのみ解決済みのオブジェクト参照に差し替え
+    //   if (loadSchema.meta) {loadSchema.meta.followId = follower;}
+    //   // インスタンス生成
+    //   const newDragon: Dragon = new Dragon(loadSchema);
+    //   // 配列とマップへの登録
+    //   DragonScope.dragons.push(newDragon);
+    //   nameMap[newDragon.name] = newDragon;
+    //   // DataStore同期
+    //   const newId: string = newDragon.id;
+    //   DragonScope.storage[newId] = { current: {}, saved: {} };
+    //     AllPropSchema_KEYS_excId.forEach((key: string) => {
+    //       DragonScope.storage[newId].saved[key] = (key === "followId") ? follower : loadProp[key];}
+    //     );});
+    // DragonScope.dragons.forEach(d => {
+    //   if (d.imgIndex >= DragonScope.images.length) {
+    //       d.imgIndex = DragonScope.images.length - 1;
+    //       d.rebuild();}
+    //       d.currentDragon = true;
+    //   });
+    //   DragonScope.selectedDragon = DragonScope.dragons[0];
+    //   DragonScope.master = DragonScope.dragons.find(d => d.name === "Master") ?? DragonScope.dragons[0];
+    //   MotionStrategy();
+    // },
+    // NOTE: ループによる動的代入において、as anyを許容
     //初期起動時にも使用するため、load関数から独立して定義する。
     async applyData(data) {
         DragonScope.dragons.length = 0;
@@ -127,13 +150,13 @@ const ResetSaveLoad = {
             // 追従先オブジェクトの解決
             const follower = loadProp.followId ? nameMap[loadProp.followId] : null;
             const loadSchema = {};
-            Object.keys(PROP_SCHEMA).forEach(groupKey => {
+            Object.keys(PROP_SCHEMA).forEach((groupKey) => {
                 if (groupKey === "id") {
                     return;
                 }
                 loadSchema[groupKey] = {};
                 // カテゴリ内の各プロパティ（name, scaleX等）をループ
-                Object.keys(PROP_SCHEMA[groupKey]).forEach(key => {
+                Object.keys(PROP_SCHEMA[groupKey]).forEach((key) => {
                     let defIdx = PROP_SCHEMA[groupKey][key].length - 1;
                     if (loadProp.hasOwnProperty(key)) {
                         loadSchema[groupKey][key] = loadProp[key];
@@ -144,7 +167,9 @@ const ResetSaveLoad = {
                 });
             });
             // 文字列になっているfollowIdのみ解決済みのオブジェクト参照に差し替え
-            loadSchema.meta.followId = follower;
+            if (loadSchema.meta) {
+                loadSchema.meta.followId = follower;
+            }
             // インスタンス生成
             const newDragon = new Dragon(loadSchema);
             // 配列とマップへの登録
@@ -153,7 +178,7 @@ const ResetSaveLoad = {
             // DataStore同期
             const newId = newDragon.id;
             DragonScope.storage[newId] = { current: {}, saved: {} };
-            AllPropSchema_KEYS_excId.forEach(key => {
+            AllPropSchema_KEYS_excId.forEach((key) => {
                 DragonScope.storage[newId].saved[key] = (key === "followId") ? follower : loadProp[key];
             });
         });
@@ -165,16 +190,22 @@ const ResetSaveLoad = {
             d.currentDragon = true;
         });
         DragonScope.selectedDragon = DragonScope.dragons[0];
-        DragonScope.master = DragonScope.dragons.find(d => d.name === "Master");
+        DragonScope.master = DragonScope.dragons.find(d => d.name === "Master") ?? DragonScope.dragons[0];
         MotionStrategy();
     },
     load(id, dragon, data) {
         const d = DragonScope.selectedDragon;
+        if (!d) {
+            return;
+        }
         if (d.name === "Master") {
+            // this.applyData(data);
             this.applyData(data);
         }
         else if (d.name !== "Master") {
-            let newName = data.name ? data.name : "";
+            const singleData = data;
+            let newName = singleData.name ? singleData.name : "";
+            // let newName = data.name ? data.name : "";
             if (d && newName) {
                 let tentativeName = newName;
                 let counter = 1;
@@ -184,6 +215,8 @@ const ResetSaveLoad = {
                 }
                 const oldName = d.name;
                 Object.keys(data).forEach((key) => {
+                    // DragonScope.storage[id].saved[key] = data[key] ?? DragonScope.storage[id].current[key] ?? DragonScope.storage[id].saved[key];
+                    // DragonScope.storage[id].current[key] = {};});
                     DragonScope.storage[id].saved[key] = data[key] ?? DragonScope.storage[id].current[key] ?? DragonScope.storage[id].saved[key];
                     DragonScope.storage[id].current[key] = {};
                 });
@@ -193,12 +226,12 @@ const ResetSaveLoad = {
                     if (d && newName && d.name !== newName) {
                         d.name = newName;
                         DragonScope.storage[d.id].current["name"] = newName;
-                        if (dragon.followId && (dragon.followId.name === oldName || dragon.followId === oldName)) {
+                        if (dragon.followId && (dragon.followId.name === oldName || String(dragon.followId) === oldName)) {
                             dragon.followId = d;
                             DragonScope.storage[dragon.id].current["followId"] = d;
                         }
                     }
-                    if ((dragon.followId === d || dragon.followId === newName) && dragon.followIndex >= d.numParts) {
+                    if ((dragon.followId === d || String(dragon.followId) === newName) && dragon.followIndex != null && dragon.followIndex >= d.numParts) {
                         dragon.followIndex = d.numParts - 1;
                     }
                 });
@@ -213,14 +246,14 @@ const ResetSaveLoad = {
     },
     deleteDragon(id) {
         if (DragonScope.selectedDragon === DragonScope.master) {
-            console.warn("Master can't be deleted.");
+            alert("Master can't be deleted.");
             return;
         }
-        if (!confirm(`Delete ${DragonScope.selectedDragon.name}?`)) {
+        if (!confirm(`Delete ${DragonScope.selectedDragon?.name}?`)) {
             return;
         }
         DragonScope.dragons.forEach(dragon => {
-            if (dragon.followId && (dragon.followId.name === DragonScope.selectedDragon.name || dragon.followId === DragonScope.selectedDragon)) {
+            if (dragon.followId && (dragon.followId.name === DragonScope.selectedDragon?.name || dragon.followId === DragonScope.selectedDragon)) {
                 dragon.followId = DragonScope.master;
                 DragonScope.storage[dragon.id].current["followId"] = DragonScope.master;
                 dragon.followIndex = 0;
@@ -231,10 +264,12 @@ const ResetSaveLoad = {
         DragonScope.dragons.splice(index, 1);
         delete DragonScope.storage[id];
         DragonScope.selectedDragon = DragonScope.master;
-        DragonScope.selectedDragon.rebuild();
+        DragonScope.selectedDragon?.rebuild();
         rebuildDragonList();
         dragonManager.buildAllDps();
-        createInspectorGUI(DragonScope.individualCurrentIndex);
+        if (DragonScope.individualCurrentIndex) {
+            createInspectorGUI(DragonScope.individualCurrentIndex);
+        }
     },
     //-----------------------
     //setup -ボタンクリック-
@@ -246,6 +281,9 @@ const ResetSaveLoad = {
         const delBtn = document.getElementById('del-btn');
         resetBtn.onclick = () => {
             const d = DragonScope.selectedDragon;
+            if (!d) {
+                return;
+            }
             if (d.name === "Master") {
                 DragonScope.dragons.forEach((dragon) => {
                     this.reset(dragon.id, dragon);
@@ -256,39 +294,53 @@ const ResetSaveLoad = {
             }
             d.rebuild();
             dragonManager.buildAllDps();
-            createInspectorGUI(DragonScope.individualCurrentIndex);
+            if (DragonScope.individualCurrentIndex) {
+                createInspectorGUI(DragonScope.individualCurrentIndex);
+            }
         };
         saveBtn.onclick = () => {
             const d = DragonScope.selectedDragon;
+            if (!d) {
+                return;
+            }
             this.save(d.id, d);
         };
         loadBtn.onclick = () => {
             const d = DragonScope.selectedDragon;
+            if (!d) {
+                return;
+            }
             const input = document.getElementById('json-loader');
             input.onchange = (e) => {
-                const file = e.target.files[0];
+                const target = e.currentTarget;
+                const file = target?.files?.[0];
                 if (!file) {
                     return;
                 }
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    const data = JSON.parse(event.target.result);
+                    const target = event.currentTarget;
+                    const result = target?.result;
+                    if (typeof result !== "string") {
+                        return;
+                    }
+                    const data = JSON.parse(result);
                     const isArray = Array.isArray(data);
                     const hasNumParts = isArray ? (data[0] && data[0].hasOwnProperty("numParts")) : data.hasOwnProperty("numParts");
                     if (!hasNumParts) {
-                        console.warn("Invalid data file");
+                        alert("Invalid data file");
                         return;
                     }
                     if (d.name === "Master") {
                         if (!isArray || data[0].name !== "Master") {
-                            console.warn("Master load failed: Selected file is not for Master.");
+                            alert("Master load failed: Selected file is not for Master.");
                             return;
                         }
-                        this.load(null, null, data);
+                        this.load(d.id, d, data);
                     }
                     else if (d.name !== "Master") {
                         if (isArray || data.name === "Master") {
-                            console.warn("Part load failed: Selected file is for Master or invalid format.");
+                            alert("Part load failed: Selected file is for Master or invalid format.");
                             return;
                         }
                         this.load(d.id, d, data);
@@ -296,7 +348,9 @@ const ResetSaveLoad = {
                     rebuildDragonList();
                     buildDPS();
                     dragonManager.buildAllDps();
-                    createInspectorGUI(DragonScope.individualCurrentIndex);
+                    if (DragonScope.individualCurrentIndex) {
+                        createInspectorGUI(DragonScope.individualCurrentIndex);
+                    }
                 };
                 reader.readAsText(file);
                 input.value = "";
@@ -305,7 +359,12 @@ const ResetSaveLoad = {
         };
         delBtn.onclick = () => {
             const d = DragonScope.selectedDragon;
-            this.deleteDragon(d.id, d);
+            if (!d) {
+                return;
+            }
+            this.deleteDragon(d.id);
         };
-    }
+    },
 };
+export { ResetSaveLoad };
+//# sourceMappingURL=ResetSaveLoad.js.map

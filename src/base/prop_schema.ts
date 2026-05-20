@@ -1,10 +1,46 @@
-export { DragonScope, PROP_SCHEMA, AllPropSchema_KEYS_excId, AllPropSchema_KEYS_except_id_followId_followIndex };
+import type { Texture } from "../lib/pixi.mjs";
+import type { IDragonPropSchema, DragonPart } from "./type.js";
+import type { Dragon } from "../core/Dragon.js";
 
-const DragonScope = {master:null, images:[], textures:[], dragons:[], dps:[], storage:{}, individualCurrentIndex:null};
-const F_1 = Number(0.1.toFixed(1));
-const F_2 = Number(0.01.toFixed(2));
-const F_3 = Number(0.001.toFixed(3));
-const F_4 = Number(0.0001.toFixed(4));
+// 1. 型（形）を定義する
+interface DragonScopeType {
+    master: Dragon | null;
+    selectedDragon: Dragon | null;
+    images: HTMLImageElement[];
+    textures: Texture[];
+    dragons: Dragon[];
+    dps: { part: DragonPart }[];
+    storage: Record<string, {
+                            current:Partial<IDragonPropSchema>;
+                            saved:Partial<IDragonPropSchema>;
+                            }>;
+    individualCurrentIndex?: number;
+    needsRebuildDPS: boolean;
+    mobileRatio: number;
+    updateWebGPUResources(): void;
+    groupVisibility?: Record<string, 'none' | 'block'>;
+    initialData?: readonly [readonly string[], readonly[number, number, number]];
+}
+
+// 2. 定義した型を適用する
+const DragonScope: DragonScopeType = {
+                                    master:null,
+                                    selectedDragon: null,
+                                    images:[],
+                                    textures:[],
+                                    dragons:[],
+                                    dps:[],
+                                    storage:{},
+                                    needsRebuildDPS:false,
+                                    mobileRatio:1,
+                                    updateWebGPUResources: () => {}};
+
+
+
+const F_1: number = Number(0.1.toFixed(1));
+const F_2: number = Number(0.01.toFixed(2));
+const F_3: number = Number(0.001.toFixed(3));
+const F_4: number = Number(0.0001.toFixed(4));
 
 //=======================
 //---PROP_SCHEMA---
@@ -97,10 +133,16 @@ swayOffset: [-1, 1, F_4, F_3],
 headBobAmpX: [-5, 5, F_1, 0],
 headBobAmpY: [-5, 5, F_1, 0],
 headBobSpeed: [-0.5, 0.5, F_4, 0],
-},};
+},} as const;
 
 
 //idプロパティだけ除外したkey配列
-const AllPropSchema_KEYS_excId = Object.values(PROP_SCHEMA).flatMap(group => Object.keys(group ?? {}));
+const AllPropSchema_KEYS_excId: (keyof IDragonPropSchema)[] =
+        Object.values(PROP_SCHEMA).flatMap(group => (group && typeof group === 'object') ?
+        Object.keys(group) : []) as (keyof IDragonPropSchema)[];
 //id,followId,followIndexを除外したkey配列
-const AllPropSchema_KEYS_except_id_followId_followIndex = AllPropSchema_KEYS_excId.filter(key => key !== 'followId' && key !== 'followIndex');
+const AllPropSchema_KEYS_except_id_followId_followIndex: (keyof IDragonPropSchema)[] =
+        AllPropSchema_KEYS_excId.filter(key => key !== 'followId' && key !== 'followIndex');
+
+export { DragonScope, PROP_SCHEMA, AllPropSchema_KEYS_excId, AllPropSchema_KEYS_except_id_followId_followIndex };
+

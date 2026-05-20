@@ -1,12 +1,10 @@
+import type { Dragon } from "../core/Dragon.js";
 import { PROP_SCHEMA, DragonScope } from './prop_schema.js';
-
-export { createResolvedParams, showToast };
 
 // ==========================
 //   showToast
 // ==========================
-
-const showToast = (text, time) => {
+const showToast = (text: string, time: number) => {
     const toast = document.createElement('div');
     toast.className = 'toast-message';
     toast.textContent = text;
@@ -19,10 +17,11 @@ const showToast = (text, time) => {
 //  scaleFunc
 // ==========================
   (function() {
-  (i, baseScaleX, baseScaleY, {methodX, methodY, ampScaleX, ampScaleY, effectScaleX, effectScaleY}) => {
+    (i: number, baseScaleX: number, baseScaleY: number, {methodX, methodY, ampScaleX, ampScaleY, effectScaleX, effectScaleY}:
+    {methodX: string; methodY: string; ampScaleX: number; ampScaleY: number; effectScaleX: number; effectScaleY: number}) => {
       let scaleX = baseScaleX;
-      const efScaX = effectScaleX+F_4;
-      const efScaY = effectScaleY+F_4;
+      const efScaX = effectScaleX;
+      const efScaY = effectScaleY;
       if(methodX==="add"){
         scaleX += Math.sin((i/efScaX)*Math.PI)*ampScaleX;
       } else if(methodX==="mul"){
@@ -48,21 +47,21 @@ const showToast = (text, time) => {
 })();
 
 //タッチパネル用 非同期でインポート
-let lumpCalculationKey;
-let showMobileButtons;
+let lumpCalculationKey: { [s: string]: unknown; } | ArrayLike<unknown>;
+let showMobileButtons: () => void;
 (async () => {
 const mainMod = await import  ('../main.js');
 lumpCalculationKey = mainMod.lumpCalculationKey;
 showMobileButtons = mainMod.showMobileButtons;
 })();
 
-const createResolvedParams = (dragon) => {
-  const resolved = {};
-  let intervalId = null;
-  let flagShowMobileButtons = false;
+const createResolvedParams = (dragon: Dragon) => {
+  const resolved = {} as Record<string, number>;
+  let intervalId: ReturnType<typeof setInterval> | null = null;
+  let flagShowMobileButtons: boolean = false;
 
 //pc,タッチパネル共通処理
-  const lumpCalculation = (targetKey) => {
+  const lumpCalculation = (targetKey: string) => {
   intervalId = setInterval(() => {
     if(!dragon.currentDragon){return};
     if (targetKey === '*') {
@@ -83,23 +82,25 @@ const createResolvedParams = (dragon) => {
 
 //PC用のキー操作
   window.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey) {return;}
+    const target = e.target instanceof Element ? e.target : null;
+    if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey) {return;}
     if (intervalId || !['*', '/', '+', '-'].includes(e.key)) {return;}
     const targetKey = e.key;
     lumpCalculation(targetKey);});
 //キーを離したとき
   window.addEventListener('keyup', () => {
-    clearInterval(intervalId);
+    if(intervalId) clearInterval(intervalId);
     intervalId = null;});
 
 //タッチパネル用の操作
   const symbols = { m: '*', d: '/', a: '+', s: '-' };
   Object.entries(lumpCalculationKey).forEach(([id, el]) => {
-  el.addEventListener('pointerdown', () => {
+    const targetEl = el as HTMLElement;
+  targetEl.addEventListener('pointerdown', () => {
     if (intervalId || !lumpCalculationKey) {return;}
-    const targetKey = symbols[id];
-    el.style.borderColor = "#2a8";
-    el.style.background = "#242";
+    const targetKey = symbols[id as keyof typeof symbols];
+    targetEl.style.borderColor = "#2a8";
+    targetEl.style.background = "#242";
     lumpCalculation(targetKey);
     showToast(`【${targetKey}】`, 1000);
     flagShowMobileButtons = true;
@@ -108,25 +109,27 @@ const createResolvedParams = (dragon) => {
 //指を離したとき
 ['pointerup', 'pointerleave', 'pointercancel'].forEach(type => {
     window.addEventListener(type, () => {
-      clearInterval(intervalId);
+      if (intervalId) clearInterval(intervalId);
       intervalId = null;
       flagShowMobileButtons = false;
       Object.values(lumpCalculationKey).forEach(el => {
-        el.style.borderColor = "";
-        el.style.background = "";
+        const targetEl = el as HTMLElement;
+        targetEl.style.borderColor = "";
+        targetEl.style.background = "";
   });});});
 
+// NOTE: ループによる動的代入において、as anyを許容
 for (const group in PROP_SCHEMA) {
-  for (const key in PROP_SCHEMA[group]) {
+  for (const key in (PROP_SCHEMA as any)[group]) {
     Object.defineProperty(resolved, key, {
       get: () => {
         // 1. マスターからの影響を計算する
         if (group === 'whole') {
           if (dragon.currentDragon && DragonScope.master) {
             // 操作中の個体なら、Masterの値を自分のプロパティに注入して保持させる
-            dragon[key] = DragonScope.master[key];}
-          return dragon[key] ?? 0;}
-        let val = dragon[key];
+            (dragon as any)[key] = (DragonScope.master as any)[key];}
+          return (dragon as any)[key] ?? 0;}
+        let val = (dragon as any)[key];
         if (dragon.currentDragon && DragonScope.master) {
           if (key === 'scaleX') {
             // マスターの補正値を計算し、即座に自身のプロパティに「焼き付け」て更新
@@ -172,3 +175,5 @@ Object.defineProperty(resolved, 'currentScaleY', {
   enumerable: true,
   configurable: true});
   return resolved;}
+
+export { createResolvedParams, showToast };

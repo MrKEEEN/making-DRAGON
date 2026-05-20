@@ -1,23 +1,19 @@
 import { PROP_SCHEMA, DragonScope } from '../base/prop_schema.js';
 import { createResolvedParams } from '../base/MathUtils.js';
 import { MotionStrategy } from './Strategies.js';
-export { Dragon };
-// ============================
-// クラス Dragon
-// ============================
-const Dragon = class {
+class Dragon {
     static INTERNAL_DEFAULTS = {
         masterOffsetX: 0,
         masterOffsetY: 0,
         motionAmount: 0,
         stillness: 0,
         anglePreset: 0,
-        angle: 0,
-        isBoosting: false,
         currentDragon: false,
     };
     constructor(options = {}) {
+        // NOTE: ループによる動的代入において、as anyを許容
         this.id = options.id ?? `dragon_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        this.parts = [];
         this.history = [];
         Object.assign(this, Dragon.INTERNAL_DEFAULTS);
         DragonScope.storage[this.id] = { current: {}, saved: {}, };
@@ -49,18 +45,21 @@ const Dragon = class {
     }
     initParts() {
         this.parts = [];
-        // const baseWidth = typeof canvas !== 'undefined' ? canvas.width / 2 : 0;
-        // const baseHeight = typeof canvas !== 'undefined' ? canvas.height / 2 : 0;
         const baseWidth = window.innerWidth / 2;
         const baseHeight = window.innerHeight / 2;
         for (let i = 0; i < this.numParts; i++) {
             this.parts.push({
+                dragon: this,
                 x: baseWidth,
                 y: baseHeight,
                 angle: 0,
                 activeAngle: 0,
                 flapInfluence: 1,
                 imgIndex: this._imgIndex,
+                baseScaleX: this.scaleX,
+                baseScaleY: this.scaleY,
+                scaleX: this.scaleX,
+                scaleY: this.scaleY,
             });
         }
     }
@@ -70,7 +69,7 @@ const Dragon = class {
         }
         ;
     }
-    rebuild(rotationMode) {
+    rebuild(rotationMode = 0) {
         this.initParts();
         if (typeof window !== 'undefined') {
             DragonScope.needsRebuildDPS = true;
@@ -170,54 +169,57 @@ const Dragon = class {
     }
     recalculateScales(t) {
         const res = this.resolvedParams;
-        const bSpeed = res.breatheSpeed;
-        const bSpread = res.breatheSpread;
-        const bLag = res.breatheLag;
+        const bSpeed = res?.breatheSpeed ?? 1;
+        const bSpread = res?.breatheSpread ?? 1;
+        const bLag = res?.breatheLag ?? 1;
         // 1. ループを一つに統合し、計算の連続性を確保
         for (let i = 0; i < this.parts.length; i++) {
             const part = this.parts[i];
             const ratio = this.parts.length > 1 ? i / (this.parts.length - 1) : 0;
             // --- 形状変形の計算 (Base Scale) ---
-            let bx = res.scaleX;
-            let by = res.scaleY;
+            let bx = res?.scaleX;
+            let by = res?.scaleY;
             if (this.flagScaleFunc) {
-                const ax = res.ampScaleX ?? 0;
-                const ex = res.effectScaleX ?? 0;
-                if (this.methodX === "add")
+                const ax = res?.ampScaleX ?? 0;
+                const ex = res?.effectScaleX ?? 0;
+                if (this.methodX === "add" && bx !== undefined)
                     bx += Math.sin(ratio * Math.PI * ex) * ax;
-                else if (this.methodX === "mul")
+                else if (this.methodX === "mul" && bx !== undefined)
                     bx *= (1 + Math.sin(ratio * Math.PI * ex) * (ax / 100));
-                else if (this.methodX === "simpAdd")
+                else if (this.methodX === "simpAdd" && bx !== undefined)
                     bx += ratio * ax;
-                else if (this.methodX === "simpMul")
+                else if (this.methodX === "simpMul" && bx !== undefined)
                     bx *= (1 + ratio * (ax / 100));
-                const ay = res.ampScaleY ?? 0;
-                const ey = res.effectScaleY ?? 0;
-                if (this.methodY === "add")
+                const ay = res?.ampScaleY ?? 0;
+                const ey = res?.effectScaleY ?? 0;
+                if (this.methodY === "add" && by !== undefined)
                     by += Math.sin(ratio * Math.PI * ey) * ay;
-                else if (this.methodY === "mul")
+                else if (this.methodY === "mul" && by !== undefined)
                     by *= (1 + Math.sin(ratio * Math.PI * ey) * (ay / 100));
-                else if (this.methodY === "simpAdd")
+                else if (this.methodY === "simpAdd" && by !== undefined)
                     by += ratio * ay;
-                else if (this.methodY === "simpMul")
+                else if (this.methodY === "simpMul" && by !== undefined)
                     by *= (1 + ratio * (ay / 100));
             }
             // 基準値を保存（呼吸計算のベースとして使用）
             part.baseScaleX = bx;
             part.baseScaleY = by;
             // --- 呼吸の計算 (Final Scale) ---
-            let bX = 0, bY = 0;
+            let bX = 0;
+            let bY = 0;
             // breatheProfile が "none" 以外かつフラグが有効な場合のみ計算を実行
             if (this.breatheProfile !== "none" && this.flagBreath) {
                 const weight = (this.breatheProfile === "center") ? Math.pow(Math.sin(ratio * Math.PI), bSpread) : 1;
                 const phase = t * bSpeed - (this.breatheProfile === "frontWave" ? i * bLag : 0);
                 const wave = Math.sin(phase);
-                bX = wave * (res.breatheAmpX / 100) * weight;
-                bY = wave * (res.breatheAmpY / 100) * weight;
+                bX = wave * (res?.breatheAmpX ?? 0) / 100 * weight;
+                bY = wave * (res?.breatheAmpY ?? 0) / 100 * weight;
             }
             // 最終的なスケールを一度だけ代入
             part.scaleX = part.baseScaleX * (1 + bX);
             part.scaleY = part.baseScaleY * (1 + bY);
         }
     }
-};
+}
+export { Dragon };
+//# sourceMappingURL=Dragon.js.map

@@ -2,7 +2,13 @@ import { DragonScope } from '../base/prop_schema.js';
 import { buildDPS, rebuildDragonList, updateListHighlight, createInspectorGUI } from '../ui/Inspector.js';
 import { Individual } from './Individual.js';
 import * as PIXI from '../lib/pixi.mjs';
-export class DragonManager {
+class DragonManager {
+    individuals;
+    allDps;
+    currentIndex;
+    spritePool;
+    container;
+    app;
     constructor() {
         // Individualインスタンスを格納する配列
         this.individuals = [];
@@ -31,6 +37,8 @@ export class DragonManager {
         });
         this.individuals.splice(deletedIndex, 1);
         const contentArea = document.getElementById("inspector-content");
+        if (!contentArea)
+            return;
         contentArea.innerHTML = "";
         this.individuals.forEach((individual, newIndex) => {
             individual.uiContainer = document.createElement("div");
@@ -54,7 +62,7 @@ export class DragonManager {
     // main.jsからappを注入するメソッド
     initApp(app) {
         this.app = app;
-        this.app.stage.addChild(this.container);
+        this.app?.stage.addChild(this.container);
     }
     syncWebGPUSprites(reverseMode) {
         const list = this.allDps;
@@ -110,4 +118,6 @@ export class DragonManager {
         createInspectorGUI(index);
     }
 }
-export const dragonManager = new DragonManager();
+const dragonManager = new DragonManager();
+export { dragonManager };
+//# sourceMappingURL=DragonManager.js.map

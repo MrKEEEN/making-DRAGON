@@ -1,14 +1,10 @@
-// import Sortable from '../../lib/sortable.esm.js';
 import Sortable from '../lib/sortable.esm.js';
-
 import { MotionStrategy } from '../core/Strategies.js';
 import { Dragon } from '../core/Dragon.js';
 import { PROP_SCHEMA, DragonScope } from '../base/prop_schema.js';
 import { showToast } from '../base/MathUtils.js';
 
-export { buildDPS, updateListHighlight, rebuildDragonList, paneSetupUI, createInspectorGUI };
-
-let dragonListEl = null;
+let dragonListEl: HTMLOListElement | null = null;
 
 const buildDPS = () => {
   DragonScope.dps = [];
@@ -18,11 +14,14 @@ const buildDPS = () => {
         d.imgIndex = DragonScope.images.length - 1;}
     //[0]のpartsは回転が独自で他partsと揃わないので描画しない
     for (const p of d.parts.slice(1)) {
-      DragonScope.dps.push({ part:p, dragon:d, imgIndex:p.imgIndex,});}}};
+      // DragonScope.dps.push({ part:p, dragon:d, imgIndex:p.imgIndex,});
+            DragonScope.dps.push({part:p});
+  }}};
 
 const rebuildDragonList = () => {
   if(!dragonListEl){return;}
-  dragonListEl.innerHTML = '';
+  const el = dragonListEl;
+  el.innerHTML = '';
   DragonScope.dragons.forEach((dragon, i) => {
     const dragonsLi = document.createElement('li');
     dragonsLi.className = "dragon-list-item";
@@ -31,23 +30,25 @@ const rebuildDragonList = () => {
     if (DragonScope.selectedDragon === dragon) {
       dragonsLi.style.borderColor = "#2a8";
       dragonsLi.style.background = "#242";}
-    dragonListEl.appendChild(dragonsLi);});}
+    el.appendChild(dragonsLi);});}
 
 // 選択状態を視覚的に更新する補助関数
 const updateListHighlight = () => {
     if (!dragonListEl){return;}
     Array.from(dragonListEl.children).forEach((listEl, i) => {
+      const el = listEl as HTMLElement;
       const isSelected = (DragonScope.dragons[i] === DragonScope.selectedDragon);
-      listEl.style.borderColor = isSelected ? "#2a8" : "#444";
-      listEl.style.background = isSelected ? "#242" : "#222";});}
+      el.style.borderColor = isSelected ? "#2a8" : "#444";
+      el.style.background = isSelected ? "#242" : "#222";});}
 
 // ============================================================
 //   ペイン初期セットアップ
 // ============================================================
 const paneSetupUI = () => {
-const dragonInput = document.getElementById("dragonInput");
-const updateAddBtn = document.getElementById("updateAddBtn");
-const topContainer = document.getElementById('inspector-top-container');
+const dragonInput = document.getElementById("dragonInput") as HTMLInputElement | null;
+const updateAddBtn = document.getElementById("updateAddBtn") as HTMLElement | null;
+const topContainer = document.getElementById('inspector-top-container') as HTMLElement | null;
+if (!topContainer || !dragonInput || !updateAddBtn) { return; }
 // 1. Dragon List の追加
 dragonListEl = document.createElement("ol");
 dragonListEl.id = "DragonScope.dragons";
@@ -59,29 +60,33 @@ fetch('manual.txt')
         .then(res => res.text())
         .then(text => {
             // 読み込み完了後にここが実行される（コンマ数秒後）
-            document.getElementById('manual-display').innerText = text;});
+            const manualDisplay = document.getElementById('manual-display');
+            if (manualDisplay) manualDisplay.innerText = text;});
 
 // --- 上下リサイズ処理 ---
-const splitResizer = document.getElementById('splitResizer');
-// pointerdown でマウスとタッチの両方に対応
-splitResizer.onpointerdown = (e) => {
-    e.preventDefault();
-    // 指をリサイザーにガッチリ固定（これがないと指がズレた瞬間に止まる）
-    splitResizer.setPointerCapture(e.pointerId);
-    const startY = e.clientY;
-    const startHeight = topContainer.offsetHeight;
-    const onPointerMove = (e) => {
-        const deltaY = e.clientY - startY;
-        const newHeight = Math.max(0, startHeight + (deltaY) * window.devicePixelRatio);
-        topContainer.style.flex = `0 0 ${newHeight}px`;
-        topContainer.style.display = newHeight === 0 ? 'none' : 'flex';};
-    const onPointerUp = (e) => {
-        // 固定を解除
-        splitResizer.releasePointerCapture(e.pointerId);
-        document.removeEventListener('pointermove', onPointerMove);
-        document.removeEventListener('pointerup', onPointerUp);};
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp);};
+const splitResizer = document.getElementById('splitResizer') as HTMLElement | null;
+if (splitResizer) {
+  // pointerdown でマウスとタッチの両方に対応
+  splitResizer.onpointerdown = (e: PointerEvent) => {
+      e.preventDefault();
+      // 指をリサイザーにガッチリ固定（これがないと指がズレた瞬間に止まる）
+      splitResizer.setPointerCapture(e.pointerId);
+      const startY = e.clientY;
+      const startHeight = topContainer.offsetHeight;
+      const onPointerMove = (e: PointerEvent) => {
+          const deltaY = e.clientY - startY;
+          const newHeight = Math.max(0, startHeight + (deltaY) * window.devicePixelRatio);
+          topContainer.style.flex = `0 0 ${newHeight}px`;
+          topContainer.style.display = newHeight === 0 ? 'none' : 'flex';};
+      const onPointerUp = (e: PointerEvent) => {
+          // 固定を解除
+          splitResizer.releasePointerCapture(e.pointerId);
+          document.removeEventListener('pointermove', onPointerMove);
+          document.removeEventListener('pointerup', onPointerUp);};
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+  };
+}
 
   // --- sortable(ライブラリ)初期化 ---
 new Sortable(dragonListEl, {
@@ -89,7 +94,7 @@ new Sortable(dragonListEl, {
   delay: 300,             // 300ミリ秒押し続けないとドラッグを開始しない
   delayOnTouchOnly: true, // スマホ（タッチ操作）の時だけこの遅延を有効にする
   touchStartThreshold: 5,
-  onEnd: (evt) => {
+  onEnd: (evt: { oldIndex: number; newIndex: number; }) => {
     const movedItem = DragonScope.dragons.splice(evt.oldIndex, 1)[0];
     DragonScope.dragons.splice(evt.newIndex, 0, movedItem);
     rebuildDragonList();
@@ -99,26 +104,29 @@ new Sortable(dragonListEl, {
     sortableFunc(e);});
   updateAddBtn.addEventListener("click", () => {
     updateAdd(dragonInput);});
-  DragonScope.master = DragonScope.dragons.find(d => d.name === "Master");}
+  DragonScope.master = DragonScope.dragons.find(d => d.name === "Master") ?? DragonScope.dragons[0];}
 
 // ============================================================
 //   sortable関数
 // ============================================================
-  function sortableFunc(e){
-    const li = e.target.closest("li");
-    if(!li){return;}
+  function sortableFunc(e: Event){
+    const target = e.target as HTMLElement | null;
+    const li = target?.closest("li") as HTMLElement | null;
+    if(!li || !dragonListEl){return;}
     const idx = Array.from(dragonListEl.children).indexOf(li);
     DragonScope.selectedDragon = DragonScope.dragons[idx];
     updateListHighlight();
-    createInspectorGUI(DragonScope.individualCurrentIndex);}
+    if(DragonScope.individualCurrentIndex) {createInspectorGUI(DragonScope.individualCurrentIndex);}
+  }
 
 // ============================================================
 //   updateAdd関数
 // ============================================================
-function updateAdd(dragonInput){
+function updateAdd(dragonInput: HTMLInputElement | null){
   let d = DragonScope.selectedDragon;
+  if (!d) {return;}
   //---replaceImage---
-  const imgInput = document.getElementById(`inspector-image-input-${DragonScope.individualCurrentIndex}`);
+  const imgInput = document.getElementById(`inspector-image-input-${DragonScope.individualCurrentIndex}`) as HTMLInputElement | null;
   const newImgIndex = imgInput ? parseInt(imgInput.value, 10) : 0;
   d.imgIndex = newImgIndex;
   if (d) {
@@ -126,10 +134,10 @@ function updateAdd(dragonInput){
   d.parts.forEach(p => p.imgIndex = newImgIndex);
   DragonScope.storage[d.id].current["_imgIndex"] = newImgIndex;}
   // ---follow---
-  const idInput = document.getElementById(`inspector-follow-input-followId-${DragonScope.individualCurrentIndex}`);
-  const idxInput = document.getElementById(`inspector-follow-input-followIndex-${DragonScope.individualCurrentIndex}`);
-  const valId = idInput.value.trim();
-  const valIdx = parseInt(idxInput.value, 10);
+  const idInput = document.getElementById(`inspector-follow-input-followId-${DragonScope.individualCurrentIndex}`) as HTMLInputElement | null;
+  const idxInput = document.getElementById(`inspector-follow-input-followIndex-${DragonScope.individualCurrentIndex}`) as HTMLInputElement | null;
+  const valId = idInput ? idInput.value.trim() : "";
+  const valIdx = idxInput ? parseInt(idxInput.value, 10) : NaN;
   const found = DragonScope.dragons.find(d => d.name === valId);
   if(found && !isNaN(valIdx)){
   d.followId = found ?? valId;
@@ -137,10 +145,10 @@ function updateAdd(dragonInput){
   DragonScope.storage[d.id].current["followId"] = found ?? valId;
   DragonScope.storage[d.id].current["followIndex"] = valIdx;}
 //========================================================================================
-  let tentativeName = null;
+  let tentativeName: string | null = null;
   let counter = 1;
   //---reName---
-  const nameInput = document.getElementById(`inspector-name-input-${DragonScope.individualCurrentIndex}`);
+  const nameInput = document.getElementById(`inspector-name-input-${DragonScope.individualCurrentIndex}`) as HTMLInputElement | null;
   let reName = nameInput ? nameInput.value.trim() : "";
   if (d && reName && d.name !== reName) {
     tentativeName = reName;
@@ -151,12 +159,12 @@ function updateAdd(dragonInput){
   d.name = reName;
     DragonScope.storage[d.id].current["name"] = reName;
   DragonScope.dragons.forEach(d => {
-    if (d.followId && (d.followId.name === oldName || d.followId === oldName)) {
+    if (d.followId && (d.followId.name === oldName || String(d.followId) === oldName)) {
         d.followId = d;
         DragonScope.storage[d.id].current["followId"] = d;
       }});}
     //---new Dragon--
-  let newDragonName = dragonInput.value.trim();
+  let newDragonName = dragonInput ? dragonInput.value.trim() : "";
       if (newDragonName) {
         tentativeName = newDragonName;
     while(DragonScope.dragons.some(target => target.name === newDragonName)){
@@ -175,18 +183,13 @@ function updateAdd(dragonInput){
     DragonScope.selectedDragon = newDragon;
     showToast(`New dragon added: ${newDragon.name}`, 5000);}
 //---update---
-  d.parts.forEach(p => {
-    p.vx = 0;
-    p.vy = 0;
-    p.oldX = p.x;
-    p.oldY = p.y;});
 
   rebuildDragonList();
   buildDPS();
   DragonScope.needsRebuildDPS = true;
   updateListHighlight();
-  createInspectorGUI(DragonScope.individualCurrentIndex);
-  dragonInput.value = "";
+  if(DragonScope.individualCurrentIndex) {createInspectorGUI(DragonScope.individualCurrentIndex);}
+  if (dragonInput) dragonInput.value = "";
 }
 
 //======================================================================================================
@@ -196,8 +199,8 @@ function updateAdd(dragonInput){
 
 //複数スライダーが同時発火しないように共通の変数を関数外に用意
 let sliderLocked = false;
-
-const createInspectorGUI = (containerIdIndex) => {
+// NOTE: ループによる動的代入において、as anyを許容
+const createInspectorGUI = (containerIdIndex: number) => {
   const topContainer = document.getElementById('inspector-top-container');
   const contentAreaWrapper = document.getElementById('inspector-content');
   const contentArea = document.getElementById(`inspector-container-${containerIdIndex}`);
@@ -207,7 +210,9 @@ const createInspectorGUI = (containerIdIndex) => {
   if (!DragonScope.selectedDragon){return;}
   // --- D. 「Editing: 名前」を上部エリアの末尾に追加（固定表示） ---
     const splitResizer = document.getElementById('splitResizer');
-    splitResizer.innerText = `Editing: ${DragonScope.selectedDragon.name || "Unnamed"}`;
+    if (splitResizer) {
+      splitResizer.innerText = `Editing: ${DragonScope.selectedDragon.name || "Unnamed"}`;
+    }
   // ------------------- groupKeyの処理 -------------------
     for (const groupKey in PROP_SCHEMA) {
     if(groupKey === 'id') {continue;};
@@ -217,7 +222,7 @@ const createInspectorGUI = (containerIdIndex) => {
     groupTitle.className = "prop-group-title";
     groupTitle.innerText = groupKey.toUpperCase();
     groupWrapper.appendChild(groupTitle);
-    const params = PROP_SCHEMA[groupKey];
+    const params = (PROP_SCHEMA as any)[groupKey];
     const contentWrapper = document.createElement('div');
     // タイトルクリックでcontentWrapperの表示切替_状態維持のためIDを付与（開閉状態の管理用）
     contentWrapper.id = `content-${groupKey}`;
@@ -228,8 +233,7 @@ const createInspectorGUI = (containerIdIndex) => {
       const nextDisplay = isHidden ? 'block' : 'none';
       contentWrapper.style.display = nextDisplay;
     // グローバルスコープ等に状態を保存し、パート切り替え後も引き継ぐ
-      if(!DragonScope.groupVisibility)
-        {DragonScope.groupVisibility = {};}
+      if(!DragonScope.groupVisibility) {DragonScope.groupVisibility = {};}
       DragonScope.groupVisibility[groupKey] = nextDisplay;};
     // ------------------- groupKeyの下階層の各keyの処理 -------------------
     for (const key in params) {
@@ -248,7 +252,7 @@ const createInspectorGUI = (containerIdIndex) => {
                             groupKey === 'basic' && ['scaleX', 'scaleY', 'offsetX', 'offsetY', 'numParts',].includes(key)) ||
                           (DragonScope.selectedDragon.name === "Master" && groupKey === 'meta' && ['name', 'followId', 'followIndex',].includes(key)));
       const isLocked = isLockedGroup || isLockedKey;
-      function lockedProperty(isLocked){
+      function lockedProperty(isLocked: boolean){
         if (isLocked){itemRow.style.opacity="0.2"; itemRow.style.pointerEvents="none"; itemRow.style.filter="grayscale(100%)";
             input.disabled=true; input.style.cursor="not-allowed"; input.style.background="#111";input.style.color="#eee";}};
       // configが"flag"の場合はgroupWrapper（タイトル直下）に、それ以外はcontentWrapperに追加
@@ -262,7 +266,7 @@ const createInspectorGUI = (containerIdIndex) => {
         input.id = `inspector-name-input-${DragonScope.individualCurrentIndex}`;
         label.innerText = "reName (Input Text)";
         input.type = "text";
-        input.value = DragonScope.selectedDragon[key] ?? "";
+        input.value = (DragonScope.selectedDragon as any)?.[key] ?? "";
         lockedProperty(isLocked);
         itemRow.appendChild(label);
         itemRow.appendChild(input);
@@ -273,9 +277,9 @@ const createInspectorGUI = (containerIdIndex) => {
     input.id = `inspector-image-input-${DragonScope.individualCurrentIndex}`;
     label.innerText = "replaceImage (Select number)";
     input.type = "number";
-    input.value = DragonScope.selectedDragon[key] ?? 0;
-    input.min = 0;
-    input.max = DragonScope.images.length - 1;
+    input.value = String((DragonScope.selectedDragon as any)[key] ?? 0);
+    input.min = "0";
+    input.max = String(DragonScope.images.length - 1);
     const controls = document.createElement("div");
     const countDisplay = document.createElement("span");
     countDisplay.className = "inspector-countDisplay";
@@ -292,8 +296,8 @@ const createInspectorGUI = (containerIdIndex) => {
         content.id = "image-list-content";
         // UI更新用
         const updateUI = () => {
-            input.max = DragonScope.images.length - 1;
-            input.value = DragonScope.selectedDragon[key] ?? 0;
+            input.max = String(DragonScope.images.length - 1);
+            input.value = String((DragonScope.selectedDragon as any)?.[key] ?? 0);
             countDisplay.innerText = ` / 0 ~ ${DragonScope.images.length - 1}`;};
         // リスト再描画用関数
         const renderList = () => {
@@ -311,16 +315,17 @@ const createInspectorGUI = (containerIdIndex) => {
                 fileInput.accept = 'image/*';
                 fileInput.multiple = true;
                 fileInput.onchange = async (e) => {
-                    const files = Array.from(e.target.files);
+                    const target = e.target as HTMLInputElement | null;
+                    const files = Array.from(target?.files ?? []);
                     if (files.length === 0) return;
                     try {
-                        const newImages = await Promise.all(files.map(async (file) => {
+                        const newImages = await Promise.all(files.map(async (file: File) => {
                             const url = URL.createObjectURL(file);
                             const { loadImage } = await import('../main.js');
                             const img = await loadImage(url);
                             return img;
                         }));
-                        DragonScope.images.push(...newImages);
+                        DragonScope.images.push(...newImages as HTMLImageElement[]);
                         DragonScope.updateWebGPUResources();
                         updateUI();
                         renderList();
@@ -335,8 +340,9 @@ const createInspectorGUI = (containerIdIndex) => {
                 const item = document.createElement("div");
                 item.className = "image-list-item";
                 // プレビュー
-                const preview = img.cloneNode();
-                preview.style = "width:60px; height:60px; object-fit:contain; background:#000; pointer-events:none;";
+                const preview = document.createElement('img');
+                preview.src = (img as HTMLImageElement).src || "";
+                preview.style.cssText = "width:60px; height:60px; object-fit:contain; background:#000; pointer-events:none;";
                 // インデックス情報
                 const info = document.createElement("div");
                 info.className = "image-index-info";
@@ -380,8 +386,8 @@ const createInspectorGUI = (containerIdIndex) => {
                     DragonScope.updateWebGPUResources();
                 // 参照範囲外になったパートのみ、配列の新しい末尾を適用
                     DragonScope.dragons.forEach(d => {
-                        if (d[key] >= DragonScope.images.length) {
-                            d[key] = DragonScope.images.length - 1;
+                        if ((d as any)[key] >= DragonScope.images.length) {
+                            (d as any)[key] = DragonScope.images.length - 1;
                             d.rebuild();}});
                     updateUI();
                     renderList();};
@@ -392,14 +398,15 @@ const createInspectorGUI = (containerIdIndex) => {
                 grid.appendChild(item);});
             content.appendChild(grid);
             // SortableJSの初期化 (タッチとドラッグを有効化)
+            interface SortableEvent {oldIndex?: number; newIndex?: number;}
             new Sortable(grid, {
                 animation: 150,
                 delay: 300,
                 delayOnTouchOnly: true,
                 touchStartThreshold: 5,
-                onEnd: (evt) => {
+                onEnd: (evt: SortableEvent) => {
                     const { oldIndex, newIndex } = evt;
-                    if (oldIndex === newIndex) {return;}
+                    if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) {return;}
                     const targetImg = DragonScope.images.splice(oldIndex, 1)[0];
                     DragonScope.images.splice(newIndex, 0, targetImg);
                     DragonScope.updateWebGPUResources();
@@ -437,13 +444,13 @@ followInput.className = "inspector-follow-input";
 followInput.type = (config[0] === "referenceId") ? "text" : "number";
 followInput.id = `inspector-follow-input-${key}-${DragonScope.individualCurrentIndex}`
 followInput.dataset.key = key;
-const rawVal = DragonScope.selectedDragon[key];
+const rawVal = (DragonScope.selectedDragon as any)[key];
 const currentVal = (rawVal?.name ?? rawVal) ?? null;
-followInput.value = currentVal;
-followInput.min = 0;
+followInput.value = String(currentVal ?? "");
+followInput.min = "0";
 const targetDragon = DragonScope.selectedDragon.followId;
   if (config[0] === "referenceIndex") {
-    followInput.max = (targetDragon && targetDragon.numParts) ? targetDragon.numParts - 1 : null;}
+    followInput.max = (targetDragon && targetDragon.numParts) ? String(targetDragon.numParts - 1) : "";}
     lockedProperty(isLocked);
     followRow.appendChild(followInput);
     itemRow.appendChild(followRow);
@@ -454,7 +461,7 @@ const targetDragon = DragonScope.selectedDragon.followId;
         itemRow.appendChild(label);
         const flagOnOffBtn = document.createElement('button');
         flagOnOffBtn.className = "inspector-flag-btn";
-        const updateBtnSwitch = (val) => {
+        const updateBtnSwitch = (val: number | boolean) => {
           flagOnOffBtn.innerText = val ? "ON" : "OFF";
           flagOnOffBtn.style = `background:${val ? '#2a8' : '#822'}`;
           let targetOpacity = val ? "1.0" : "0.2";
@@ -469,15 +476,16 @@ const targetDragon = DragonScope.selectedDragon.followId;
               contentWrapper.style.opacity = targetOpacity;
               contentWrapper.style.pointerEvents = targetPointer;
               contentWrapper.style.filter = targetFilter;};
-        updateBtnSwitch(!!DragonScope.selectedDragon[key]);
+        updateBtnSwitch(!!(DragonScope.selectedDragon as any)[key]);
         flagOnOffBtn.onclick = () => {
-          const newVal = !DragonScope.selectedDragon[key];
-          DragonScope.selectedDragon[key] = newVal ? 1 : 0;
+          if(!DragonScope.selectedDragon) {return;}
+          const newVal = !(DragonScope.selectedDragon as any)?.[key];
+          (DragonScope.selectedDragon as any)[key] = newVal ? 1 : 0;
           updateBtnSwitch(newVal);
-          DragonScope.storage[DragonScope.selectedDragon.id].current[key] = newVal;
+          (DragonScope.storage[DragonScope.selectedDragon.id].current as any)[key] = newVal;
           if (["flagBranch"].includes(key)) {
             MotionStrategy();
-            DragonScope.selectedDragon.rebuild();
+            DragonScope.selectedDragon?.rebuild();
           }};
         itemRow.appendChild(flagOnOffBtn);
         groupWrapper.insertBefore(itemRow, groupTitle.nextSibling);}
@@ -494,10 +502,13 @@ const targetDragon = DragonScope.selectedDragon.followId;
           o.value = config[i];
           o.innerText = config[i];
           select.appendChild(o);};
-        select.value = DragonScope.selectedDragon[key] ?? config[defIdx];
+        select.value = (DragonScope.selectedDragon as any)[key] ?? config[defIdx];
         select.onchange = (e) => {
-          DragonScope.selectedDragon[key] = e.target.value;
-          DragonScope.storage[DragonScope.selectedDragon.id].current[key] = e.target.value;};
+          if(!DragonScope.selectedDragon) {return;}
+          const target = e.target as HTMLSelectElement | null;
+          const value = target ? target.value : "";
+          (DragonScope.selectedDragon as any)[key] = value;
+          (DragonScope.storage[DragonScope.selectedDragon.id].current as any)[key] = value;};
         itemRow.appendChild(select);
         lockedProperty(isLocked);
         contentWrapper.appendChild(itemRow);}
@@ -512,19 +523,19 @@ const targetDragon = DragonScope.selectedDragon.followId;
         const slider = document.createElement('input');
         slider.className = "inspector-slider";
         slider.type = "range";
-        slider.min = config[0];
-        slider.max = config[1];
-        const baseStep = config[2] ?? F_1;
-        slider.step = baseStep;
-        const currentVal = DragonScope.selectedDragon[key] ?? config[defInd];
+        slider.min = String(config[0]);
+        slider.max = String(config[1]);
+        const baseStep = config[2];
+        slider.step = String(baseStep);
+        const currentVal = (DragonScope.selectedDragon as any)[key] ?? config[defInd];
         const valDisp = document.createElement('input');
         valDisp.type = "number";
         valDisp.className = "inspector-slider-value-disp";
         const negBtn = document.createElement('input');
         negBtn.type = "button";
         negBtn.value = "±";
-        slider.value = currentVal;
-        valDisp.value = currentVal;
+        slider.value = String(currentVal);
+        valDisp.value = String(currentVal);
 
         // -------------------キーボード操作ロジック--------------
         slider.addEventListener('keydown', e => {
@@ -544,37 +555,37 @@ const targetDragon = DragonScope.selectedDragon.followId;
               v += baseStep * (["ArrowUp", "ArrowRight"].includes(e.key) ? 10 : -10);
               changed = true;}
           if (changed) {
+            if(!DragonScope.selectedDragon) {return;}
             v = Math.max(config[0], Math.min(config[1], v));
             const stepDec = baseStep.toString().includes('.') ? baseStep.toString().split('.')[1].length : 0;
             const finalV = parseFloat(v.toFixed(stepDec + 1));
-            slider.value = finalV;
-            valDisp.value = finalV;
-            DragonScope.selectedDragon[key] = finalV;
+            slider.value = String(finalV);
+            valDisp.value = String(finalV);
+            (DragonScope.selectedDragon as any)[key] = finalV;
             slider.dispatchEvent(new Event('input'));
-            DragonScope.storage[DragonScope.selectedDragon.id].current[key] = finalV;}});
+            (DragonScope.storage[DragonScope.selectedDragon.id].current as any)[key] = finalV;}});
 
             let isSliderDragging = false;
-            let activePointerId = null;
-            let longPressTimer = null;
-            let startX;
-            let startV;
+            let activePointerId: number | null = null;
+            let longPressTimer: number | null = null;
+            let startX = 0;
+            let startV = 0;
 
             slider.oninput = (e) => {
-              if (!isSliderDragging) {
+              if (!isSliderDragging || !DragonScope.selectedDragon) {
     // 長押し確定前なら、表示上の値を元の値に戻して処理を中断する
-              slider.value = startV;
+              slider.value = String(startV);
               return;}
 
-              const v = parseFloat(e.target.value);
-              valDisp.value = v;
-              DragonScope.selectedDragon[key] = v;
-              DragonScope.storage[DragonScope.selectedDragon.id].current[key] = v;
+              const target = e.target as HTMLInputElement | null;
+              const v = target ? parseFloat(target.value) : 0;
+              valDisp.value = String(v);
+              (DragonScope.selectedDragon as any)[key] = v;
+              (DragonScope.storage[DragonScope.selectedDragon.id].current as any)[key] = v;
               if (["numParts"].includes(key)) {
-                DragonScope.selectedDragon.rebuild();
+                DragonScope.selectedDragon?.rebuild();
                 rebuildDragonList();
               }};
-
-
 
 slider.addEventListener('pointerdown', (e) => {
   if(sliderLocked || activePointerId) return;
@@ -612,50 +623,50 @@ window.addEventListener('pointermove', (e) => {
     // 範囲制限
     const finalV = Math.max(config[0], Math.min(config[1], newValue));
     // 反映（既存の共通処理を呼び出し）
-    slider.value = finalV;
-    slider.oninput({ target: slider });
+    slider.value = String(finalV);
+    slider.dispatchEvent(new Event('input'));
 });
 
-window.addEventListener('pointerup', (e) => {
-    clearTimeout(longPressTimer);
+window.addEventListener('pointerup', () => {
+    if (longPressTimer !== null) clearTimeout(longPressTimer);
     isSliderDragging = false;
     sliderLocked = false;
     activePointerId = null;
 });
 
-
         valDisp.onchange = () => {
+          if(!DragonScope.selectedDragon) {return;}
           try {
           const v = parseFloat(valDisp.value);
           // parseFloatがNaNを返した場合、または値が不正な場合は意図的にエラーを発生させてcatchへ飛ばす.3つのkeyは個別にclamp
         if (isNaN(v) || (["spacing"].includes(key) && v<0) || (["speed"].includes(key) && v<0) || (["numParts"].includes(key) && v<=0)){
           throw new Error("Invalid Number");}
-            slider.value = v;
-            valDisp.value = v;
-            DragonScope.selectedDragon[key] = v;
-            DragonScope.storage[DragonScope.selectedDragon.id].current[key] = v;
+            slider.value = String(v);
+            valDisp.value = String(v);
+            (DragonScope.selectedDragon as any)[key] = v;
+            (DragonScope.storage[DragonScope.selectedDragon.id].current as any)[key] = v;
             if (["numParts"].includes(key)) {
-              DragonScope.selectedDragon.rebuild();
+              DragonScope.selectedDragon?.rebuild();
               rebuildDragonList();}
           } catch (e) {
         // エラー（NaN）時は現在の保持値（currentVal）に差し戻す
-              slider.value = currentVal;
-              valDisp.value = currentVal;
-              DragonScope.selectedDragon[key] = currentVal;
-              DragonScope.storage[DragonScope.selectedDragon.id].current[key] = currentVal;
+              slider.value = String(currentVal);
+              valDisp.value = String(currentVal);
+              (DragonScope.selectedDragon as any)[key] = currentVal;
+              (DragonScope.storage[DragonScope.selectedDragon.id].current as any)[key] = currentVal;
               if (["numParts"].includes(key)) {
-                DragonScope.selectedDragon.rebuild();
+                DragonScope.selectedDragon?.rebuild();
                 rebuildDragonList();}}};
 
         negBtn.onclick = () => {
-          if (["spacing"].includes(key) || ["speed"].includes(key) || ["numParts"].includes(key)) {return;}
+          if (["spacing"].includes(key) || ["speed"].includes(key) || ["numParts"].includes(key) || !DragonScope.selectedDragon) {return;}
           const rawVal = valDisp.value;
           let v = parseFloat(rawVal);
           v = -v;
-          slider.value = v;
-          valDisp.value = v;
-          DragonScope.selectedDragon[key] = v;
-          DragonScope.storage[DragonScope.selectedDragon.id].current[key] = v;};
+          slider.value = String(v);
+          valDisp.value = String(v);
+          (DragonScope.selectedDragon as any)[key] = v;
+          (DragonScope.storage[DragonScope.selectedDragon.id].current as any)[key] = v;};
 
         sliderRow.appendChild(slider);
         sliderRow.appendChild(negBtn);
@@ -667,3 +678,4 @@ window.addEventListener('pointerup', (e) => {
 }};
 
 
+export { buildDPS, updateListHighlight, rebuildDragonList, paneSetupUI, createInspectorGUI };

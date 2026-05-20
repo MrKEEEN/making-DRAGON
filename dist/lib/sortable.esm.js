@@ -3148,3 +3148,4 @@ Sortable.mount(new AutoScrollPlugin());
 Sortable.mount(Remove, Revert);
 export default Sortable;
 export { MultiDragPlugin as MultiDrag, Sortable, SwapPlugin as Swap };
+//# sourceMappingURL=sortable.esm.js.map

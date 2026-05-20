@@ -1,5 +1,16 @@
-export { DragonScope, PROP_SCHEMA, AllPropSchema_KEYS_excId, AllPropSchema_KEYS_except_id_followId_followIndex };
-const DragonScope = { master: null, images: [], textures: [], dragons: [], dps: [], storage: {}, individualCurrentIndex: null };
+// 2. 定義した型を適用する
+const DragonScope = {
+    master: null,
+    selectedDragon: null,
+    images: [],
+    textures: [],
+    dragons: [],
+    dps: [],
+    storage: {},
+    needsRebuildDPS: false,
+    mobileRatio: 1,
+    updateWebGPUResources: () => { }
+};
 const F_1 = Number(0.1.toFixed(1));
 const F_2 = Number(0.01.toFixed(2));
 const F_3 = Number(0.001.toFixed(3));
@@ -98,6 +109,9 @@ const PROP_SCHEMA = {
     },
 };
 //idプロパティだけ除外したkey配列
-const AllPropSchema_KEYS_excId = Object.values(PROP_SCHEMA).flatMap(group => Object.keys(group ?? {}));
+const AllPropSchema_KEYS_excId = Object.values(PROP_SCHEMA).flatMap(group => (group && typeof group === 'object') ?
+    Object.keys(group) : []);
 //id,followId,followIndexを除外したkey配列
 const AllPropSchema_KEYS_except_id_followId_followIndex = AllPropSchema_KEYS_excId.filter(key => key !== 'followId' && key !== 'followIndex');
+export { DragonScope, PROP_SCHEMA, AllPropSchema_KEYS_excId, AllPropSchema_KEYS_except_id_followId_followIndex };
+//# sourceMappingURL=prop_schema.js.map

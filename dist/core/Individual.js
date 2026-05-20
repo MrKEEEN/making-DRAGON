@@ -1,6 +1,10 @@
 import { DragonScope } from '../base/prop_schema.js';
 import { createInspectorGUI } from '../ui/Inspector.js';
-export class Individual {
+class Individual {
+    individualDragon;
+    index;
+    individualDps;
+    uiContainer;
     constructor(dragons, index) {
         this.individualDragon = dragons; // Dragonインスタンスの配列
         this.index = index;
@@ -40,3 +44,5 @@ export class Individual {
         });
     }
 }
+export { Individual };
+//# sourceMappingURL=Individual.js.map

@@ -1,10 +1,18 @@
+import type { DragonPart } from "../base/type.js";
+import type { Dragon } from "./Dragon.js";
 import { DragonScope } from '../base/prop_schema.js';
 import { buildDPS, rebuildDragonList, updateListHighlight, createInspectorGUI } from '../ui/Inspector.js';
 import { Individual } from './Individual.js';
 import * as PIXI from '../lib/pixi.mjs';
 
+class DragonManager {
+    individuals: Individual[];
+    allDps: { part: DragonPart }[];
+    currentIndex: number;
+    spritePool: PIXI.Sprite[];
+    container: PIXI.Container;
+    app: typeof PIXI.Application.prototype | null;
 
-export class DragonManager {
     constructor() {
         // Individualインスタンスを格納する配列
         this.individuals = [];
@@ -17,19 +25,20 @@ export class DragonManager {
         this.app = null;}
 
 //個体追加
-    add(dragons) {
+    add(dragons: Dragon[]) {
         const index = this.individuals.length;
         const newIndividual = new Individual(dragons, index);
         this.individuals.push(newIndividual);}
 
 //個体削除
-    deleteCurrentIndividual(deletedIndex) {
+    deleteCurrentIndividual(deletedIndex: number) {
         if (!confirm(`Delete This Whole Individual?`)){return;}
         const deletedIndividual = this.individuals[deletedIndex];
         deletedIndividual.individualDragon.forEach((dragons) => {
             delete DragonScope.storage[dragons.id];});
         this.individuals.splice(deletedIndex, 1);
         const contentArea = document.getElementById("inspector-content");
+        if (!contentArea) return;
         contentArea.innerHTML = "";
         this.individuals.forEach((individual, newIndex) => {
             individual.uiContainer = document.createElement("div");
@@ -49,11 +58,11 @@ export class DragonManager {
                 this.allDps.push(...individual.individualDps);});}
 
         // main.jsからappを注入するメソッド
-        initApp(app) {
+        initApp(app: typeof PIXI.Application.prototype) {
         this.app = app;
-        this.app.stage.addChild(this.container);}
+        this.app?.stage.addChild(this.container);}
 
-syncWebGPUSprites(reverseMode) {
+syncWebGPUSprites(reverseMode: number) {
         const list = this.allDps;
         if (!this.app) return;
         while (this.spritePool.length < list.length) {
@@ -82,7 +91,7 @@ syncWebGPUSprites(reverseMode) {
     current() {
         return this.individuals[this.currentIndex];}
 
-    switch(index) {
+    switch(index: number) {
         if (index < 0 || index >= this.individuals.length) return;
         // 全個体の状態を一括更新
         this.individuals.forEach((individual, idx) => {
@@ -99,4 +108,7 @@ syncWebGPUSprites(reverseMode) {
         updateListHighlight();
         createInspectorGUI(index);}}
 
-export const dragonManager = new DragonManager();
+const dragonManager = new DragonManager();
+
+export { dragonManager };
+export type { Individual };

@@ -1,8 +1,15 @@
+import type { Dragon } from "./Dragon.js";
+import type { DragonPart } from "../base/type.js";
 import { DragonScope } from '../base/prop_schema.js';
 import { createInspectorGUI } from '../ui/Inspector.js';
 
-export class Individual {
-    constructor(dragons, index) {
+class Individual {
+    individualDragon: Dragon[];
+    index: number;
+    individualDps: { part: DragonPart }[];
+    uiContainer: HTMLDivElement;
+
+    constructor(dragons: Dragon[], index: number) {
         this.individualDragon = dragons; // Dragonインスタンスの配列
         this.index = index;
         this.individualDps = []; // 個体ごとのDPSを格納する配列
@@ -34,3 +41,6 @@ export class Individual {
         this.individualDragon.forEach(p => {
             p.currentDragon = false;
             p.isBoosting = false;});}}
+
+
+export { Individual };

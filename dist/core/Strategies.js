@@ -1,10 +1,9 @@
 import { DragonScope } from '../base/prop_schema.js';
-export { MotionStrategy };
 //==================
 //flagBranch判定関数
 //==================
 const MotionStrategy = () => {
-    DragonScope.dragons.forEach(dragon => {
+    DragonScope.dragons.forEach((dragon) => {
         dragon.strategy = dragon.flagBranch ? new ComplexBranchMotionStrategy() : new ChainMotionStrategy();
     });
 };
@@ -12,12 +11,13 @@ const MotionStrategy = () => {
 //ComplexBranchMotionStrategy
 //=========================================
 class ComplexBranchMotionStrategy {
-    update(target, _, t) {
+    update(target) {
         if (!target.followId) {
             return;
         }
+        const t = Date.now();
         const parentDragon = target.followId;
-        const parentPart = parentDragon.parts[target.followIndex ?? (target.followId).numParts.length - 1];
+        const parentPart = parentDragon.parts[target.followIndex ?? (target.followId).numParts - 1];
         if (!parentPart) {
             return;
         }
@@ -29,8 +29,8 @@ class ComplexBranchMotionStrategy {
         const sinA = Math.sin(a);
         const rotPrePoX = target.offsetX * cosA * m - target.offsetY * sinA;
         const rotPrePoY = target.offsetX * sinA * m + target.offsetY * cosA;
-        const rotOffsetX = (target.branchOffsetX * cosA * m - target.branchOffsetY * sinA) ?? 0;
-        const rotOffsetY = (target.branchOffsetX * sinA * m + target.branchOffsetY * cosA) ?? 0;
+        const rotOffsetX = target.branchOffsetX * cosA * m - target.branchOffsetY * sinA;
+        const rotOffsetY = target.branchOffsetX * sinA * m + target.branchOffsetY * cosA;
         // 親パーツのサイズに基づいたアタッチ位置
         const rx = parentPart.scaleX / 2;
         const ry = parentPart.scaleY / 2;
@@ -106,7 +106,7 @@ class ComplexBranchMotionStrategy {
 // ------------------------------
 class ChainMotionStrategy {
     update(target, mouse, t) {
-        if (!target.followId) {
+        if (target.followId === null && target.name === "Master") {
             //master動き
             this._updateMaster(target, mouse, t);
         }
@@ -201,6 +201,9 @@ class ChainMotionStrategy {
     //各parts[0]_update
     _updateSubRoot(target) {
         const root = target.parts[0];
+        if (target.followId === null || target.followIndex === null) {
+            return;
+        }
         const parentDragon = target.followId;
         const p = parentDragon.parts[target.followIndex];
         if (p) {
@@ -239,3 +242,5 @@ class ChainMotionStrategy {
         }
     }
 }
+export { MotionStrategy };
+//# sourceMappingURL=Strategies.js.map

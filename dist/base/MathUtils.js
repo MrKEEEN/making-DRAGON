@@ -1,5 +1,4 @@
 import { PROP_SCHEMA, DragonScope } from './prop_schema.js';
-export { createResolvedParams, showToast };
 // ==========================
 //   showToast
 // ==========================
@@ -18,8 +17,8 @@ const showToast = (text, time) => {
 (function () {
     (i, baseScaleX, baseScaleY, { methodX, methodY, ampScaleX, ampScaleY, effectScaleX, effectScaleY }) => {
         let scaleX = baseScaleX;
-        const efScaX = effectScaleX + F_4;
-        const efScaY = effectScaleY + F_4;
+        const efScaX = effectScaleX;
+        const efScaY = effectScaleY;
         if (methodX === "add") {
             scaleX += Math.sin((i / efScaX) * Math.PI) * ampScaleX;
         }
@@ -94,7 +93,8 @@ const createResolvedParams = (dragon) => {
     };
     //PC用のキー操作
     window.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey) {
+        const target = e.target instanceof Element ? e.target : null;
+        if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey) {
             return;
         }
         if (intervalId || !['*', '/', '+', '-'].includes(e.key)) {
@@ -105,19 +105,21 @@ const createResolvedParams = (dragon) => {
     });
     //キーを離したとき
     window.addEventListener('keyup', () => {
-        clearInterval(intervalId);
+        if (intervalId)
+            clearInterval(intervalId);
         intervalId = null;
     });
     //タッチパネル用の操作
     const symbols = { m: '*', d: '/', a: '+', s: '-' };
     Object.entries(lumpCalculationKey).forEach(([id, el]) => {
-        el.addEventListener('pointerdown', () => {
+        const targetEl = el;
+        targetEl.addEventListener('pointerdown', () => {
             if (intervalId || !lumpCalculationKey) {
                 return;
             }
             const targetKey = symbols[id];
-            el.style.borderColor = "#2a8";
-            el.style.background = "#242";
+            targetEl.style.borderColor = "#2a8";
+            targetEl.style.background = "#242";
             lumpCalculation(targetKey);
             showToast(`【${targetKey}】`, 1000);
             flagShowMobileButtons = true;
@@ -126,15 +128,18 @@ const createResolvedParams = (dragon) => {
     //指を離したとき
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(type => {
         window.addEventListener(type, () => {
-            clearInterval(intervalId);
+            if (intervalId)
+                clearInterval(intervalId);
             intervalId = null;
             flagShowMobileButtons = false;
             Object.values(lumpCalculationKey).forEach(el => {
-                el.style.borderColor = "";
-                el.style.background = "";
+                const targetEl = el;
+                targetEl.style.borderColor = "";
+                targetEl.style.background = "";
             });
         });
     });
+    // NOTE: ループによる動的代入において、as anyを許容
     for (const group in PROP_SCHEMA) {
         for (const key in PROP_SCHEMA[group]) {
             Object.defineProperty(resolved, key, {
@@ -206,3 +211,5 @@ const createResolvedParams = (dragon) => {
     });
     return resolved;
 };
+export { createResolvedParams, showToast };
+//# sourceMappingURL=MathUtils.js.map

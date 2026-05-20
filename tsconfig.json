@@ -12,7 +12,7 @@
     /* 最適化オプション */
     "sourceMap": true,          // ブラウザのデバッガーで「元のTS/JSコード」を表示可能にする
     "strict": true,             // TS移行時にバグを厳格に見つけるための基本設定
-    "noImplicitAny": false,     // 移行を楽にするため、型が不明な変数（any）を許容する
+    "noImplicitAny": true,     // 移行を楽にするため、型が不明な変数（any）を許容する
     "forceConsistentCasingInFileNames": true // ファイル名の大文字小文字ミスを防ぐ
   },
   "include": ["src/**/*"]
