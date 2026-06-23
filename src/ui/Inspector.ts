@@ -14,8 +14,8 @@ const buildDPS = () => {
         d.imgIndex = DragonScope.images.length - 1;}
     //[0]のpartsは回転が独自で他partsと揃わないので描画しない
     for (const p of d.parts.slice(1)) {
-      // DragonScope.dps.push({ part:p, dragon:d, imgIndex:p.imgIndex,});
-            DragonScope.dps.push({part:p});
+    // DragonScope.dps.push({ part:p, dragon:d, imgIndex:p.imgIndex,});
+        DragonScope.dps.push({part:p});
   }}};
 
 const rebuildDragonList = () => {
@@ -116,7 +116,8 @@ new Sortable(dragonListEl, {
     const idx = Array.from(dragonListEl.children).indexOf(li);
     DragonScope.selectedDragon = DragonScope.dragons[idx];
     updateListHighlight();
-    if(DragonScope.individualCurrentIndex) {createInspectorGUI(DragonScope.individualCurrentIndex);}
+    //DragonScope.individualCurrentIndexは0値(true判定になるべき)を取るので、booleanで判定するとfalseになってしまう。undefinedかどうかで判定する
+    if(DragonScope.individualCurrentIndex !== undefined) {createInspectorGUI(DragonScope.individualCurrentIndex);}
   }
 
 // ============================================================
@@ -183,12 +184,11 @@ function updateAdd(dragonInput: HTMLInputElement | null){
     DragonScope.selectedDragon = newDragon;
     showToast(`New dragon added: ${newDragon.name}`, 5000);}
 //---update---
-
   rebuildDragonList();
   buildDPS();
   DragonScope.needsRebuildDPS = true;
   updateListHighlight();
-  if(DragonScope.individualCurrentIndex) {createInspectorGUI(DragonScope.individualCurrentIndex);}
+  if(DragonScope.individualCurrentIndex !== undefined) {createInspectorGUI(DragonScope.individualCurrentIndex);}
   if (dragonInput) dragonInput.value = "";
 }
 

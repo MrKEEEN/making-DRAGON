@@ -34,6 +34,7 @@ const ResetSaveLoad = {
         MotionStrategy();
         if (currentNumParts && dragon.initParts) {
             dragon.initParts();
+            rebuildDragonList();
             currentNumParts = false;
         }
         if (currentImgIndex && dragon.resetParts) {
@@ -267,7 +268,7 @@ const ResetSaveLoad = {
         DragonScope.selectedDragon?.rebuild();
         rebuildDragonList();
         dragonManager.buildAllDps();
-        if (DragonScope.individualCurrentIndex) {
+        if (DragonScope.individualCurrentIndex !== undefined) {
             createInspectorGUI(DragonScope.individualCurrentIndex);
         }
     },
@@ -294,7 +295,7 @@ const ResetSaveLoad = {
             }
             d.rebuild();
             dragonManager.buildAllDps();
-            if (DragonScope.individualCurrentIndex) {
+            if (DragonScope.individualCurrentIndex !== undefined) {
                 createInspectorGUI(DragonScope.individualCurrentIndex);
             }
         };
@@ -348,7 +349,7 @@ const ResetSaveLoad = {
                     rebuildDragonList();
                     buildDPS();
                     dragonManager.buildAllDps();
-                    if (DragonScope.individualCurrentIndex) {
+                    if (DragonScope.individualCurrentIndex !== undefined) {
                         createInspectorGUI(DragonScope.individualCurrentIndex);
                     }
                 };

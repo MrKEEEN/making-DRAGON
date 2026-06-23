@@ -28,6 +28,10 @@ class DragonManager {
     }
     //個体削除
     deleteCurrentIndividual(deletedIndex) {
+        if (this.individuals.length === 1) {
+            alert("Cannot delete the last individual.");
+            return;
+        }
         if (!confirm(`Delete This Whole Individual?`)) {
             return;
         }

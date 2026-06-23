@@ -31,6 +31,7 @@ this.sync(dragon.id, dragon, true);
 MotionStrategy();
 if(currentNumParts && dragon.initParts){
   dragon.initParts();
+  rebuildDragonList();
   currentNumParts = false;}
 if(currentImgIndex && dragon.resetParts){
   dragon.resetParts();
@@ -239,7 +240,7 @@ deleteDragon(id: string) {
     DragonScope.selectedDragon?.rebuild();
     rebuildDragonList();
     dragonManager.buildAllDps();
-    if(DragonScope.individualCurrentIndex) {createInspectorGUI(DragonScope.individualCurrentIndex);}
+    if(DragonScope.individualCurrentIndex !== undefined) {createInspectorGUI(DragonScope.individualCurrentIndex);}
   },
 
 //-----------------------
@@ -261,7 +262,7 @@ setupUI() {
       this.reset(d.id, d);}
     d.rebuild();
     dragonManager.buildAllDps();
-    if(DragonScope.individualCurrentIndex) {createInspectorGUI(DragonScope.individualCurrentIndex);}
+    if(DragonScope.individualCurrentIndex !== undefined) {createInspectorGUI(DragonScope.individualCurrentIndex);}
   };
 
 saveBtn.onclick = () => {
@@ -301,7 +302,7 @@ saveBtn.onclick = () => {
         rebuildDragonList();
         buildDPS();
         dragonManager.buildAllDps();
-        if(DragonScope.individualCurrentIndex) {createInspectorGUI(DragonScope.individualCurrentIndex);}
+        if(DragonScope.individualCurrentIndex !== undefined) {createInspectorGUI(DragonScope.individualCurrentIndex);}
         };
     reader.readAsText(file);
     input.value = "";};

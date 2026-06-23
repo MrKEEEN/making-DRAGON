@@ -4,36 +4,36 @@ import type { Dragon } from "../core/Dragon.js";
 
 // 1. 型（形）を定義する
 interface DragonScopeType {
-    master: Dragon | null;
-    selectedDragon: Dragon | null;
-    images: HTMLImageElement[];
-    textures: Texture[];
-    dragons: Dragon[];
-    dps: { part: DragonPart }[];
-    storage: Record<string, {
-                            current:Partial<IDragonPropSchema>;
-                            saved:Partial<IDragonPropSchema>;
-                            }>;
-    individualCurrentIndex?: number;
-    needsRebuildDPS: boolean;
-    mobileRatio: number;
-    updateWebGPUResources(): void;
-    groupVisibility?: Record<string, 'none' | 'block'>;
-    initialData?: readonly [readonly string[], readonly[number, number, number]];
+        master: Dragon | null;
+        selectedDragon: Dragon | null;
+        images: HTMLImageElement[];
+        textures: Texture[];
+        dragons: Dragon[];
+        dps: { part: DragonPart }[];
+        storage: Record<string, {
+                                current:Partial<IDragonPropSchema>;
+                                saved:Partial<IDragonPropSchema>;
+                                }>;
+        individualCurrentIndex?: number;
+        needsRebuildDPS: boolean;
+        mobileRatio: number;
+        updateWebGPUResources(): void;
+        groupVisibility?: Record<string, 'none' | 'block'>;
+        initialData?: readonly [readonly string[], readonly[number, number, number]];
 }
 
 // 2. 定義した型を適用する
 const DragonScope: DragonScopeType = {
-                                    master:null,
-                                    selectedDragon: null,
-                                    images:[],
-                                    textures:[],
-                                    dragons:[],
-                                    dps:[],
-                                    storage:{},
-                                    needsRebuildDPS:false,
-                                    mobileRatio:1,
-                                    updateWebGPUResources: () => {}};
+        master:null,
+        selectedDragon: null,
+        images:[],
+        textures:[],
+        dragons:[],
+        dps:[],
+        storage:{},
+        needsRebuildDPS:false,
+        mobileRatio:1,
+        updateWebGPUResources: () => {}};
 
 
 

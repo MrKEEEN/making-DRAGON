@@ -133,7 +133,8 @@ function sortableFunc(e) {
     const idx = Array.from(dragonListEl.children).indexOf(li);
     DragonScope.selectedDragon = DragonScope.dragons[idx];
     updateListHighlight();
-    if (DragonScope.individualCurrentIndex) {
+    //DragonScope.individualCurrentIndexは0値(true判定になるべき)を取るので、booleanで判定するとfalseになってしまう。undefinedかどうかで判定する
+    if (DragonScope.individualCurrentIndex !== undefined) {
         createInspectorGUI(DragonScope.individualCurrentIndex);
     }
 }
@@ -215,7 +216,7 @@ function updateAdd(dragonInput) {
     buildDPS();
     DragonScope.needsRebuildDPS = true;
     updateListHighlight();
-    if (DragonScope.individualCurrentIndex) {
+    if (DragonScope.individualCurrentIndex !== undefined) {
         createInspectorGUI(DragonScope.individualCurrentIndex);
     }
     if (dragonInput)

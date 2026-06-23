@@ -1,5 +1,5 @@
 import type { DragonPart } from "../base/type.js";
-import type { Dragon } from "./Dragon.js";
+import { Dragon } from "./Dragon.js";
 import { DragonScope } from '../base/prop_schema.js';
 import { buildDPS, rebuildDragonList, updateListHighlight, createInspectorGUI } from '../ui/Inspector.js';
 import { Individual } from './Individual.js';
@@ -32,6 +32,10 @@ class DragonManager {
 
 //個体削除
     deleteCurrentIndividual(deletedIndex: number) {
+        if (this.individuals.length === 1) {
+            alert("Cannot delete the last individual.");
+            return;
+        }
         if (!confirm(`Delete This Whole Individual?`)){return;}
         const deletedIndividual = this.individuals[deletedIndex];
         deletedIndividual.individualDragon.forEach((dragons) => {
